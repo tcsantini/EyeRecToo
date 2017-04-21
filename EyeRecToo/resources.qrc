@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/blinker.png</file>
+        <file>icons/lEyeWidget.png</file>
+        <file>icons/rEyeWidget.png</file>
+        <file>icons/fieldWidget.png</file>
+        <file>icons/EyeRecToo.png</file>
+        <file>icons/gazeEstimationWidget.png</file>
+    </qresource>
+</RCC>

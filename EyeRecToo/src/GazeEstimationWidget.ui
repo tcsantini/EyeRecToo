@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GazeEstimationWidget</class>
+ <widget class="QMainWindow" name="GazeEstimationWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>254</width>
+    <height>629</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>9</number>
+    </property>
+    <property name="rightMargin">
+     <number>9</number>
+    </property>
+    <property name="bottomMargin">
+     <number>9</number>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="tupleCollectionGroupBox">
+      <property name="toolTip">
+       <string>Interface for calibration / evaluation tuple collection.&lt;br&gt;&lt;br&gt;After starting collection either:&lt;br&gt;1) select points in the Field Widget view&lt;br&gt;or&lt;br&gt;2)Hold 'c' while gazing at the center of the collection marker</string>
+      </property>
+      <property name="statusTip">
+       <string/>
+      </property>
+      <property name="whatsThis">
+       <string/>
+      </property>
+      <property name="title">
+       <string>Tuple Collection</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>9</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="verticalSpacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QComboBox" name="collectionTypeComboBox">
+           <property name="toolTip">
+            <string>Selects if collected tuples are for calibration or evaluation</string>
+           </property>
+           <property name="statusTip">
+            <string/>
+           </property>
+           <property name="whatsThis">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>6</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>9</number>
+             </property>
+             <property name="rightMargin">
+              <number>9</number>
+             </property>
+             <property name="bottomMargin">
+              <number>9</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="startFinishButton">
+               <property name="toolTip">
+                <string>Starts / stops tuple collection</string>
+               </property>
+               <property name="statusTip">
+                <string/>
+               </property>
+               <property name="whatsThis">
+                <string/>
+               </property>
+               <property name="text">
+                <string>Start</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="saveTuples">
+               <property name="toolTip">
+                <string>Saves current calibration or evaluation tuples</string>
+               </property>
+               <property name="statusTip">
+                <string/>
+               </property>
+               <property name="whatsThis">
+                <string/>
+               </property>
+               <property name="text">
+                <string>Save</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="loadTuples">
+               <property name="toolTip">
+                <string>Loads tuples from file to calibration or evaluation tuples</string>
+               </property>
+               <property name="statusTip">
+                <string/>
+               </property>
+               <property name="whatsThis">
+                <string/>
+               </property>
+               <property name="text">
+                <string>Load</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="samplingBox">
+             <property name="toolTip">
+              <string>Field widget sampling configuration; for points collected by clicking on the field widget</string>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
+             <property name="title">
+              <string>Sampling</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QSpinBox" name="samplingTimeMsCheckBox">
+                <property name="toolTip">
+                 <string>Sampling time after a point has been selected in the field widget</string>
+                </property>
+                <property name="whatsThis">
+                 <string/>
+                </property>
+                <property name="readOnly">
+                 <bool>false</bool>
+                </property>
+                <property name="suffix">
+                 <string> ms</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>2000</number>
+                </property>
+                <property name="value">
+                 <number>500</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="samplingMedianCheckBox">
+                <property name="toolTip">
+                 <string>Use all samples or their median value</string>
+                </property>
+                <property name="text">
+                 <string>Use Median</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="gazeEstimationGroupBox">
+      <property name="toolTip">
+       <string>Selects gaze estimation method and input type</string>
+      </property>
+      <property name="statusTip">
+       <string/>
+      </property>
+      <property name="whatsThis">
+       <string/>
+      </property>
+      <property name="title">
+       <string>Gaze Estimation Method</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QComboBox" name="methodBox">
+         <property name="toolTip">
+          <string>Gaze estimation method</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="whatsThis">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="inputTypeBox">
+         <property name="toolTip">
+          <string>Input Type Selection&lt;br&gt;&lt;br&gt;Binocular:&lt;br&gt;-Mean point of regard &lt;br&gt;-Mean pupil value&lt;br&gt;&lt;br&gt;Monocular:&lt;br&gt;-Left Eye&lt;br&gt;-Right Eye</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="whatsThis">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="calibMeBox">
+      <property name="font">
+       <font>
+        <italic>false</italic>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Configurations for CalibMe</string>
+      </property>
+      <property name="title">
+       <string>CalibMe (Santini et al. 2017b)</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QGroupBox" name="outlierRemovalBox">
+         <property name="toolTip">
+          <string>Remove outliers</string>
+         </property>
+         <property name="title">
+          <string>Outlier Removal</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="outlierPupilRatioBox">
+            <property name="toolTip">
+             <string>Outliers based on ratio between subsequent detected pupils</string>
+            </property>
+            <property name="text">
+             <string>Pupil Ratio</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="outlierPupilPositionBox">
+            <property name="toolTip">
+             <string>Outliers based on normally distributed pupil positions</string>
+            </property>
+            <property name="text">
+             <string>Pupil Position</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="outlierPupilOutlineBox">
+            <property name="toolTip">
+             <string>Outliers based on pupil center estimates without pupil outline</string>
+            </property>
+            <property name="text">
+             <string>Pupil Outline</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="autoEvaluationBox">
+         <property name="toolTip">
+          <string>Selectes tuples for evaluation automatically</string>
+         </property>
+         <property name="title">
+          <string>Evaluation Tuple Selection</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="horizontalStrideLabel">
+              <property name="toolTip">
+               <string>Horizontal stride</string>
+              </property>
+              <property name="text">
+               <string>∆x</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="verticalStrideLabel">
+              <property name="toolTip">
+               <string>Vertical stride</string>
+              </property>
+              <property name="text">
+               <string>∆y</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::AutoText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="horizontalStrideSB">
+              <property name="toolTip">
+               <string>Horizontal stride</string>
+              </property>
+              <property name="suffix">
+               <string>%</string>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="verticalStrideSB">
+              <property name="toolTip">
+               <string>Vertical stride</string>
+              </property>
+              <property name="suffix">
+               <string>%</string>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="granularityLabel">
+              <property name="toolTip">
+               <string>Granularity of the regions (i.e., steps from the image center)</string>
+              </property>
+              <property name="text">
+               <string>g</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="rangeFactorLabel">
+              <property name="toolTip">
+               <string>Range factor</string>
+              </property>
+              <property name="text">
+               <string>rf</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="granularitySB">
+              <property name="toolTip">
+               <string>Granularity of the regions (i.e., steps from the image center)</string>
+              </property>
+              <property name="suffix">
+               <string> steps</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="rangeFactorSB">
+              <property name="toolTip">
+               <string>Range factor</string>
+              </property>
+              <property name="suffix">
+               <string>%</string>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="visualizationGroupBox">
+         <property name="toolTip">
+          <string>Shows calibration/evaluation overlay</string>
+         </property>
+         <property name="title">
+          <string>Visualization</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QSpinBox" name="visualizationTimeSpinBox">
+            <property name="toolTip">
+             <string>Display overlay for N seconds</string>
+            </property>
+            <property name="suffix">
+             <string> s</string>
+            </property>
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="value">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
