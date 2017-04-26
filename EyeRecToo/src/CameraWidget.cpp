@@ -17,8 +17,8 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     maxAgeMs(300),
     collectionIntervalMs(2000),
     collectionCount(20),
-    patternSize(8,6),
-    squareSizeMM(29),
+    patternSize(9,6),
+    squareSizeMM(25),
     ui(new Ui::CameraWidget)
 {
     ui->setupUi(this);
