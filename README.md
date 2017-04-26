@@ -35,19 +35,19 @@ should work out of the box.
 - Pupil DIY (see [Pupil Labs](https://pupil-labs.com/))
 - Eivazi's microscope add-on (see [Eivazi, S et al.  2016](http://ieeexplore.ieee.org/document/7329925/))
 - Pupil Eye Tracker (see [Pupil Labs](https://pupil-labs.com/store/))
->**NOTE:** Early support for Pupil Labs' custom cameras is provided
->through the [UVC Engine](https://atreus.informatik.uni-tuebingen.de/santini/uvcengine).
->This support was tested with a binocular Pupil headset (in total three cameras) with the
->following configurations:
->1. Eyes (320 x 240 @120fps) Field (1280 x 720 @30fps)
->2. Eyes (640 x 480 @120fps) Field (1280 x 720 @30fps)
->3. Eyes (640 x 480 @120fps) Field (640 x 480 @120fps)
->
->Other configurations also work but were not extensively used.
->
->*Please note that the camera driver, libusb, and libuvc can crash if the headset is unplugged
->while the cameras are streaming. These are still work in progress for Windows,
->and the uvc engine is still in beta.*
+**NOTE:** Early support for Pupil Labs' custom cameras is provided
+through the [UVC Engine](https://atreus.informatik.uni-tuebingen.de/santini/uvcengine).
+This support was tested with a binocular Pupil headset (in total three cameras) with the
+following configurations:
+1. Eyes (320 x 240 @120fps) Field (1280 x 720 @30fps)
+2. Eyes (640 x 480 @120fps) Field (1280 x 720 @30fps)
+3. Eyes (640 x 480 @120fps) Field (640 x 480 @120fps)
+
+Other configurations also work but were not extensively used.
+
+*Please note that the camera driver, libusb, and libuvc can crash if the headset is unplugged
+while the cameras are streaming. These are still work in progress for Windows,
+and the uvc engine is still in beta.*
 
 
 *Tested webcams:*
