@@ -31,7 +31,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             ui->viewFinder->setToolTip("You can select a region of interest by clicking and holding the right mouse button.");
             break;
         case ImageProcessor::Field:
-            ui->viewFinder->setToolTip("After starting the collection you can select points by clicking in this view with here the left mouse button.");
+            ui->viewFinder->setToolTip("After starting the collection you can select points by clicking in this view with the left mouse button.");
             break;
         default:
             break;
