@@ -283,6 +283,9 @@ void GazeEstimationWidget::keyPressEvent(QKeyEvent *event)
             if (isCollecting)
                 connect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
             break;
+        case Qt::Key_S:
+            ui->startFinishButton->setChecked(!ui->startFinishButton->isChecked());
+            break;
         default:
             break;
     }

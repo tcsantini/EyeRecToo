@@ -123,7 +123,6 @@ MainWindow::MainWindow(QWidget *parent) :
             journal, SIGNAL(stopRecording()) );
 
     checkForOpenH264();
-
 }
 
 MainWindow::~MainWindow()
@@ -351,6 +350,7 @@ void MainWindow::widgetButtonReact(QMainWindow *window, bool checked)
     if (checked) {
         window->show();
         window->raise();
+        window->setFocus();
     } else
         window->hide();
 }
