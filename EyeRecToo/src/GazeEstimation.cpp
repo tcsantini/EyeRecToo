@@ -232,6 +232,8 @@ void GazeEstimation::calibrate()
         if (!calibrationTuples[i]->isOutlier())
             calibrationInliers.push_back(*calibrationTuples[i]);
 
+    updateInterpolationHull(calibrationInliers);
+
     qInfo() << "Using" << calibrationInliers.size() << "/" << calibrationTuples.size() << "calibration tuples.";
     if (calibrationInliers.size() <= 0) {
         error = "No calibration tuples remaining.";
@@ -592,3 +594,14 @@ void GazeEstimation::setCalibrating(bool v)
     isCalibrating = v;
 }
 
+void GazeEstimation::updateInterpolationHull(const std::vector<CollectionTuple> &tuples)
+{
+    if (tuples.size() <= 0)
+        return;
+
+    vector<Point> points;
+    for (unsigned int i=0; i<tuples.size(); i++)
+        points.push_back( to2D(tuples[i].field.collectionMarker.center) );
+
+    convexHull(points, interpolationHull);
+}

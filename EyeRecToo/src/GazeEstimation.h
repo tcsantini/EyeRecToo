@@ -213,6 +213,7 @@ private slots:
     bool isPupilOutlineValid(const EyeData &cur);
     void selectEvaluationTuples(const int g, const double dx, const double dy, const double rf);
 
+    void updateInterpolationHull(const std::vector<CollectionTuple> &tuples);
     void drawGazeEstimationInfo(DataTuple &dataTuple);
 };
 
