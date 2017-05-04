@@ -12,6 +12,8 @@ GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
     QMainWindow(parent),
     isCollecting(false),
     isSampling(false),
+    lastStatus(false),
+    calibrationRequested(false),
     ui(new Ui::GazeEstimationWidget)
 {
     ui->setupUi(this);
@@ -137,6 +139,12 @@ GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
 
     gazeEstimation->settings = settings;
     QMetaObject::invokeMethod(gazeEstimation, "updateConfig");
+
+    // Load sound effects
+    loadSoundEffect(startSound, "start.wav");
+    loadSoundEffect(successSound, "success.wav");
+    loadSoundEffect(failureSound, "failure.wav");
+    loadSoundEffect(collectedSound, "collected.wav");
 }
 
 GazeEstimationWidget::~GazeEstimationWidget()
@@ -213,6 +221,7 @@ void GazeEstimationWidget::finishSampling()
     }
 
     samples.clear();
+    collectedSound.play();
 }
 void GazeEstimationWidget::newSample(DataTuple dataTuple)
 {
@@ -255,7 +264,7 @@ void GazeEstimationWidget::on_startFinishButton_toggled(bool checked)
         emit setCalibrating(true);
         connect(this, SIGNAL(newClick(Timestamp,QPoint,QSize)),
                 this, SLOT(startSampling(Timestamp,QPoint,QSize)) );
-        //startSound.play();
+        startSound.play();
         isCollecting = true;
     } else {
         ui->startFinishButton->setText("Start");
@@ -264,6 +273,7 @@ void GazeEstimationWidget::on_startFinishButton_toggled(bool checked)
         disconnect(this, SIGNAL(newClick(Timestamp,QPoint,QSize)),
                    this, SLOT(startSampling(Timestamp,QPoint,QSize)) );
         emit setCalibrating(false);
+        calibrationRequested = true;
         emit calibrationRequest();
         isCollecting = false;
     }
@@ -410,6 +420,14 @@ void GazeEstimationWidget::on_visualizationTimeSpinBox_valueChanged(int arg1)
 
 void GazeEstimationWidget::updateStatus(bool status, QString msg)
 {
+    // There are two different triggers for an status update:
+    // 1) We requested a calibration, in which case we always give the user feedback
+    // 2) The configuration changed, in which case we only give feedback if the status changed
+    if (calibrationRequested || status != lastStatus)
+        status ? successSound.play() : failureSound.play();
+    lastStatus = status;
+    calibrationRequested = false;
+
     if (status) {
         statusBarLabel->setText("Calibrated.");
         statusBarLabel->setStyleSheet("QLabel { color : green }");
@@ -417,5 +435,6 @@ void GazeEstimationWidget::updateStatus(bool status, QString msg)
         statusBarLabel->setText(QString("Uncalibrated: %1").arg(msg));
         statusBarLabel->setStyleSheet("QLabel { color : red }");
     }
+
 }
 

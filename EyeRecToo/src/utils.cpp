@@ -172,3 +172,20 @@ QString iniStr(QString str)
 // CPU hoggers for testing
 void delay(int thMs) { Timestamp cur = gTimer.elapsed(); volatile int a=0; while ( gTimer.elapsed() - cur < thMs ) a++; }
 
+void loadSoundEffect(QSoundEffect &effect, QString fileName)
+{
+    // TODO: clean this up; QSoundEffect doesn't work with resources currently so
+    // we search manually in case this is a release or a development environment.
+    // It assumes the build location for the development environment!
+
+    QStringList searchPaths;
+    searchPaths << "../EyeRecToo/effects" << "./effects";
+    for (int i=0; i<searchPaths.size(); i++) {
+        QString target = searchPaths[i] + "/" + fileName;
+        if (QFile(target).exists()) {
+            qDebug() << "Loaded" << target;
+            effect.setSource(QUrl::fromLocalFile(target));
+            break;
+        }
+    }
+}

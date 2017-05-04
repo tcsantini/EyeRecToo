@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QThread>
 #include <QKeyEvent>
+#include <QSoundEffect>
 
 #include "Synchronizer.h"
 #include "GazeEstimation.h"
@@ -49,8 +50,12 @@ private:
     cv::Point2f fieldRatio;
     bool isCollecting;
     bool isSampling;
+    bool lastStatus;
+    bool calibrationRequested;
 
     QLabel *statusBarLabel;
+
+    QSoundEffect startSound, successSound, failureSound, collectedSound;
 
 private slots:
     void startSampling(Timestamp timestamp, QPoint calibrationPoint, QSize previewSize);

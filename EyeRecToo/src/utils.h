@@ -18,6 +18,7 @@
 #include <QCameraInfo>
 #include <QWidget>
 #include <QSettings>
+#include <QSoundEffect>
 
 #include <opencv/cv.h>
 #include <opencv2/imgproc.hpp>
@@ -92,5 +93,7 @@ template<typename T> void set(const QSettings *settings, const QString key, T &v
     if (variant.isValid())
         v = qvariant_cast<T>(variant);
 }
+
+void loadSoundEffect(QSoundEffect &effect, QString fileName);
 
 #endif // UTILS_H
