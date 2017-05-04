@@ -52,6 +52,9 @@ private:
     cv::Mat depthMap;
     unsigned int unknowns;
     InputType calibrationInputType;
+    bool binocularCalibrated;
+    bool monoLeftCalibrated;
+    bool monoRightCalibrated;
 
     bool calibrate(cv::Mat &x, cv::Mat &y, cv::Mat &z, cv::Mat1d &c, QString &errorMsg);
     float evaluate(float x, float y, cv::Mat1d &c);

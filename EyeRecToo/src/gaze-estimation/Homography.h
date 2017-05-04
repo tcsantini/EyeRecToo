@@ -25,6 +25,9 @@ private:
     cv::Mat mH;
     cv::Mat lH;
     cv::Mat rH;
+    bool binocularCalibrated;
+    bool monoLeftCalibrated;
+    bool monoRightCalibrated;
 
     bool calibrate(std::vector<cv::Point2f> pupil, std::vector<cv::Point2f> gaze, cv::Mat &H, QString &errorMsg);
 };

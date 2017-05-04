@@ -259,10 +259,37 @@ void GazeEstimation::estimate(DataTuple dataTuple)
     if (!gazeEstimationMethod)
         return;
 
-    // TODO: check pupil validity, use single pupil if one of the two is invalid
     if (calibrated) {
-        dataTuple.field.gazeEstimate = gazeEstimationMethod->estimateGaze(dataTuple, cfg.inputType);
-        dataTuple.field.validGazeEstimate = true;
+        GazeEstimationMethod::InputType inputType = cfg.inputType;
+        bool lValid = dataTuple.lEye.pupil.center.x > 0 && dataTuple.lEye.pupil.center.y > 0;
+        bool rValid = dataTuple.rEye.pupil.center.x > 0 && dataTuple.rEye.pupil.center.y > 0;
+
+        switch(inputType) {
+            case GazeEstimationMethod::BINOCULAR:
+            case GazeEstimationMethod::BINOCULAR_MEAN_POR:
+                if (!lValid && !rValid) // None valid
+                    break;
+                if (lValid && !rValid) // Use only left
+                    inputType = GazeEstimationMethod::MONO_LEFT;
+                if (rValid && !lValid) // Use only right
+                    inputType = GazeEstimationMethod::MONO_RIGHT;
+                dataTuple.field.gazeEstimate = gazeEstimationMethod->estimateGaze(dataTuple, inputType);
+                dataTuple.field.validGazeEstimate = true;
+                break;
+            case GazeEstimationMethod::MONO_LEFT:
+                if (!lValid)
+                    break;
+                dataTuple.field.gazeEstimate = gazeEstimationMethod->estimateGaze(dataTuple, inputType);
+                dataTuple.field.validGazeEstimate = true;
+                break;
+            case GazeEstimationMethod::MONO_RIGHT:
+                if (!rValid)
+                    break;
+                dataTuple.field.gazeEstimate = gazeEstimationMethod->estimateGaze(dataTuple, inputType);
+                dataTuple.field.validGazeEstimate = true;
+                break;
+        }
+
     }
 
     drawGazeEstimationInfo(dataTuple);

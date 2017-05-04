@@ -3,7 +3,10 @@
 using namespace std;
 using namespace cv;
 
-Homography::Homography()
+Homography::Homography() :
+    binocularCalibrated(false),
+    monoLeftCalibrated(false),
+    monoRightCalibrated(false)
 {
 
 }
@@ -21,21 +24,22 @@ bool Homography::calibrate(vector<CollectionTuple> &calibrationTuples, InputType
         gaze.push_back( to2D(calibrationTuples[i].field.collectionMarker.center) );
     }
 
-    switch (inputType) {
+    // Estimate parameters for all, independently of input type; this allows us
+    // to use a single eye later even if mean pupil was selected for calibration
+
+    binocularCalibrated = calibrate(meanPupil, gaze, mH, errorMsg);
+    monoLeftCalibrated = calibrate(leftPupil, gaze, lH, errorMsg);
+    monoRightCalibrated = calibrate(rightPupil, gaze, rH, errorMsg);
+
+    switch(inputType) {
         case BINOCULAR:
-            if (!calibrate(meanPupil, gaze, mH, errorMsg))
-                return false;
-            break;
-
-        case UNKNOWN:
-            return false;
-
-        default:
-            if (!calibrate(leftPupil, gaze, lH, errorMsg))
-                return false;
-            if (!calibrate(rightPupil, gaze, rH, errorMsg))
-                return false;
-            break;
+            return binocularCalibrated;
+        case BINOCULAR_MEAN_POR:
+            return monoLeftCalibrated && monoRightCalibrated;
+        case MONO_LEFT:
+            return monoLeftCalibrated;
+        case MONO_RIGHT:
+            return monoRightCalibrated;
     }
 
     calibrationInputType = inputType;
@@ -46,20 +50,21 @@ Point3f Homography::estimateGaze(const CollectionTuple &tuple, const InputType i
 {
     Point3f estimate(-1,-1,-1);
 
-    if (inputType != calibrationInputType)
-        return estimate;
-
     vector<Point2d> ev;
     vector<Point2d> pupil;
 
-    switch (calibrationInputType) {
+    switch (inputType) {
         case BINOCULAR:
+            if (!binocularCalibrated)
+                return estimate;
             pupil.push_back( (tuple.lEye.pupil.center + tuple.rEye.pupil.center)/2 );
             perspectiveTransform(pupil, ev, mH);
             estimate = to3D(ev[0]);
             break;
 
         case BINOCULAR_MEAN_POR:
+            if (!monoLeftCalibrated || !monoRightCalibrated)
+                return estimate;
             pupil.push_back( tuple.lEye.pupil.center );
             perspectiveTransform(pupil, ev, lH);
             estimate = to3D(ev[0]);
@@ -70,12 +75,16 @@ Point3f Homography::estimateGaze(const CollectionTuple &tuple, const InputType i
             break;
 
         case MONO_LEFT:
+            if (!monoLeftCalibrated)
+                return estimate;
             pupil.push_back( tuple.lEye.pupil.center );
             perspectiveTransform(pupil, ev, lH);
             estimate = to3D(ev[0]);
             break;
 
         case MONO_RIGHT:
+            if (!monoRightCalibrated)
+                return estimate;
             pupil.push_back( tuple.rEye.pupil.center );
             perspectiveTransform(pupil, ev, rH);
             estimate = to3D(ev[0]);

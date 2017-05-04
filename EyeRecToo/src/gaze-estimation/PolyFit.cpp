@@ -4,7 +4,10 @@
 using namespace std;
 using namespace cv;
 
-PolyFit::PolyFit(PlType plType)
+PolyFit::PolyFit(PlType plType) :
+    binocularCalibrated(false),
+    monoLeftCalibrated(false),
+    monoRightCalibrated(false)
 {
     this->plType = plType;
 
@@ -58,8 +61,6 @@ PolyFit::~PolyFit()
 
 bool PolyFit::calibrate(vector<CollectionTuple> &calibrationTuples, InputType inputType, QString &errorMsg)
 {
-    calibrationInputType = UNKNOWN;
-
     PointVector leftPupil;
     PointVector rightPupil;
     PointVector meanPupil;
@@ -77,27 +78,24 @@ bool PolyFit::calibrate(vector<CollectionTuple> &calibrationTuples, InputType in
         return false;
     }
 
-    switch (inputType) {
+    // Estimate parameters for all, independently of input type; this allows us
+    // to use a single eye later even if mean pupil was selected for calibration
+    binocularCalibrated = calibrate(meanPupil.x, meanPupil.y, gaze.x, mcx, errorMsg)
+            && calibrate(meanPupil.x, meanPupil.y, gaze.y, mcy, errorMsg);
+    monoLeftCalibrated = calibrate(leftPupil.x, leftPupil.y, gaze.x, lcx, errorMsg)
+            && calibrate(leftPupil.x, leftPupil.y, gaze.y, lcy, errorMsg);
+    monoRightCalibrated = calibrate(rightPupil.x, rightPupil.y, gaze.x, rcx, errorMsg)
+            && calibrate(rightPupil.x, rightPupil.y, gaze.y, rcy, errorMsg);
+
+    switch(inputType) {
         case BINOCULAR:
-            if (!calibrate(meanPupil.x, meanPupil.y, gaze.x, mcx, errorMsg))
-                return false;
-            if (!calibrate(meanPupil.x, meanPupil.y, gaze.y, mcy, errorMsg))
-                return false;
-            break;
-
-        case UNKNOWN:
-            return false;
-
-        default:
-            if (!calibrate(leftPupil.x, leftPupil.y, gaze.x, lcx, errorMsg))
-                return false;
-            if (!calibrate(leftPupil.x, leftPupil.y, gaze.y, lcy, errorMsg))
-                return false;
-            if (!calibrate(rightPupil.x, rightPupil.y, gaze.x, rcx, errorMsg))
-                return false;
-            if (!calibrate(rightPupil.x, rightPupil.y, gaze.y, rcy, errorMsg))
-                return false;
-            break;
+            return binocularCalibrated;
+        case BINOCULAR_MEAN_POR:
+            return monoLeftCalibrated && monoRightCalibrated;
+        case MONO_LEFT:
+            return monoLeftCalibrated;
+        case MONO_RIGHT:
+            return monoRightCalibrated;
     }
 
     calibrationInputType = inputType;
@@ -115,7 +113,7 @@ Point3f PolyFit::estimateGaze(const CollectionTuple &tuple, const InputType inpu
     estimate3D.x = estimate.x;
     estimate3D.y = estimate.y;
     if (estimate.x < 0 || estimate.x >= depthMap.cols || estimate.y < 0 || estimate.y >= depthMap.rows)
-        estimate3D.z = depthMap.at<float>(0, 0);
+        estimate3D.z = -1;
     else
         estimate3D.z = depthMap.at<float>(estimate.y, estimate.x);
 
@@ -125,11 +123,11 @@ Point3f PolyFit::estimateGaze(const CollectionTuple &tuple, const InputType inpu
 Point2f PolyFit::evaluate(Point2f leftPupil, Point2f rightPupil, InputType inputType)
 {
     Point2f estimate(-1, -1);
-    if (inputType != calibrationInputType)
-        return estimate;
 
-    switch (calibrationInputType) {
+    switch (inputType) {
         case BINOCULAR:
+            if (!binocularCalibrated)
+                return estimate;
             estimate.x = evaluate(
                              (leftPupil.x + rightPupil.x)/2.0,
                              (leftPupil.y + rightPupil.y)/2.0,
@@ -141,6 +139,8 @@ Point2f PolyFit::evaluate(Point2f leftPupil, Point2f rightPupil, InputType input
             break;
 
         case BINOCULAR_MEAN_POR:
+            if (!monoLeftCalibrated || !monoRightCalibrated)
+                return estimate;
             estimate.x = evaluate(
                              leftPupil.x,
                              leftPupil.y,
@@ -162,6 +162,8 @@ Point2f PolyFit::evaluate(Point2f leftPupil, Point2f rightPupil, InputType input
             break;
 
         case MONO_LEFT:
+            if (!monoLeftCalibrated)
+                return estimate;
             estimate.x = evaluate(
                              leftPupil.x,
                              leftPupil.y,
@@ -173,6 +175,8 @@ Point2f PolyFit::evaluate(Point2f leftPupil, Point2f rightPupil, InputType input
             break;
 
         case MONO_RIGHT:
+            if (!monoRightCalibrated)
+                return estimate;
             estimate.x = evaluate(
                              rightPupil.x,
                              rightPupil.y,
@@ -185,26 +189,6 @@ Point2f PolyFit::evaluate(Point2f leftPupil, Point2f rightPupil, InputType input
 
         default:
             break;
-    }
-
-    if (calibrationInputType == BINOCULAR_MEAN_POR) {
-        Point2f le, re;
-        le.x = evaluate(
-                       leftPupil.x,
-                       leftPupil.y,
-                       lcx);
-        le.y = evaluate(
-                       leftPupil.x,
-                       leftPupil.y,
-                       lcy);
-        re.x = evaluate(
-                       rightPupil.x,
-                       rightPupil.y,
-                       rcx);
-        re.y = evaluate(
-                       rightPupil.x,
-                       rightPupil.y,
-                       rcy);
     }
 
     return estimate;
