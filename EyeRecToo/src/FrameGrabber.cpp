@@ -9,6 +9,7 @@ FrameGrabber::FrameGrabber(QString id, int code, QObject *parent) :
     code(code),
     yuvBuffer(NULL),
     yuvBufferSize(0),
+    timestampOffset(INT_MAX),
     timeoutMs(2000)
 {
 #ifdef TURBOJPEG
@@ -77,8 +78,13 @@ bool FrameGrabber::present(const QVideoFrame &frame)
      *
      */
     Timestamp t = gTimer.elapsed();
-    if ( frame.metaData("latency").isValid() ) // uvcengine supports buffering with predefined maximum latency
-        t -= frame.metaData("latency").toInt();
+
+    QVariant ft = frame.metaData("timestamp");
+    if (ft.isValid() ) {
+        if (timestampOffset == INT_MAX) // offset between gTimer and frame timer
+            timestampOffset = t - ft.toInt();
+        t = ft.toInt() + timestampOffset;
+    }
 
     if (!frame.isValid())
         return false;

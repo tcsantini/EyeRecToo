@@ -35,6 +35,7 @@ public slots:
 private:
     QTimer *watchdog;
     int timeoutMs;
+    int timestampOffset;
 #ifdef TURBOJPEG
     tjhandle tjh;
 #endif
