@@ -33,7 +33,7 @@ public:
     cv::Mat gazeEstimationVisualization;
     bool showGazeEstimationVisualization;
     QString header() const {
-        return "Timestamp" + gDataSeparator + FieldData().header("field.") + EyeData().header("left.") + EyeData().header("right.");
+        return QString("sync.timestamp") + gDataSeparator + FieldData().header("field.") + EyeData().header("left.") + EyeData().header("right.");
     }
     QString toQString() {
         return QString::number(timestamp) + gDataSeparator + field.toQString() + lEye.toQString() + rEye.toQString();

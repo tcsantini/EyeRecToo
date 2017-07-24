@@ -33,6 +33,7 @@
 class EyeData : public InputData {
 public:
     explicit EyeData(){
+        timestamp = 0;
         input = cv::Mat();
         pupil = cv::RotatedRect(cv::Point2f(0,0), cv::Size2f(0,0), 0);
         validPupil = false;

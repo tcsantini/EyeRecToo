@@ -449,8 +449,10 @@ bool CameraWidget::isDataRecent(Timestamp t)
     Timestamp cur = gTimer.elapsed();
     if (cur - t < maxAgeMs) // TODO: make this based on estimated FPS?
         return true;
-    if (cur - lastUpdate > maxAgeMs) // not recent, but we haven't update in a while
+    if (cur - lastUpdate > maxAgeMs) { // not recent, but we haven't update in a while
+        lastUpdate = cur;
         return true;
+    }
     return false;
 }
 

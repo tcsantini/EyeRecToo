@@ -49,6 +49,7 @@ public:
 class FieldData : public InputData {
 public:
     explicit FieldData(){
+        timestamp = 0;
         input = cv::Mat();
         gazeEstimate = cv::Point3f(0,0,0);
         validGazeEstimate = false;
