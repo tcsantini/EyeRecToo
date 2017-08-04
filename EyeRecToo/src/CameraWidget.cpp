@@ -505,8 +505,8 @@ void CameraWidget::drawPupil(const cv::RotatedRect ellipse, QPainter &painter)
     painter.setPen(QPen(Qt::green, 0.75*refPx, Qt::SolidLine));
     painter.setBrush(Qt::green);
     // center
-    double r = refPx;
-    painter.drawEllipse(ellipse.center.x-0.5*r, ellipse.center.y-0.5*r, r, r);
+    double r = 0.5*refPx;
+    painter.drawEllipse(QPointF(ellipse.center.x, ellipse.center.y), r, r);
     painter.setBrush(QBrush(Qt::NoBrush));
     // outline
     if (ellipse.size.width > 0 && ellipse.size.height > 0){
