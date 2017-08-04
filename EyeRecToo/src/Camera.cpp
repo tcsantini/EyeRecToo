@@ -11,7 +11,9 @@ Camera::Camera(QString id, QObject *parent)
     : QObject(parent),
       colorCode(CV_8UC3),
       camera(NULL),
-      frameGrabber(NULL)
+      frameGrabber(NULL),
+      retriesLeft(0),
+      maxRetries(15)
 {
     this->id = id;
     if (id.contains("eye", Qt::CaseInsensitive) )
@@ -169,6 +171,7 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
         currentViewfinderSettings = settings;
         settingsList = camera->supportedViewfinderSettings();
         msg = currentCameraInfo.description() + " " + toQString(settings);
+        retriesLeft = maxRetries;
     }
     saveCfg();
     qInfo() << id << msg;
@@ -248,18 +251,25 @@ void Camera::loadCfg()
 void Camera::timedout()
 {
     qWarning() << id << "timedout; reopening...";
-    int retries = 15;
+    retriesLeft--; // initialize the countdown
+    retry();
+}
 
+void Camera::retry()
+{
     QCameraInfo cameraInfo = currentCameraInfo;
     QCameraViewfinderSettings viewfinderSettings = currentViewfinderSettings;
 
     currentCameraInfo = QCameraInfo();
     currentViewfinderSettings = QCameraViewfinderSettings();
 
-    for (int i=1; i<=retries; i++) {
+    if (retriesLeft < maxRetries && retriesLeft >= 0) {
         setCamera(cameraInfo, viewfinderSettings);
         if (!currentCameraInfo.isNull())
-            break;
-        QThread::msleep(1000);
+            return;
+        currentCameraInfo = cameraInfo;
+        currentViewfinderSettings = viewfinderSettings;
+        retriesLeft--;
+        QTimer::singleShot(1000, this, SLOT(retry()));
     }
 }

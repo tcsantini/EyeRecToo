@@ -155,6 +155,7 @@ public slots:
     void saveCfg();
     void loadCfg();
     void timedout();
+    void retry();
 
 private:
     QString id;
@@ -165,6 +166,9 @@ private:
     QCameraViewfinderSettings getViewfinderSettings(const QCameraInfo cameraInfo);
 
     QSettings *settings;
+
+    int retriesLeft;
+    int maxRetries;
 
     static QMutex setCameraMutex;
 
