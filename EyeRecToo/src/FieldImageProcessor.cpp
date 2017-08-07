@@ -175,8 +175,8 @@ void FieldImageProcessor::sanitizeCameraParameters(Size size)
         qInfo() << "No valid intrinsic parameters available. Using dummy values";
         // Dummy estimation
         cameraMatrix = (Mat_<double>(3,3) <<
-                        size.width, 0, size.width,
-                        0, size.width, size.height,
+		                size.width, 0, 0.5*size.width,
+		                0, size.width, 0.5*size.height,
                         0, 0 ,1 );
         distCoeffs = (Mat_<double>(1,4) << 0, 0, 0, 0);
         imageSize = size;
