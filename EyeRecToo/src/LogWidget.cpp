@@ -20,3 +20,14 @@ void LogWidget::appendMessage(const QString &msg)
 {
     ui->log->appendPlainText(msg.trimmed());
 }
+
+void LogWidget::on_usrMsg_returnPressed()
+{
+    on_addMsg_clicked();
+}
+
+void LogWidget::on_addMsg_clicked()
+{
+    qInfo() << "[USER]" << ui->usrMsg->text();
+    ui->usrMsg->clear();
+}

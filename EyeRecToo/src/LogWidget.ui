@@ -22,6 +22,9 @@
         <family>Courier New</family>
        </font>
       </property>
+      <property name="toolTip">
+       <string>Log messages</string>
+      </property>
       <property name="undoRedoEnabled">
        <bool>false</bool>
       </property>
@@ -29,6 +32,27 @@
        <bool>true</bool>
       </property>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="addLogLayout">
+      <item>
+       <widget class="QLineEdit" name="usrMsg">
+        <property name="toolTip">
+         <string>You can add a user message to the log by using this text box and pressing return or the &quot;Add&quot; button.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="addMsg">
+        <property name="toolTip">
+         <string>Adds user message to the log.</string>
+        </property>
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

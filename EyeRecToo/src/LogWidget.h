@@ -2,6 +2,7 @@
 #define LOGWIDGET_H
 
 #include <QMainWindow>
+#include <QDebug>
 
 namespace Ui {
 class LogWidget;
@@ -17,6 +18,11 @@ public:
 
 public slots:
     void appendMessage(const QString &msg);
+
+private slots:
+    void on_usrMsg_returnPressed();
+
+    void on_addMsg_clicked();
 
 private:
     Ui::LogWidget *ui;
