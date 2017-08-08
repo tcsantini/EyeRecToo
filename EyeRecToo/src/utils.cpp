@@ -20,6 +20,9 @@ QTextStream gLogStream;
 std::atomic<bool> gRecording(false);
 bool gHasOpenH264 = false;
 
+LogWidget *gLogWidget = NULL;
+std::vector<QString> gLogBuffer;
+
 /*
  * Utility functions
  */
@@ -87,6 +90,16 @@ void logMessages(QtMsgType type, const QMessageLogContext &context, const QStrin
     std::cout << str.c_str();
     if (gLogStream.status() == QTextStream::Ok)
         gLogStream << str.c_str();
+
+    if (gLogWidget) {
+        if (gLogBuffer.size() > 0) {
+            for (auto s=gLogBuffer.begin(); s!=gLogBuffer.end(); s++)
+                QMetaObject::invokeMethod( gLogWidget, "appendMessage", Q_ARG( const QString&, *s ) );
+            gLogBuffer.clear();
+        }
+        QMetaObject::invokeMethod( gLogWidget, "appendMessage", Q_ARG( const QString&, QString(str.c_str())) );
+    } else
+        gLogBuffer.push_back( QString(str.c_str()) );
 
     std::cout.flush();
     gLogStream.flush();

@@ -33,7 +33,8 @@ SOURCES +=\
     $${TOP}/src/gaze-estimation/Homography.cpp \
     $${TOP}/src/DataRecorder.cpp \
     $${TOP}/src/NetworkStream.cpp \
-    $${TOP}/src/Reference.cpp
+    $${TOP}/src/Reference.cpp \
+    $${TOP}/src/LogWidget.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -56,12 +57,14 @@ HEADERS  += \
     $${TOP}/src/gaze-estimation/Homography.h \
     $${TOP}/src/DataRecorder.h \
     $${TOP}/src/NetworkStream.h \
-    $${TOP}/src/Reference.h
+    $${TOP}/src/Reference.h \
+    $${TOP}/src/LogWidget.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \
     $${TOP}/src/CameraWidget.ui \
-    $${TOP}/src/GazeEstimationWidget.ui
+    $${TOP}/src/GazeEstimationWidget.ui \
+    src/LogWidget.ui
 
 RESOURCES += \
     $${TOP}/resources.qrc

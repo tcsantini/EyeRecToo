@@ -21,6 +21,8 @@
 
 #include "Reference.h"
 
+#include "LogWidget.h"
+
 #include "utils.h"
 
 class MainWindowConfig
@@ -29,6 +31,8 @@ public:
     MainWindowConfig() :
     mainWindowPos( QPoint(0,0) ),
     mainWindowSize( QSize(100, 100)),
+    logWidgetPos( QPoint(0,0) ),
+    logWidgetSize( QSize(640, 240)),
     leftEyeWidgetPos( QPoint(0,0) ),
     leftEyeWidgetSize( QSize(320,240) ),
     rightEyeWidgetPos( QPoint(0,0) ),
@@ -43,6 +47,8 @@ public:
 
     QPoint mainWindowPos;
     QSize mainWindowSize;
+    QPoint logWidgetPos;
+    QSize logWidgetSize;
     QPoint leftEyeWidgetPos;
     QSize leftEyeWidgetSize;
     QPoint rightEyeWidgetPos;
@@ -59,6 +65,8 @@ public:
         settings->sync();
         settings->setValue("mainWindowPos", mainWindowPos);
         settings->setValue("mainWindowSize", mainWindowSize);
+        settings->setValue("logWidgetPos", logWidgetPos);
+        settings->setValue("logWidgetSize", logWidgetSize);
         settings->setValue("leftEyeWidgetPos", leftEyeWidgetPos);
         settings->setValue("leftEyeWidgetSize", leftEyeWidgetSize);
         settings->setValue("rightEyeWidgetPos", rightEyeWidgetPos);
@@ -76,6 +84,8 @@ public:
         settings->sync();
         set(settings, "mainWindowPos", mainWindowPos);
         set(settings, "mainWindowSize", mainWindowSize);
+        set(settings, "logWidgetPos", logWidgetPos);
+        set(settings, "logWidgetSize", logWidgetSize);
         set(settings, "leftEyeWidgetPos", leftEyeWidgetPos);
         set(settings, "leftEyeWidgetSize", leftEyeWidgetSize);
         set(settings, "rightEyeWidgetPos", rightEyeWidgetPos);
@@ -119,6 +129,7 @@ private:
     QThread *journalThread;
     DataRecorderThread *journal;
     NetworkStream * networkStream;
+    LogWidget *logWidget;
 
     QElapsedTimer elapsedTime;
     int elapsedTimeUpdateTimer;
@@ -151,6 +162,7 @@ private slots:
     void menuOption(QAction*);
     void showReferencesDialog();
     void showAboutDialog();
+    void on_log_clicked();
 };
 
 #endif // MAINWINDOW_H

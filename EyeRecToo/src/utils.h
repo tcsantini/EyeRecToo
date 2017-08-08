@@ -24,6 +24,8 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/calib3d.hpp>
 
+#include "LogWidget.h"
+
 /*
  * Global variables
  */
@@ -95,5 +97,8 @@ template<typename T> void set(const QSettings *settings, const QString key, T &v
 }
 
 void loadSoundEffect(QSoundEffect &effect, QString fileName);
+
+extern LogWidget *gLogWidget;
+extern std::vector<QString> gLogBuffer;
 
 #endif // UTILS_H

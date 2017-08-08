@@ -6,5 +6,6 @@
         <file>icons/fieldWidget.png</file>
         <file>icons/EyeRecToo.png</file>
         <file>icons/gazeEstimationWidget.png</file>
+        <file>icons/logWidget.png</file>
     </qresource>
 </RCC>

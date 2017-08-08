@@ -34,6 +34,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->blinker->hide();
 
+    logWidget = new LogWidget();
+    logWidget->show();
+    logWidget->move(cfg.logWidgetPos);
+    logWidget->resize(cfg.logWidgetSize);
+    gLogWidget = logWidget;
+
     /*
      * WARNING: DO NOT REMOVE THIS CALL to QCameraInfo::availableCameras()
      * Logically, its meaningless, but it guarantees that DirectShow will work
@@ -138,6 +144,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     cfg.mainWindowPos = pos();
     cfg.mainWindowSize = size();
+    cfg.logWidgetPos = logWidget->pos();
+    cfg.logWidgetSize = logWidget->size();
     cfg.leftEyeWidgetPos = lEyeWidget->pos();
     cfg.leftEyeWidgetSize = lEyeWidget->size();
     cfg.rightEyeWidgetPos = rEyeWidget->pos();
@@ -181,6 +189,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     qInfo() << "Stoping network stream...";
     if (networkStream)
         networkStream->deleteLater();
+
+    if (logWidget) {
+        gLogWidget = NULL;
+        logWidget->deleteLater();
+    }
 
     if (settings)
         settings->deleteLater();
@@ -375,6 +388,11 @@ void MainWindow::on_gazeEstimation_clicked()
     widgetButtonReact(gazeEstimationWidget, ui->gazeEstimation->isChecked());
 }
 
+void MainWindow::on_log_clicked()
+{
+    widgetButtonReact(logWidget, ui->log->isChecked());
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->isAutoRepeat())
@@ -524,3 +542,4 @@ void MainWindow::checkForOpenH264()
     qInfo() << "Video encoder:" << (gHasOpenH264 ? "OpenH264" : "DivX");
 
 }
+
