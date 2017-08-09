@@ -139,8 +139,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (ui->recordingToggle->isChecked())
-        emit stopRecording();
+    if (ui->recordingToggle->isChecked()) {
+        ui->recordingToggle->setChecked(false);
+        on_recordingToggle_clicked();
+        // should be equivalent, but just in case click() is connected with a
+        // queued connection in the future :-)
+        // ui->recordingToggle->click();
+    }
 
     cfg.mainWindowPos = pos();
     cfg.mainWindowSize = size();
@@ -158,29 +163,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (settings)
         cfg.save(settings);
 
-    qInfo() << "Closing LeftEyeWidget...";
+    qInfo() << "Closing Left Eye Widget...";
     if ( lEyeWidget ) {
         lEyeWidget->close();
         lEyeWidget->deleteLater();
         lEyeWidget = NULL;
     }
-    qInfo() << "Closing RightEyeWidget...";
+    qInfo() << "Closing Right Eye Widget...";
     if ( rEyeWidget ) {
         rEyeWidget->close();
         rEyeWidget->deleteLater();
         rEyeWidget = NULL;
     }
-    qInfo() << "Closing FieldWidget...";
+    qInfo() << "Closing Field Widget...";
     if ( fieldWidget ) {
         fieldWidget->close();
         fieldWidget->deleteLater();
         fieldWidget = NULL;
     }
 
-    if (synchronizer)
-        delete synchronizer;
-
-    qInfo() << "Closing GazeEstimationWidget...";
+    qInfo() << "Closing Gaze Estimation Widget...";
     if (gazeEstimationWidget) {
         gazeEstimationWidget->close();
         gazeEstimationWidget->deleteLater();
@@ -190,13 +192,29 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (networkStream)
         networkStream->deleteLater();
 
+    qInfo() << "Closing Log Widget...";
     if (logWidget) {
         gLogWidget = NULL;
+        logWidget->close();
         logWidget->deleteLater();
+        logWidget = NULL;
     }
 
-    if (settings)
+    qInfo() << "Stopping journal and synchronizer";
+    if (journal) {
+        journal->deleteLater();
+        journal = NULL;
+    }
+
+    if (synchronizer) {
+        synchronizer->deleteLater();
+        synchronizer = NULL;
+    }
+
+    if (settings) {
         settings->deleteLater();
+        settings = NULL;
+    }
 
     event->accept();
 }
