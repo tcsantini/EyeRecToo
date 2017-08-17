@@ -41,6 +41,7 @@ void Camera::reset()
     if (camera) {
         camera->stop();
         camera->unload();
+        camera->setViewfinder( static_cast<FrameGrabber*>(NULL) );
         // Delete straight away so the destructor from uvcengine service get's
         // called and the device is not busy anymore
         //camera->deleteLater();
