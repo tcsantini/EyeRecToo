@@ -34,7 +34,9 @@ SOURCES +=\
     $${TOP}/src/DataRecorder.cpp \
     $${TOP}/src/NetworkStream.cpp \
     $${TOP}/src/Reference.cpp \
-    $${TOP}/src/LogWidget.cpp
+    $${TOP}/src/LogWidget.cpp \
+    $${TOP}/src/PerformanceMonitor.cpp \
+    $${TOP}/src/PerformanceMonitorWidget.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -58,13 +60,16 @@ HEADERS  += \
     $${TOP}/src/DataRecorder.h \
     $${TOP}/src/NetworkStream.h \
     $${TOP}/src/Reference.h \
-    $${TOP}/src/LogWidget.h
+    $${TOP}/src/LogWidget.h \
+    $${TOP}/src/PerformanceMonitor.h \
+    $${TOP}/src/PerformanceMonitorWidget.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \
     $${TOP}/src/CameraWidget.ui \
     $${TOP}/src/GazeEstimationWidget.ui \
-    src/LogWidget.ui
+    $${TOP}/src/LogWidget.ui \
+    $${TOP}/src/PerformanceMonitorWidget.ui
 
 RESOURCES += \
     $${TOP}/resources.qrc

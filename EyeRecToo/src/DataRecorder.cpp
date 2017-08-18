@@ -2,8 +2,8 @@
 
 using namespace cv;
 
-DataRecorder::DataRecorder(QString prefix, QString header, QObject *parent)
-    : prefix(prefix),
+DataRecorder::DataRecorder(QString id, QString header, QObject *parent)
+    : id(id),
       header(header),
       videoWriter(NULL),
       dataFile(NULL),
@@ -11,6 +11,8 @@ DataRecorder::DataRecorder(QString prefix, QString header, QObject *parent)
       framerate(0),
       QObject(parent)
 {
+    if (!id.contains("Journal"))
+        pmIdx = gPerformanceMonitor.enrol(id, "Data Recorder");
 }
 
 DataRecorder::~DataRecorder()
@@ -20,7 +22,7 @@ DataRecorder::~DataRecorder()
 
 void DataRecorder::startRecording()
 {
-    QString fileName = prefix + "Data.csv";
+    QString fileName = id + "Data.csv";
     dataFile = new QFile( fileName );
     if ( !dataFile->open(QIODevice::WriteOnly) ) {
         qWarning() << "Recording failure." << QString("Could not open %1").arg(fileName);
@@ -69,6 +71,9 @@ void DataRecorder::newData(FieldData fieldData)
 
 void DataRecorder::newData(DataTuple dataTuple)
 {
+    // Note that the Journal data recorder doesn't registered with the
+    // performance monitor since it's cheap to store its data.
+
     if (dataStream == NULL)
         return;
 
@@ -96,7 +101,7 @@ void DataRecorder::storeData(T &data)
     if (firstFrame || splitVideoFile()) {
         firstFrame = false;
 
-        QString fileName = prefix + "-P" + QString::number(videoIdx) + ".avi";
+        QString fileName = id + "-P" + QString::number(videoIdx) + ".avi";
 
         int codec = videoWriter->fourcc('D', 'I', 'V', 'X');
         if (gHasOpenH264)
@@ -114,6 +119,9 @@ void DataRecorder::storeData(T &data)
     }
 
     if (!gRecording)
+        return;
+
+    if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - data.timestamp, 1000) )
         return;
 
     if (videoWriter->isOpened())

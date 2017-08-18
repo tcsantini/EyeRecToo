@@ -37,6 +37,11 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             break;
     }
 
+    // Early enrollment of stages so they are listed in order :-)
+    gPerformanceMonitor.enrol(id, "Frame Grabber");
+    gPerformanceMonitor.enrol(id, "Image Processor");
+    gPerformanceMonitor.enrol(id, "Data Recorder");
+
     setWindowTitle(id + " Widget");
     camera = NULL;
     imageProcessor = NULL;

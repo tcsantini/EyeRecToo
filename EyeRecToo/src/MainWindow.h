@@ -22,6 +22,7 @@
 #include "Reference.h"
 
 #include "LogWidget.h"
+#include "PerformanceMonitorWidget.h"
 
 #include "utils.h"
 
@@ -41,6 +42,8 @@ public:
     fieldWidgetSize( QSize(320,240) ),
     gazeEstimationWidgetPos( QPoint(0,0) ),
     gazeEstimationWidgetSize( QSize(100, 100) ),
+    performanceMonitorWidgetPos( QPoint(0,0) ),
+    performanceMonitorWidgetSize( QSize(640, 240)),
     workingDirectory("./"),
     showOpenH264Info(true)
     {}
@@ -57,6 +60,8 @@ public:
     QSize fieldWidgetSize;
     QPoint gazeEstimationWidgetPos;
     QSize gazeEstimationWidgetSize;
+    QPoint performanceMonitorWidgetPos;
+    QSize performanceMonitorWidgetSize;
     QString workingDirectory;
     bool showOpenH264Info;
 
@@ -75,6 +80,8 @@ public:
         settings->setValue("fieldWidgetSize", fieldWidgetSize);
         settings->setValue("gazeEstimationWidgetPos", gazeEstimationWidgetPos);
         settings->setValue("gazeEstimationWidgetSize", gazeEstimationWidgetSize);
+        settings->setValue("performanceMonitorWidgetPos", performanceMonitorWidgetPos);
+        settings->setValue("performanceMonitorWidgetSize", performanceMonitorWidgetSize);
         settings->setValue("workingDirectory", workingDirectory);
         settings->setValue("showOpenH264Info", showOpenH264Info);
     }
@@ -94,6 +101,8 @@ public:
         set(settings, "fieldWidgetSize", fieldWidgetSize);
         set(settings, "gazeEstimationWidgetPos", gazeEstimationWidgetPos);
         set(settings, "gazeEstimationWidgetSize", gazeEstimationWidgetSize);
+        set(settings, "performanceMonitorWidgetPos", performanceMonitorWidgetPos);
+        set(settings, "performanceMonitorWidgetSize", performanceMonitorWidgetSize);
         set(settings, "workingDirectory", workingDirectory);
         set(settings, "showOpenH264Info", showOpenH264Info);
     }
@@ -130,6 +139,7 @@ private:
     DataRecorderThread *journal;
     NetworkStream * networkStream;
     LogWidget *logWidget;
+    PerformanceMonitorWidget *performanceMonitorWidget;
 
     QElapsedTimer elapsedTime;
     int elapsedTimeUpdateTimer;
@@ -163,6 +173,7 @@ private slots:
     void showReferencesDialog();
     void showAboutDialog();
     void on_log_clicked();
+    void on_performanceMonitor_clicked();
 };
 
 #endif // MAINWINDOW_H

@@ -278,6 +278,8 @@ private:
     QPointF sROI, eROI;
 
     PupilDetectionMethod *pupilDetectionMethod;
+
+    unsigned int pmIdx;
 };
 
 #endif // EYEIMAGEPROCESSOR_H

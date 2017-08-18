@@ -45,6 +45,8 @@ private:
     long unsigned int yuvBufferSize;
     bool jpeg2bmp(const QVideoFrame &in, cv::Mat &cvFrame);
     bool rgb32_2bmp(const QVideoFrame &in, cv::Mat &cvFrame);
+
+    unsigned int pmIdx;
 };
 
 #endif // FRAMEGRABBER_H

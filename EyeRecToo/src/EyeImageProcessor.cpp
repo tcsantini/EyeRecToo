@@ -22,6 +22,8 @@ EyeImageProcessor::EyeImageProcessor(QString id, QObject *parent)
 #endif
     settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor", QSettings::IniFormat);
     updateConfig();
+
+    pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");
 }
 
 void EyeImageProcessor::updateConfig()
@@ -50,7 +52,7 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
     Mat prevInput = data.input;
 
     // TODO: parametrize frame drop due to lack of processing power
-    if (gTimer.elapsed() - timestamp > 50)
+    if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 50) )
         return;
 
     QMutexLocker locker(&cfgMutex);

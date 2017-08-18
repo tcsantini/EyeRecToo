@@ -381,6 +381,8 @@ private:
     cv::Size imageSize, newImageSize;
     bool forceSanitize;
     void sanitizeCameraParameters(cv::Size size);
+
+    unsigned int pmIdx;
 };
 
 #endif // FIELDIMAGEPROCESSOR_H

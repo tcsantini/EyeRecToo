@@ -23,6 +23,8 @@ bool gHasOpenH264 = false;
 LogWidget *gLogWidget = NULL;
 std::vector<QString> gLogBuffer;
 
+PerformanceMonitor gPerformanceMonitor;
+
 /*
  * Utility functions
  */

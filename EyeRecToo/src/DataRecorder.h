@@ -16,7 +16,7 @@ class DataRecorder : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataRecorder(QString prefix, QString header, QObject *parent = 0);
+    explicit DataRecorder(QString id, QString header, QObject *parent = 0);
     ~DataRecorder();
 
 signals:
@@ -30,7 +30,7 @@ public slots:
     void newData(DataTuple dataTuple);
 
 private:
-    QString prefix;
+    QString id;
     QString header;
     QFile *dataFile;
     QTextStream *dataStream;
@@ -44,14 +44,16 @@ private:
     void storeData(T &data);
     bool splitVideoFile();
     double fps;
+
+    unsigned int pmIdx;
 };
 
 class DataRecorderThread : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataRecorderThread(QString prefix, QString header, QObject *parent = 0)
-        : prefix(prefix),
+    explicit DataRecorderThread(QString id, QString header, QObject *parent = 0)
+        : id(id),
           header(header),
           dataRecorder(NULL),
           QObject(parent)
@@ -76,7 +78,7 @@ signals:
 
 public slots:
     void create() {
-        dataRecorder = new DataRecorder(prefix, header, this);
+        dataRecorder = new DataRecorder(id, header, this);
         connect(this, SIGNAL(startRecording(double)),
                 dataRecorder, SLOT(startRecording(double)) );
         connect(this, SIGNAL(startRecording()),
@@ -92,9 +94,8 @@ public slots:
     }
 
 private:
-    QString prefix;
+    QString id;
     QString header;
-
 };
 
 #endif // DATARECORDER_H

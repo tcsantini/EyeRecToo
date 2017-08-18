@@ -26,6 +26,8 @@
 
 #include "LogWidget.h"
 
+#include "PerformanceMonitor.h"
+
 /*
  * Global variables
  */
@@ -100,5 +102,7 @@ void loadSoundEffect(QSoundEffect &effect, QString fileName);
 
 extern LogWidget *gLogWidget;
 extern std::vector<QString> gLogBuffer;
+
+extern PerformanceMonitor gPerformanceMonitor;
 
 #endif // UTILS_H

@@ -7,5 +7,6 @@
         <file>icons/EyeRecToo.png</file>
         <file>icons/gazeEstimationWidget.png</file>
         <file>icons/logWidget.png</file>
+        <file>icons/performanceMonitorWidget.png</file>
     </qresource>
 </RCC>

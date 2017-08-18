@@ -18,6 +18,8 @@ FrameGrabber::FrameGrabber(QString id, int code, QObject *parent) :
     watchdog = new QTimer(this);
     connect(watchdog, SIGNAL(timeout()), this, SIGNAL(timedout()));
     watchdog->start(timeoutMs);
+
+    pmIdx = gPerformanceMonitor.enrol(id, "Frame Grabber");
 }
 
 FrameGrabber::~FrameGrabber()
@@ -108,7 +110,8 @@ bool FrameGrabber::present(const QVideoFrame &frame)
     if (success && !cvFrame.empty()) {
         watchdog->start(timeoutMs);
         emit newFrame(t, cvFrame);
-    }
+    } else
+        gPerformanceMonitor.account(pmIdx);
 
     return success;
 }

@@ -108,6 +108,11 @@ MainWindow::MainWindow(QWidget *parent) :
     networkStream->start(2002);
     connect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)), networkStream, SLOT(push(DataTuple)) );
 
+    performanceMonitorWidget = new PerformanceMonitorWidget();
+    performanceMonitorWidget->show();
+    performanceMonitorWidget->move(cfg.performanceMonitorWidgetPos);
+    performanceMonitorWidget->resize(cfg.performanceMonitorWidgetSize);
+
     // GUI to Widgets signals
     connect(this, SIGNAL(startRecording()),
             lEyeWidget, SLOT(startRecording()) );
@@ -159,6 +164,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     cfg.fieldWidgetSize = fieldWidget->size();
     cfg.gazeEstimationWidgetPos = gazeEstimationWidget->pos();
     cfg.gazeEstimationWidgetSize = gazeEstimationWidget->size();
+    cfg.performanceMonitorWidgetPos = performanceMonitorWidget->pos();
+    cfg.performanceMonitorWidgetSize = performanceMonitorWidget->size();
     cfg.workingDirectory = QDir::currentPath();
     if (settings)
         cfg.save(settings);
@@ -191,6 +198,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
     qInfo() << "Stoping network stream...";
     if (networkStream)
         networkStream->deleteLater();
+
+    gPerformanceMonitor.report();
+
+    qInfo() << "Closing Performance Monitor Widget...";
+    if (performanceMonitorWidget) {
+        performanceMonitorWidget->close();
+        performanceMonitorWidget->deleteLater();
+        performanceMonitorWidget = NULL;
+    }
+
 
     qInfo() << "Closing Log Widget...";
     if (logWidget) {
@@ -411,6 +428,11 @@ void MainWindow::on_log_clicked()
     widgetButtonReact(logWidget, ui->log->isChecked());
 }
 
+void MainWindow::on_performanceMonitor_clicked()
+{
+    widgetButtonReact(performanceMonitorWidget, ui->performanceMonitor->isChecked());
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->isAutoRepeat())
@@ -560,4 +582,5 @@ void MainWindow::checkForOpenH264()
     qInfo() << "Video encoder:" << (gHasOpenH264 ? "OpenH264" : "DivX");
 
 }
+
 
