@@ -257,7 +257,7 @@ void GazeEstimationWidget::on_startFinishButton_toggled(bool checked)
     if (checked) {
         ui->startFinishButton->setText("Finish");
         statusBarLabel->setText("Calibrating: click on the field widget\nor hold 'c' to collect from marker.");
-        statusBarLabel->setStyleSheet("QLabel { color : orange }");
+        statusBarLabel->setStyleSheet("QLabel { color : black; font : bold }");
         ui->loadTuples->setEnabled(false);
         ui->saveTuples->setEnabled(false);
         emit resetCalibration( currentTupleType );
@@ -430,10 +430,10 @@ void GazeEstimationWidget::updateStatus(bool status, QString msg)
 
     if (status) {
         statusBarLabel->setText("Calibrated.");
-        statusBarLabel->setStyleSheet("QLabel { color : green }");
+        statusBarLabel->setStyleSheet("QLabel { font : bold; color : green }");
     } else {
         statusBarLabel->setText(QString("Uncalibrated: %1").arg(msg));
-        statusBarLabel->setStyleSheet("QLabel { color : red }");
+        statusBarLabel->setStyleSheet("QLabel { font : bold; color : red }");
     }
 
 }
