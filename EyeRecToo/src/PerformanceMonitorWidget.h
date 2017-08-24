@@ -34,6 +34,7 @@ private:
 
 private slots:
     void update();
+    void on_resetCounters_clicked();
 };
 
 #endif // PERFORMANCEMONITORWIDGET_H

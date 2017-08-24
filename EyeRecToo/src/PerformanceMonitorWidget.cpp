@@ -61,3 +61,9 @@ void PerformanceMonitorWidget::update()
             enrolled[i].second->setText( QString::number(gPerformanceMonitor.droppedFrameCount[i]) );
     QTimer::singleShot(updateTimeMs, this, SLOT(update()) );
 }
+
+void PerformanceMonitorWidget::on_resetCounters_clicked()
+{
+    for (auto c = gPerformanceMonitor.droppedFrameCount.begin(); c != gPerformanceMonitor.droppedFrameCount.end(); c++)
+        *c = 0;
+}
