@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="toolTip">
-       <string>Log messages</string>
+       <string>Log messages; use the text box below to add custom messages to the log file.</string>
       </property>
       <property name="undoRedoEnabled">
        <bool>false</bool>

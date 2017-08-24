@@ -1,6 +1,9 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+// TODO: refactor MainWindow into a config aware class that can be shared by the
+// widgets
+
 void MainWindow::createExtraMenus()
 {
     ui->menuBar->addAction("References");
@@ -25,8 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setWindowTitle(QString("EyeRecToo v%1").arg(GIT_VERSION));
     setWindowIcon(QIcon(":/icons/EyeRecToo.png"));
-    move(cfg.mainWindowPos);
-    resize(cfg.mainWindowSize);
+    setupWidget(this, cfg.mainWindowPos, cfg.mainWindowSize, true);
 
     if (!cfg.workingDirectory.isEmpty())
         setWorkingDirectory(cfg.workingDirectory);
@@ -35,9 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->blinker->hide();
 
     logWidget = new LogWidget();
-    logWidget->show();
-    logWidget->move(cfg.logWidgetPos);
-    logWidget->resize(cfg.logWidgetSize);
+    setupWidget(logWidget, cfg.logWidgetPos, cfg.logWidgetSize, cfg.logWidgetVisible, ui->log);
     gLogWidget = logWidget;
 
     /*
@@ -53,21 +53,15 @@ MainWindow::MainWindow(QWidget *parent) :
      */
     lEyeWidget = new CameraWidget("LeftEye", ImageProcessor::Eye);
     lEyeWidget->setWindowIcon(QIcon(":/icons/lEyeWidget.png"));
-    lEyeWidget->move(cfg.leftEyeWidgetPos);
-    lEyeWidget->resize(cfg.leftEyeWidgetSize);
-    lEyeWidget->show();
+    setupWidget(lEyeWidget, cfg.leftEyeWidgetPos, cfg.leftEyeWidgetSize, cfg.leftEyeWidgetVisible, ui->leftEyeCam);
     QThread::msleep(200);
     rEyeWidget = new CameraWidget("RightEye", ImageProcessor::Eye);
     rEyeWidget->setWindowIcon(QIcon(":/icons/rEyeWidget.png"));
-    rEyeWidget->move(cfg.rightEyeWidgetPos);
-    rEyeWidget->resize(cfg.rightEyeWidgetSize);
-    rEyeWidget->show();
+    setupWidget(rEyeWidget, cfg.rightEyeWidgetPos, cfg.rightEyeWidgetSize, cfg.rightEyeWidgetVisible, ui->rightEyeCam);
     QThread::msleep(200);
     fieldWidget = new CameraWidget("Field", ImageProcessor::Field);
     fieldWidget->setWindowIcon(QIcon(":/icons/fieldWidget.png"));
-    fieldWidget->move(cfg.fieldWidgetPos);
-    fieldWidget->resize(cfg.fieldWidgetSize);
-    fieldWidget->show();
+    setupWidget(fieldWidget, cfg.fieldWidgetPos, cfg.fieldWidgetSize, cfg.fieldWidgetVisible, ui->fieldCam);
 
     /*
      * Synchronizer
@@ -84,9 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
      * Synchronous elements
      */
     gazeEstimationWidget = new GazeEstimationWidget();
-    gazeEstimationWidget->move(cfg.gazeEstimationWidgetPos);
-    gazeEstimationWidget->resize(cfg.gazeEstimationWidgetSize);
-    gazeEstimationWidget->show();
+    setupWidget(gazeEstimationWidget, cfg.gazeEstimationWidgetPos, cfg.gazeEstimationWidgetSize, cfg.gazeEstimationWidgetVisible, ui->gazeEstimation);
     connect(synchronizer, SIGNAL(newData(DataTuple)),
             gazeEstimationWidget, SIGNAL(inDataTuple(DataTuple)) );
     connect(fieldWidget, SIGNAL(newClick(Timestamp,QPoint,QSize)),
@@ -109,9 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)), networkStream, SLOT(push(DataTuple)) );
 
     performanceMonitorWidget = new PerformanceMonitorWidget();
-    performanceMonitorWidget->show();
-    performanceMonitorWidget->move(cfg.performanceMonitorWidgetPos);
-    performanceMonitorWidget->resize(cfg.performanceMonitorWidgetSize);
+    setupWidget(performanceMonitorWidget, cfg.performanceMonitorWidgetPos, cfg.performanceMonitorWidgetSize, cfg.performanceMonitorWidgetVisible, ui->performanceMonitor);
 
     // GUI to Widgets signals
     connect(this, SIGNAL(startRecording()),
@@ -154,16 +144,22 @@ void MainWindow::closeEvent(QCloseEvent *event)
     cfg.mainWindowSize = size();
     cfg.logWidgetPos = logWidget->pos();
     cfg.logWidgetSize = logWidget->size();
+    cfg.logWidgetVisible = logWidget->isVisible();
     cfg.leftEyeWidgetPos = lEyeWidget->pos();
     cfg.leftEyeWidgetSize = lEyeWidget->size();
+    cfg.leftEyeWidgetVisible = lEyeWidget->isVisible();
     cfg.rightEyeWidgetPos = rEyeWidget->pos();
     cfg.rightEyeWidgetSize = rEyeWidget->size();
+    cfg.rightEyeWidgetVisible = rEyeWidget->isVisible();
     cfg.fieldWidgetPos = fieldWidget->pos();
     cfg.fieldWidgetSize = fieldWidget->size();
+    cfg.fieldWidgetVisible = fieldWidget->isVisible();
     cfg.gazeEstimationWidgetPos = gazeEstimationWidget->pos();
     cfg.gazeEstimationWidgetSize = gazeEstimationWidget->size();
+    cfg.gazeEstimationWidgetVisible = gazeEstimationWidget->isVisible();
     cfg.performanceMonitorWidgetPos = performanceMonitorWidget->pos();
     cfg.performanceMonitorWidgetSize = performanceMonitorWidget->size();
+    cfg.performanceMonitorWidgetVisible = performanceMonitorWidget->isVisible();
     cfg.workingDirectory = QDir::currentPath();
     if (settings)
         cfg.save(settings);
@@ -529,4 +525,24 @@ void MainWindow::showAboutDialog()
     msg.append("Contact: <a href=\"mailto:thiago.santini@uni-tuebingen.de?Subject=[EyeRecToo] Contact\" target=\"_top\">thiago.santini@uni-tuebingen.de</a><br><br>");
     msg.append("Copyright &copy; 2017 University of Tübingen");
     QMessageBox::about(this, "About", msg);
+}
+
+void MainWindow::setupWidget(QMainWindow *window, QPoint &position, const QSize &size, const bool &visible, QPushButton *button)
+{
+    // Sanitize position first
+    bool inScreen = false;
+    for (int i = 0; i < QApplication::desktop()->screenCount(); i++)
+        inScreen |= QApplication::desktop()->screenGeometry(i).contains(position, true);
+
+    if (!inScreen)
+        position = QApplication::desktop()->screenGeometry().topLeft();
+
+    window->move(position);
+    window->resize(size);
+
+    if (visible)
+        window->show();
+
+    if (button)
+        button->setChecked(visible);
 }

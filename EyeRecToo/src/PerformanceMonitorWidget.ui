@@ -17,6 +17,9 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
      <widget class="QGroupBox" name="droppedFramesBox">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Counts the number of frames dropped by different sources at the beginning of different stages.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Stages:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;1) Frame Grabber: &lt;/span&gt;received an invalid frame from the camera.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;2) Image Processor:&lt;/span&gt; probably the device can't handle the current camera settings.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;3) Data Recorder:&lt;/span&gt; probably the device can't write the data fast enough to the disk.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;To reduce frame dropping from stages 2 and 3, try:&lt;/p&gt;&lt;p&gt;- Reducing the camera fps and resolution (In Widget-&amp;gt;Options-&amp;gt;Device-&amp;gt;Format)&lt;/p&gt;&lt;p&gt;- Downscaling the image before processing (In Widget-&amp;gt;Options-&amp;gt;Image Processor-&amp;gt;Downscaling Factor)&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note: This is from the point of view of EyeRecToo so frames dropped by the driver or hardware are not accounted.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
       <property name="title">
        <string>Dropped Frames</string>
       </property>
