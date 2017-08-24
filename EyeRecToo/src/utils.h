@@ -40,8 +40,6 @@ extern QString gExeDir;
 extern QString gCfgDir;
 extern char gDataSeparator;
 extern char gDataNewline;
-extern std::atomic<bool> gRecording;
-extern bool gHasOpenH264;
 
 extern QList<QPair<QString, QString> > gReferenceList;
 

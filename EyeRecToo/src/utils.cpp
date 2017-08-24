@@ -17,8 +17,6 @@ char gDataNewline = '\n';
 QMutex gLogMutex;
 QFile gLogFile;
 QTextStream gLogStream;
-std::atomic<bool> gRecording(false);
-bool gHasOpenH264 = false;
 
 LogWidget *gLogWidget = NULL;
 std::vector<QString> gLogBuffer;

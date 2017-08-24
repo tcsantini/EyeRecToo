@@ -77,9 +77,6 @@ void DataRecorder::newData(DataTuple dataTuple)
     if (dataStream == NULL)
         return;
 
-    if (!gRecording)
-        return;
-
     if (dataStream->status() == QTextStream::Ok) {
         *dataStream << dataTuple.toQString();
         *dataStream << gDataNewline;
@@ -98,14 +95,32 @@ bool DataRecorder::splitVideoFile()
 template <class T>
 void DataRecorder::storeData(T &data)
 {
-    if (firstFrame || splitVideoFile()) {
+    if (firstFrame) {
         firstFrame = false;
 
-        QString fileName = id + "-P" + QString::number(videoIdx) + ".avi";
+        // TODO: Make the container and codecs parametrizable
+        // Alternative containers are .mkv and .mov, for which ffmpeg seems to use
+        // fourcc codes
 
-        int codec = videoWriter->fourcc('D', 'I', 'V', 'X');
-        if (gHasOpenH264)
-            codec = videoWriter->fourcc('x', '2', '6', '4');
+        /* OpenCV seems capable of using other containers now :D
+         *
+         * ffmpeg seems to use its own codes for tags instead of regular fourcc codes
+         * when mp4 container is selected; for most fourcc codes end up being invalid
+         * and it falls back to a default tag.
+         *
+         * From the ffmpeg source (libavformat/isom.c)
+         *
+         *    { AV_CODEC_ID_MPEG4       , 0x20 },
+         *    { AV_CODEC_ID_H264        , 0x21 },
+         *    { AV_CODEC_ID_MJPEG       , 0x6C }, // 10918-1
+         *
+         *
+         * 	MPEG4 and H264 are compressed.
+         *  MJPEG is uncompressed (and therefore gives huge files!)
+         *
+         */
+        QString fileName = id + ".mp4";
+        int codec = 0x20;
 
         if (videoWriter->isOpened())
             videoWriter->release();
@@ -117,9 +132,6 @@ void DataRecorder::storeData(T &data)
 
         videoIdx++;
     }
-
-    if (!gRecording)
-        return;
 
     if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - data.timestamp, 1000) )
         return;

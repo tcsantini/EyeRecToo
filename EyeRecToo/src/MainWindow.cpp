@@ -132,8 +132,6 @@ MainWindow::MainWindow(QWidget *parent) :
             journal, SIGNAL(startRecording()) );
     connect(this, SIGNAL(stopRecording()),
             journal, SIGNAL(stopRecording()) );
-
-    checkForOpenH264();
 }
 
 MainWindow::~MainWindow()
@@ -354,7 +352,6 @@ void MainWindow::on_recordingToggle_clicked()
         QTimer::singleShot(500, this, SLOT(effectiveRecordingStart())); // TODO: right now we wait a predefined amount of time; ideally, we should wait for an ack from everyone involved
         ui->recordingToggle->setEnabled(false);
     } else {
-        gRecording = false;
         qInfo() << "Record stopped (Subject:" << ui->subject->text() << ")";
         emit stopRecording();
         disconnect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
@@ -373,7 +370,6 @@ void MainWindow::effectiveRecordingStart()
 {
     elapsedTime.restart();
     elapsedTimeUpdateTimer = startTimer(500);
-    gRecording = true;
     ui->recordingToggle->setEnabled(true);
     qInfo() << "Record started.";
 }
@@ -534,53 +530,3 @@ void MainWindow::showAboutDialog()
     msg.append("Copyright &copy; 2017 University of Tübingen");
     QMessageBox::about(this, "About", msg);
 }
-
-void MainWindow::checkForOpenH264()
-{
-    QString openh264 = "unknown-platform-for-openh264";
-#ifdef _WIN64
-    openh264 = "openh264-1.6.0-win64msvc.dll";
-#elif _WIN32
-    openh264 = "openh264-1.4.0-win32msvc.dll";
-#endif
-
-#if __x86_64__ || __ppc64__
-#if __linux__
-    openh264 = "openh264-1.4.0-linux64.so";
-#elif __APPLE__
-    openh264 = "openh264-1.4.0-osx64.dylib";
-#endif
-#else
-#if __linux__
-    openh264 = "openh264-1.4.0-linux32.so";
-#elif __APPLE__
-    openh264 = "openh264-1.4.0-osx32.dylib";
-#endif
-#endif
-    QString downloadURL = QString("http://ciscobinary.openh264.org/%1.bz2").arg(openh264);
-
-    gHasOpenH264 = QFileInfo(gExeDir + "/" + openh264).exists();
-
-    if (!gHasOpenH264 && cfg.showOpenH264Info) {
-        int ret = QMessageBox::information(this, "EyeRecToo Video Encoding Info",
-                                 QString("EyeRecToo favors using OpenH264 for video encoding.<br>")
-                                 + QString("However, the user must download the library himself<br>")
-                                 + QString("(why? <a href=\"%1\">%1</a>)<br><br>").arg("http://www.openh264.org/BINARY_LICENSE.txt")
-                                 + QString("You can download it from<br><a href=\"%1\">%1</a><br> and unzip it at<br>%2<br>before continuing.<br>").arg(downloadURL).arg(gExeDir)
-                                 + QString("Otherwise, defaulting to DivX.<br><br>")
-                                 + QString("To disable OpenH264, simply delete<br>%1/%2").arg(gExeDir).arg(openh264)
-                                 + QString("<br><br><br>%1").arg("OpenH264 Video Codec provided by Cisco Systems, Inc.<br><br><br>")
-                                 + QString("Ok (always display this message) / Discard (never display this message)"),
-                                   QMessageBox::Ok,
-                                   QMessageBox::Discard);
-
-        if (ret == QMessageBox::Discard)
-            cfg.showOpenH264Info = false;
-
-        gHasOpenH264 = QFileInfo(gExeDir + "/" + openh264).exists();
-    }
-    qInfo() << "Video encoder:" << (gHasOpenH264 ? "OpenH264" : "DivX");
-
-}
-
-
