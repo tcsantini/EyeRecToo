@@ -72,11 +72,6 @@ components installed. If not, you can install them by running
 vcredist_x64.exe or
 [downloading the installer directly from Microsoft](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe).
 
-We advise to use [OpenH264](http://www.openh264.org/) for video encoding:
-1. However, it is not feasiable to distribute the binary with EyeRecToo.
-2. When first run, EyeRecToo will prompt you instructions on how to enable OpenH264.
-3. If OpenH264 is not present, EyeRecToo will default to DivX, which is *lossy*.
-
 **NOTE:** Additionally, you may need to install drivers to access your eye tracker
 cameras:
 
