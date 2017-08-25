@@ -64,6 +64,8 @@ void PerformanceMonitorWidget::update()
 
 void PerformanceMonitorWidget::on_resetCounters_clicked()
 {
+    gPerformanceMonitor.report();
+    qInfo() << "Resetting counters:";
     for (auto c = gPerformanceMonitor.droppedFrameCount.begin(); c != gPerformanceMonitor.droppedFrameCount.end(); c++)
         *c = 0;
 }
