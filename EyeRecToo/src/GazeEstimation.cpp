@@ -338,8 +338,12 @@ void GazeEstimation::evaluate()
 
     if (cfg.autoEvaluation) {
         double evaluationRegionsCount = pow(1 + 2*cfg.granularity, 2);
-        qInfo() << QString("Evaluation Region Coverage: %1 %"
-                           ).arg(100 * errors.rows / evaluationRegionsCount, 0, 'f', 2).toLatin1().data();
+        double evaluationRegionsSelected = 0;
+        for (unsigned int i=0; i<collectedTuples.size(); i++)
+            if ( collectedTuples[i].isAutoEval() )
+                evaluationRegionsSelected++;
+        qInfo() << QString("Auto Evaluation Region Coverage: %1 %"
+                           ).arg(100 * evaluationRegionsSelected / evaluationRegionsCount, 0, 'f', 2).toLatin1().data();
     }
 }
 
