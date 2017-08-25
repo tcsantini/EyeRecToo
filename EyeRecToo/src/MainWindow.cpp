@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setWindowTitle(QString("EyeRecToo v%1").arg(GIT_VERSION));
     setWindowIcon(QIcon(":/icons/EyeRecToo.png"));
-    setupWidget(this, cfg.mainWindowPos, cfg.mainWindowSize, true);
 
     if (!cfg.workingDirectory.isEmpty())
         setWorkingDirectory(cfg.workingDirectory);
@@ -125,6 +124,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     loadSoundEffect(recStartSound, "rec-start.wav");
     loadSoundEffect(recStopSound, "rec-stop.wav");
+
+    setupWidget(this, cfg.mainWindowPos, cfg.mainWindowSize, true);
 }
 
 MainWindow::~MainWindow()
@@ -395,6 +396,7 @@ void MainWindow::widgetButtonReact(QMainWindow *window, bool checked)
     if (checked) {
         window->show();
         window->raise();
+        window->activateWindow();
         window->setFocus();
     } else
         window->hide();
