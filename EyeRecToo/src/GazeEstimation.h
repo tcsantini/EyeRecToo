@@ -56,6 +56,7 @@ public:
     void draw(cv::Mat &in, int w = 2, cv::Scalar color = CV_RED) {
         cv::line( in, cv::Point(gt.x, gt.y), cv::Point(gaze.x, gaze.y), color, w);
     }
+    double magnitude() { return cv::norm(gt - gaze); }
 };
 
 /*******************************************************************************
@@ -185,6 +186,7 @@ public slots:
     void calibrate();
     void estimate(DataTuple dataTuple);
     void evaluate();
+    void printAccuracyInfo(const cv::Mat &errors, const QString &which, const double &diagonal);
 
     void updateConfig();
 

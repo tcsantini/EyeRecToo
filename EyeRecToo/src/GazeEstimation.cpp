@@ -297,6 +297,19 @@ void GazeEstimation::estimate(DataTuple dataTuple)
     emit gazeEstimationDone(dataTuple);
 }
 
+void GazeEstimation::printAccuracyInfo(const cv::Mat &errors, const QString &which, const double &diagonal)
+{
+    Scalar m, std;
+    meanStdDev(errors, m, std);
+    qInfo() << which.toLatin1().data() <<  "Error ( N =" << errors.rows << "):";
+    //qInfo() << QString("m = %1 ( std = %2 ) pixels."
+    //    ).arg(m[0], 6, 'f', 2
+    //    ).arg(std[0], 6, 'f', 2).toLatin1().data();
+    qInfo() << QString("m = %1 ( std = %2 ) % of the image diagonal."
+        ).arg(100 * m[0] / diagonal, 6, 'f', 2
+        ).arg(100 * std[0] / diagonal, 6, 'f', 2).toLatin1().data();
+}
+
 void GazeEstimation::evaluate()
 {
     if (!calibrated)
@@ -312,12 +325,22 @@ void GazeEstimation::evaluate()
 
     // evaluate for known points
     errorVectors.clear();
+    Mat errors;
     for (unsigned int i=0; i<evaluationTuples.size(); i++) {
         Point3f gt = evaluationTuples[i]->field.collectionMarker.center;
         Point3f gaze = gazeEstimationMethod->estimateGaze(*evaluationTuples[i], cfg.inputType);
         errorVectors.push_back(ErrorVector(gt, gaze));
+        errors.push_back( errorVectors.back().magnitude() );
     }
 
+    double imDiagonal = sqrt( pow(evaluationTuples[0]->field.width,2) + pow(evaluationTuples[0]->field.height, 2) );
+    printAccuracyInfo(errors, "Gaze Evaluation", imDiagonal);
+
+    if (cfg.autoEvaluation) {
+        double evaluationRegionsCount = pow(1 + 2*cfg.granularity, 2);
+        qInfo() << QString("Evaluation Region Coverage: %1 %"
+                           ).arg(100 * errors.rows / evaluationRegionsCount, 0, 'f', 2).toLatin1().data();
+    }
 }
 
 /*
