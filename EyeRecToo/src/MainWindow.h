@@ -166,6 +166,8 @@ private:
     int elapsedTimeUpdateTimer;
     QString previousPwd;
 
+    QSoundEffect recStartSound, recStopSound;
+
     bool setupSubjectDirectory();
     void setSubjectName(QString newSubjectName);
     void setWorkingDirectory(QString dir);

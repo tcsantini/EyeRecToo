@@ -122,6 +122,9 @@ MainWindow::MainWindow(QWidget *parent) :
             journal, SIGNAL(startRecording()) );
     connect(this, SIGNAL(stopRecording()),
             journal, SIGNAL(stopRecording()) );
+
+    loadSoundEffect(recStartSound, "rec-start.wav");
+    loadSoundEffect(recStopSound, "rec-stop.wav");
 }
 
 MainWindow::~MainWindow()
@@ -347,6 +350,7 @@ void MainWindow::on_recordingToggle_clicked()
                 journal, SIGNAL(newData(DataTuple)) );
         QTimer::singleShot(500, this, SLOT(effectiveRecordingStart())); // TODO: right now we wait a predefined amount of time; ideally, we should wait for an ack from everyone involved
         ui->recordingToggle->setEnabled(false);
+        recStartSound.play();
     } else {
         qInfo() << "Record stopped (Subject:" << ui->subject->text() << ")";
         emit stopRecording();
@@ -360,6 +364,7 @@ void MainWindow::on_recordingToggle_clicked()
         setWorkingDirectory(previousPwd);
         ui->changeSubjectButton->setEnabled(true);
         ui->changePwdButton->setEnabled(true);
+        recStopSound.play();
     }
 }
 void MainWindow::effectiveRecordingStart()

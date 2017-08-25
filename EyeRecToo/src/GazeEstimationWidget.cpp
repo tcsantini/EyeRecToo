@@ -141,10 +141,10 @@ GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
     QMetaObject::invokeMethod(gazeEstimation, "updateConfig");
 
     // Load sound effects
-    loadSoundEffect(startSound, "start.wav");
-    loadSoundEffect(successSound, "success.wav");
-    loadSoundEffect(failureSound, "failure.wav");
-    loadSoundEffect(collectedSound, "collected.wav");
+    loadSoundEffect(startSound, "cal-start.wav");
+    loadSoundEffect(successSound, "cal-success.wav");
+    loadSoundEffect(failureSound, "cal-failure.wav");
+    loadSoundEffect(collectedSound, "cal-collected.wav");
 }
 
 GazeEstimationWidget::~GazeEstimationWidget()
@@ -290,8 +290,10 @@ void GazeEstimationWidget::keyPressEvent(QKeyEvent *event)
         return;
     switch (event->key()) {
         case Qt::Key_C:
-            if (isCollecting)
+            if (isCollecting) {
                 connect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
+                collectedSound.play();
+            }
             break;
         case Qt::Key_S:
             ui->startFinishButton->setChecked(!ui->startFinishButton->isChecked());
@@ -307,6 +309,8 @@ void GazeEstimationWidget::keyReleaseEvent(QKeyEvent *event)
     switch (event->key()) {
         case Qt::Key_C:
             disconnect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
+            if (isCollecting)
+                collectedSound.play();
             break;
         default:
             break;
