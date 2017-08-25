@@ -8,6 +8,9 @@ TARGET = EyeRecToo
 TEMPLATE = app
 win32: RC_ICONS = $${TOP}/icons/eyerectoo.ico
 
+# For profiling with msvc
+#TEMPLATE = vcapp
+
 DEFINES += TURBOJPEG
 
 # Note: Starburst and Swirski are not currently included in the repository; do not enable
