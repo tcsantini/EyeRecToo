@@ -479,7 +479,7 @@ void MainWindow::showReferencesDialog()
     ReferenceList::add( "Santini et al.",
         "CalibMe: Fast and Unsupervised Eye Tracker Calibration for Gaze-Based Pervasive Human-Computer Interaction",
         "CHI", "2017b",
-        "http://confer.csail.mit.edu/chi2017/paper#!pn3994"
+        "http://dl.acm.org/citation.cfm?id=3025453.3025950"
     );
     ReferenceList::add( "Fuhl et al.",
         "ElSe: Ellipse Selection for Robust Pupil Detection in Real-World Environments",
