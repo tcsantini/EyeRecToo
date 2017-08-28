@@ -406,32 +406,30 @@ void CameraWidget::mouseMoveEvent(QMouseEvent *event)
 
 void CameraWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (ui->viewFinder->underMouse()) {
-        if (event->button() == Qt::RightButton) {
-            eROI = ui->viewFinder->mapFrom(this, event->pos());
-            validatePoint(eROI);
-            eROI.setX( eROI.x() / ui->viewFinder->width());
-            eROI.setY( eROI.y() / ui->viewFinder->height());
-            settingROI = false;
-            if ( abs(sROI.x() - eROI.x()) < 0.1 || abs(sROI.y() - eROI.y()) < 0.1 ) {
-                sROI = QPointF();
-                eROI = QPointF();
-            }
-            emit newROI(sROI, eROI);
+    if (event->button() == Qt::RightButton) {
+        eROI = ui->viewFinder->mapFrom(this, event->pos());
+        validatePoint(eROI);
+        eROI.setX( eROI.x() / ui->viewFinder->width());
+        eROI.setY( eROI.y() / ui->viewFinder->height());
+        settingROI = false;
+        if ( abs(sROI.x() - eROI.x()) < 0.1 || abs(sROI.y() - eROI.y()) < 0.1 ) {
+            sROI = QPointF();
+            eROI = QPointF();
         }
+        emit newROI(sROI, eROI);
     }
 }
 
 void CameraWidget::validatePoint(QPointF &point)
 {
-    if (point.x() < 0)
-        point.setX(0);
-    if (point.y() < 0)
-        point.setY(0);
+    if (point.x() < 1)
+        point.setX(1);
+    if (point.y() < 1)
+        point.setY(1);
     if (point.x() > ui->viewFinder->width())
-        point.setX(ui->viewFinder->width());
+        point.setX(ui->viewFinder->width()-1);
     if (point.y() > ui->viewFinder->height())
-        point.setY(ui->viewFinder->height());
+        point.setY(ui->viewFinder->height()-1);
 }
 
 bool CameraWidget::shouldUpdate(Timestamp t)
