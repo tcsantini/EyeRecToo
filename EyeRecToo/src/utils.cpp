@@ -192,7 +192,7 @@ void loadSoundEffect(QSoundEffect &effect, QString fileName)
     // It assumes the build location for the development environment!
 
     QStringList searchPaths;
-    searchPaths << "../EyeRecToo/effects" << "./effects";
+	searchPaths << gExeDir + "/../EyeRecToo/effects" << gExeDir + "/effects";
     for (int i=0; i<searchPaths.size(); i++) {
         QString target = searchPaths[i] + "/" + fileName;
         if (QFile(target).exists()) {
