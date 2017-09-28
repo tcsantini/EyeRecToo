@@ -114,12 +114,12 @@ contains(DEFINES, TURBOJPEG) {
 }
 
 contains(DEFINES, STARBURST) {
-    SOURCES += $${TOP}/pupil-detection/Starburst.cpp
-    HEADERS += $${TOP}/pupil-detection/Starburst.h
+	SOURCES += $${TOP}/src/pupil-detection/Starburst.cpp
+	HEADERS += $${TOP}/src/pupil-detection/Starburst.h
 }
 contains(DEFINES, SWIRSKI) {
-    SOURCES += $${TOP}/pupil-detection/Swirski.cpp
-    HEADERS += $${TOP}/pupil-detection/Swirski.h
+	SOURCES += $${TOP}/src/pupil-detection/Swirski.cpp
+	HEADERS += $${TOP}/src/pupil-detection/Swirski.h
 
     TBB_INC_DIR = $${TOP}/deps/tbb43/include
     TBB_LIB_DIR = $${TOP}/deps/tbb43/lib/ia32/vc11
