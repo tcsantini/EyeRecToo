@@ -1,0 +1,59 @@
+Temporary file to hold instructions for the Linux port.
+
+IMPORTANT:
+Priority is being given to support the uvcengine in detriment of the gstreamer
+camera plugin.
+If you don't want to recompile the uvcengine, use Qt 5.9.2
+
+linux-setup.sh runs the step described here.
+
+
+1) General dependencies:
+
+sudo apt-get install build-essential
+sudo apt-get install libgl1-mesa-dev
+sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+sudo apt-get install libusb-1.0-0
+sudo apt-get install libturbojpeg
+
+IMPORTANT: read the end of the file for an explanation
+mv <qt-installation-directory>/5.9.2/gcc_64/plugins/mediaservice/libgstcamerabin.so ~/libgstcamerabin.so
+
+
+
+2) Notes:
+
+The libturbojpeg package for 16.04 seems to be missing a symlink. Make it:
+
+sudo ln -s /usr/lib/x86_64-linux-gnu/libturbojpeg.so.0.1.0 /usr/lib/x86_64-linux-gnu/libturbojpeg.so
+
+To access the pupil lab cameras without sudo, add the appropriate udev rule:
+
+sudo cp EyeRecToo/deps/udev-rules/10-libuvc.rules /etc/udev/rules.d/
+
+
+
+3) Others:
+
+Compiling OpenCV 3.2.0 with contrib modules from source:
+
+cmake -D CMAKE_INSTALL_PREFIX=/home/santini/repo/opencv/install -D CMAKE_BUILD_TYPE=RELEASE -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules ../
+make -j 8 && make install
+
+If you want to recompile the uvcengine, checkout the linux branch
+at https://www-ti.informatik.uni-tuebingen.de/santini/uvcengine
+
+
+
+
+Regarding libgstcamerabin.so:
+Moving it from the qt directory will prevent the gstreamer plugin from being
+loaded. The two main reasons from doing so are that this plugin:
+
+1) doesn't list viewfinder settings,
+
+2) doesn't hangs when loading the camera,
+
+3) and ends up as duplicate entries if the uvcengine is available.
+
+If you need this plugin, just move it back to its original location.

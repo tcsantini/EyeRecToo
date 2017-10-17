@@ -10,14 +10,18 @@ FrameGrabber::FrameGrabber(QString id, int code, QObject *parent) :
     yuvBuffer(NULL),
     yuvBufferSize(0),
     timestampOffset(INT_MAX),
-    timeoutMs(2000)
+    timeoutMs(2e3)
 {
 #ifdef TURBOJPEG
     tjh = tjInitDecompress();
 #endif
+
     watchdog = new QTimer(this);
     connect(watchdog, SIGNAL(timeout()), this, SIGNAL(timedout()));
-    watchdog->start(timeoutMs);
+
+    // for the first frame, we give a bit of extra leeway becase gstreamer is slow...
+    //watchdog->start(timeoutMs);
+    watchdog->start(15e3);
 
     pmIdx = gPerformanceMonitor.enrol(id, "Frame Grabber");
 }
@@ -102,7 +106,12 @@ bool FrameGrabber::present(const QVideoFrame &frame)
             break;
         case QVideoFrame::Format_RGB32:
             success = rgb32_2bmp(copy, cvFrame);
+            break;
+        case QVideoFrame::Format_YUYV:
+            success = yuyv_2bmp(copy, cvFrame);
+            break;
         default:
+            qDebug() << "Unknown pixel format:" << frame.pixelFormat();
             break;
     }
     copy.unmap();
@@ -181,4 +190,28 @@ bool FrameGrabber::rgb32_2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
     return true;
 }
 
+bool FrameGrabber::yuyv_2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
+{
+    // TODO: can we optimize this?
+    cvFrame = Mat::zeros(abs(in.height()), abs(in.width()), CV_8UC3);
+    const unsigned char *pyuv = in.bits();
+    unsigned char *pbgr = cvFrame.data;
+    for(int i = 0; i < in.mappedBytes(); i += 4) {
+        int b = (0x7179 * ((pyuv)[1] - 0x80)) >> 0xE;
+        int g = (-0x1604 * ((pyuv)[1] - 0x80) - 0x2DB2 * ((pyuv)[3] - 0x80)) >> 0xE;
+        int r = (0x59CB * ((pyuv)[3] - 0x80)) >> 0xE;
+        (pbgr)[0] = (*(pyuv) + b);
+        (pbgr)[1] = (*(pyuv) + g);
+        (pbgr)[2] = (*(pyuv) + r);
+        (pbgr)[3] = ((pyuv)[2] + b);
+        (pbgr)[4] = ((pyuv)[2] + g);
+        (pbgr)[5] = ((pyuv)[2] + r);
+        pbgr += 6;
+        pyuv += 4;
+    }
+    if (code != CV_8UC3)
+        cvtColor(cvFrame, cvFrame, CV_BGR2GRAY);
+
+    return true;
+}
 //TODO: add support for other frame formats

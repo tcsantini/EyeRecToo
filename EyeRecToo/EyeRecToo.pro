@@ -78,24 +78,26 @@ RESOURCES += \
     $${TOP}/resources.qrc
 
 INCLUDEPATH += "$${TOP}/src"
+unix{
+    LIBS += "-L$${TOP}/deps/runtime/x86_64-linux-gnu/"
+}
 
 Debug:DBG_SUFFIX = "d"
 
-#OPENCVPATH="D:/opencv/opencv/build/install"
 OPENCVPATH="$${TOP}/deps/opencv-3.2.0"
 INCLUDEPATH += $${OPENCVPATH}/include/
-CV_SUFFIX=320$${DBG_SUFFIX}
+win32:CV_SUFFIX=320$${DBG_SUFFIX}
+unix:CV_SUFFIX=$${DBG_SUFFIX}
 win32:contains(QMAKE_HOST.arch, x86_64) {
     LIBS += "-L$${OPENCVPATH}/x64/vc14/lib/"
 } else {
     LIBS += "-L$${OPENCVPATH}/x86/vc14/lib/"
 }
-unix{
-    LIBS += "-L$${OPENCVPATH}/lib/"
-}
 LIBS += \
     -lopencv_calib3d$${CV_SUFFIX} \
     -lopencv_core$${CV_SUFFIX} \
+    -lopencv_features2d$${CV_SUFFIX} \
+    -lopencv_flann$${CV_SUFFIX} \
     -lopencv_highgui$${CV_SUFFIX} \
     -lopencv_imgcodecs$${CV_SUFFIX} \
     -lopencv_imgproc$${CV_SUFFIX} \
@@ -141,6 +143,13 @@ win32{
 # Copy plugins
 win32{
     copydata.commands = (robocopy $$PWD/deps/runtime/x64/Release/plugins $$OUT_PWD/plugins /E) ^& exit 0
+    first.depends = $(first) copydata
+    export(first.depends)
+    export(copydata.commands)
+    QMAKE_EXTRA_TARGETS += first copydata
+}
+unix{
+    copydata.commands = $(COPY_DIR) $$PWD/deps/runtime/x86_64-linux-gnu/plugins $$OUT_PWD
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)
