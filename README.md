@@ -19,9 +19,14 @@ For data analysis functionality replacement, we recommend
 ## Supported Platforms
 
 - Windows 64 bits
+>This is the platform that gets the most testing and recommended.
 
->Nonetheless, it also has been previously ran on Ubuntu 16.04 (64 bits) and a
->couple other Linux distributions.
+- Initiall support for Ubuntu 16.04 64 bits has been added; no binaries available atm though
+>Only supports camera access using the uvcengine, including the Pupil Labs eye tracker. Has been tested for
+pupil detection, gaze estimation, and data recording. This is **alpha**.
+
+- Notes
+
 >It's also possible to get EyeRecToo running on 32 bits platforms, but no Pupil
 >eye tracker supported is available.
 
@@ -85,6 +90,8 @@ have the 64 bits version)
 The EyeRecToo official repository is located at:
 [https://atreus.informatik.uni-tuebingen.de/santini/EyeRecToo](https://atreus.informatik.uni-tuebingen.de/santini/EyeRecToo)
 
+**Windows**
+
 The particulars of the test build system we use are:
 - QtCreator 4.0.3
 - Qt 5.7.0 (MSVC 2015, 64 bit)
@@ -99,4 +106,22 @@ All libraries/includes (for Windows 64 bits) should be in the deps directory alr
 5. Before running, add deps/runtime/Release or deps/runtime/Debug to your PATH.
 
 *Both Release and Debug versions are functional although the latter may run at a low sampling rates.*
+
+**Linux**
+
+The particulars of the test build system we use are:
+- QtCreator 4.4.1
+- Qt 5.9.2 
+- GCC 5.4.0
+- Ubuntu 16.04.3
+
+Requires the installation of some packages (see README.LINUX); to build:
+1. Install Qt 5.9.2 (and Qt Creator)
+2. Run ./linux-setup.sh (or do the steps manually)
+3. Open the project
+4. Run qmake and build
+5. Should be good to go :-)
+
+*Only Release versions have been tested.*
+
 
