@@ -35,8 +35,11 @@ void CameraCalibration::startCalibration()
 	sampleCount = 0;
 	sampleCountQL->setText(QString::number(sampleCount));
 	covered = Rect();
-	if (dbgCB->isChecked())
+	if (dbgCB->isChecked()) {
 		namedWindow(DBG_WINDOW_NAME);
+		this->activateWindow();
+		this->setFocus();
+	}
 }
 
 void CameraCalibration::finishCalibration()
@@ -125,6 +128,8 @@ void CameraCalibration::undistortSample(const Mat &frame)
 	else
 		cv::undistort(frame, tmp, newCameraMatrix, distCoeffs);
 	imshow("Undistorted Image", tmp);
+	this->activateWindow();
+	this->setFocus();
 	undistortPB->setEnabled(true);
 }
 
@@ -221,7 +226,7 @@ void CameraCalibration::calibrate()
 		fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1);
 	} else {
 		rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
-		newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 0, imageSize);
+		newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize);
 	}
 	calibrationSuccessful = true;
 }

@@ -18,6 +18,7 @@
 #include <QFileInfo>
 #include <QtConcurrent/QtConcurrent>
 #include <QFutureWatcher>
+#include <QKeyEvent>
 
 #include "opencv2/imgproc.hpp"
 #include "opencv2/calib3d.hpp"
@@ -69,10 +70,10 @@ public:
 		fishEyeCB->setEnabled(false);
 		formLayout->addRow( new QLabel("Fish Eye"), fishEyeCB );
 		dbgCB = new QCheckBox();
-		dbgCB->setChecked(false);
+		dbgCB->setChecked(true);
 		dbgCB->setWhatsThis("Display results from the pattern detection.");
 		dbgCB->setToolTip(dbgCB->whatsThis());
-		formLayout->addRow( new QLabel("Show Debug"), dbgCB );
+		formLayout->addRow( new QLabel("Show Detection"), dbgCB );
 		patternCB = new QComboBox();
 		patternCB->addItem("Assymetric Circles", ASYMMETRIC_CIRCLES_GRID);
 		patternCB->addItem("Chessboard", CHESSBOARD);
@@ -185,9 +186,11 @@ private:
 	}
 	void setRms() { setLabelText(rmsQL, "N/A", "black"); }
 	void setRms(double val) {
-		if ( val < 1)
+		if ( val <= 0.75) {
 			setLabelText(rmsQL, QString::number(val), "green");
-		else {
+		} else if (val <= 1 ) {
+			setLabelText(rmsQL, QString::number(val), "orange");
+		} else {
 			setLabelText(rmsQL, QString::number(val), "red");
 			qInfo() << "RMS Error is above the expected value. It's recommended to recalibrate.";
 		}
@@ -210,6 +213,27 @@ private slots:
 	void startCalibration();
 	void finishCalibration();
 	void onCalibrated();
+	void keyReleaseEvent(QKeyEvent *event) {
+		// TODO: Document these
+		if (event->isAutoRepeat())
+			return;
+		switch (event->key()) {
+			case Qt::Key_S:
+				calibrationTogglePB->click();
+			break;
+			case Qt::Key_C:
+				collectPB->click();
+			break;
+			case Qt::Key_U:
+				undistortPB->click();
+			break;
+			case Qt::Key_Escape:
+				this->close();
+			break;
+		default:
+			break;
+		}
+	}
 };
 
 #endif // CAMERACALIBRATION_H
