@@ -213,7 +213,7 @@ public:
     QComboBox *pupilDetectionComboBox;
 
 signals:
-    void updateConfig();
+	void updateConfig();
 
 public slots:
     void showOptions(QPoint pos)
@@ -243,7 +243,7 @@ public slots:
         cfg.pupilDetectionMethod = pupilDetectionComboBox->currentData().toString();
         cfg.save(settings);
         emit updateConfig();
-    }
+	}
 
 private:
     QPushButton *applyButton;
@@ -267,8 +267,8 @@ signals:
 
 public slots:
     void process(Timestamp t, const cv::Mat &frame);
-    void updateConfig();
-    void newROI(QPointF sROI, QPointF eROI);
+	void updateConfig();
+	void newROI(QPointF sROI, QPointF eROI);
 
 private:
     QString id;

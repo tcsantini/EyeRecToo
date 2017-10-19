@@ -158,9 +158,7 @@ void FieldImageProcessor::sanitizeCameraParameters(Size size)
 	 * 1) Move camera parameters logic to the Camera instead so it's
 	 * considered for the eye cameras as well.
 	 *
-	 * 2) Force update after a camera calibration has been performed.
-	 *
-	 * 3) Drop the logic for resizing the intrinsic parameters since it's not
+	 * 2) Drop the logic for resizing the intrinsic parameters since it's not
 	 * throughly tested.
 	 *
 	 */

@@ -40,10 +40,12 @@ void ImageProcessor::create()
                 connect(this, SIGNAL(process(Timestamp,const cv::Mat&)),
                     eyeProcessor, SLOT(process(Timestamp,const cv::Mat&)) );
                 connect(this, SIGNAL(newROI(QPointF,QPointF)),
-                    eyeProcessor, SLOT(newROI(QPointF,QPointF)) );
+					eyeProcessor, SLOT(newROI(QPointF,QPointF)) );
+				connect(this, SIGNAL(updateConfig()),
+					eyeProcessor, SLOT(updateConfig()) );
 
                 connect(eyeProcessor, SIGNAL(newData(EyeData)),
-                        this, SIGNAL(newData(EyeData)) );
+						this, SIGNAL(newData(EyeData)) );
 
                 // GUI
                 connect(this, SIGNAL(showOptions(QPoint)),
@@ -55,7 +57,7 @@ void ImageProcessor::create()
                     eyeProcessorUI->pupilDetectionComboBox->addItem(name, name);
                 }
                 connect(eyeProcessorUI, SIGNAL(updateConfig()),
-                        eyeProcessor, SLOT(updateConfig()) );
+						eyeProcessor, SLOT(updateConfig()) );
                 break;
             case Field:
                 fieldProcessor = new FieldImageProcessor(id);
@@ -63,6 +65,8 @@ void ImageProcessor::create()
                     fieldProcessor, SLOT(process(Timestamp,const cv::Mat&)) );
                 connect(this, SIGNAL(newROI(QPointF,QPointF)),
                     fieldProcessor, SLOT(newROI(QPointF,QPointF)) );
+				connect(this, SIGNAL(updateConfig()),
+					fieldProcessor, SLOT(updateConfig()) );
 
                 connect(fieldProcessor, SIGNAL(newData(FieldData)),
                         this, SIGNAL(newData(FieldData)) );

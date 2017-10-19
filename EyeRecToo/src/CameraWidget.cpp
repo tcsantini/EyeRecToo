@@ -436,6 +436,7 @@ void CameraWidget::onCameraCalibrationFinished(bool success)
 	// TODO: at some point we might consider storing this with a unique camera ID instead of this generic one
 	QString fileName = gCfgDir + "/" + id + "Calibration.xml";
 	QMetaObject::invokeMethod(cameraCalibration, "store", Qt::QueuedConnection, Q_ARG(QString, fileName));
+	QMetaObject::invokeMethod(imageProcessor,  "updateConfig", Qt::QueuedConnection);
 }
 
 void CameraWidget::drawROI(QPainter &painter)

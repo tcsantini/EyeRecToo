@@ -25,6 +25,7 @@ signals:
     void newROI(QPointF sROI, QPointF eROI);
     void newData(EyeData data);
     void newData(FieldData data);
+	void updateConfig();
 
 public slots:
     void create();
