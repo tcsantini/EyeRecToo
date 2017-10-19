@@ -14,11 +14,8 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     settingROI(false),
     lastUpdate(0),
     updateIntervalMs(50),
-    maxAgeMs(300),
-    collectionIntervalMs(2000),
-    collectionCount(20),
-    patternSize(9,6),
-    squareSizeMM(25),
+	maxAgeMs(300),
+	cameraCalibrationSampleRequested(false),
     ui(new Ui::CameraWidget)
 {
     ui->setupUi(this);
@@ -93,7 +90,14 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     recorderThread->setPriority(QThread::NormalPriority);
     recorder = new DataRecorderThread(id, type == ImageProcessor::Eye ? EyeData().header() : FieldData().header());
     recorder->moveToThread(recorderThread);
-    QMetaObject::invokeMethod(recorder, "create");
+	QMetaObject::invokeMethod(recorder, "create");
+
+	cameraCalibration = new CameraCalibration();
+	connect(cameraCalibration, SIGNAL(requestSample()),
+			this, SLOT(requestCameraCalibrationSample()) );
+	connect(cameraCalibration, SIGNAL(calibrationFinished(bool)),
+			this, SLOT(onCameraCalibrationFinished(bool)) );
+	cameraCalibration->load(gCfgDir + "/" + id + "Calibration.xml");
 
     // GUI
     optionsGroup = new QActionGroup(this);
@@ -139,7 +143,12 @@ CameraWidget::~CameraWidget()
     if (recorder) {
         recorder->deleteLater();
         recorder = NULL;
-    }
+	}
+
+	if (cameraCalibration) {
+		cameraCalibration->deleteLater();
+		cameraCalibration = NULL;
+	}
 
     cameraThread->quit();
     cameraThread->wait();
@@ -148,7 +157,7 @@ CameraWidget::~CameraWidget()
     processorThread->wait();
 
     recorderThread->quit();
-    recorderThread->wait();
+	recorderThread->wait();
 }
 
 void CameraWidget::preview(Timestamp t, const cv::Mat &frame)
@@ -182,7 +191,9 @@ void CameraWidget::preview(EyeData data)
     drawROI(painter);
     if (data.validPupil)
         drawPupil(data.pupil, painter);
-    ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
+	ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
+
+	sendCameraCalibrationSample(data.input);
 }
 
 void CameraWidget::preview(FieldData data)
@@ -218,7 +229,9 @@ void CameraWidget::preview(const DataTuple &data)
         drawMarker(data.field.collectionMarker, painter, Qt::green);
     if (data.field.validGazeEstimate)
         drawGaze(data.field, painter);
-    ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
+	ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
+
+	sendCameraCalibrationSample(input);
 }
 
 void CameraWidget::updateFrameRate(Timestamp t)
@@ -270,89 +283,9 @@ void CameraWidget::options(QAction* action)
         if (imageProcessor)
             QMetaObject::invokeMethod(imageProcessor, "showOptions", Qt::QueuedConnection, Q_ARG(QPoint, this->pos()));
 
-    if (option == "calibrate camera") {
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Camera Calibration",
-                                        QString("Show the chess pattern in multiple positions to calibrate the camera.\n")
-                                        +QString("Current configuration is:\n\n")
-                                        +QString("Samples: %1\n").arg(collectionCount)
-                                        +QString("Inter-sample interval: %1 s\n").arg(1.0e-3*collectionIntervalMs)
-                                        +QString("Pattern size: %1 x %2\n").arg(patternSize.width).arg(patternSize.height)
-                                        +QString("Square size: %1 mm\n").arg(squareSizeMM)
-                                        +QString("\nOther widget options will be inaccessible during calibration.\n")
-                                        +QString("Continue?"),
-                                        QMessageBox::Yes|QMessageBox::No);
-        if (reply != QMessageBox::Yes)
-            return;
-        ui->menubar->setEnabled(false);
-        imagePoints.clear();
-        connect(camera, SIGNAL(newFrame(Timestamp,cv::Mat)),
-            this, SLOT(collectCameraCalibration(Timestamp,cv::Mat)) );
-        cameraCalTimer.start();
-        calibratingCamera = true;
-    }
-}
-
-void CameraWidget::collectCameraCalibration(Timestamp t, cv::Mat frame)
-{
-    Q_UNUSED(t)
-    // TODO: parametrize me
-    if (!calibratingCamera || cameraCalTimer.elapsed() < collectionIntervalMs)
-        return;
-    else
-        cameraCalTimer.restart();
-    Mat view = frame.clone();
-    vector<Point2f> pointBuf;
-    bool found;
-    int chessBoardFlags = CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE;
-    found = findChessboardCorners( view, patternSize, pointBuf, chessBoardFlags);
-
-    int count = collectionCount;
-    if (found) {
-        imagePoints.push_back(pointBuf);
-        cameraCalTimer.restart();
-        drawChessboardCorners(view, patternSize, pointBuf, found);
-        QString tmp = QString::number(imagePoints.size()) + "/" + QString::number(count);
-        putText(view, tmp.toStdString(), Point(0.05*view.cols, 0.9*view.rows), CV_FONT_NORMAL, 1, Scalar(0,255,255),2);
-        imshow("Camera calibration", view);
-    }
-
-    if (imagePoints.size() >= count) {
-        putText(view, "Calibrating, please wait...", Point(0.05*view.cols, 0.5*view.rows), CV_FONT_NORMAL, 1, Scalar(0,255,255),2);
-        imshow("Camera calibration", view);
-        waitKey(500);
-        calibratingCamera = false;
-        cameraCalTimer.invalidate();
-
-        double squareSize = squareSizeMM * 1.0e-3;
-
-        Mat cameraMatrix = Mat::eye(3, 3, CV_64F);
-        Mat distCoeffs = Mat::zeros(8, 1, CV_64F);
-        Size imageSize = frame.size();
-
-        vector<vector<Point3f> > objectPoints(1);
-        for( int i = 0; i < patternSize.height; ++i )
-          for( int j = 0; j < patternSize.width; ++j )
-              objectPoints[0].push_back(Point3f(float( j*squareSize ), float( i*squareSize ), 0));
-        objectPoints.resize(imagePoints.size(),objectPoints[0]);
-
-        qInfo() << "Calibrating, this may take a while...";
-        vector<Mat> rvecs, tvecs;
-        double rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix,
-                                 distCoeffs, rvecs, tvecs, 0,
-                                     TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, DBL_EPSILON));
-        QString res = "RMS error:" + QString::number(rms);
-        qInfo() << res;
-
-        FileStorage fs( QString(gCfgDir + "/" + id + "Calibration.xml").toStdString(), FileStorage::WRITE);
-        fs << "cameraMatrix" << cameraMatrix;
-        fs << "distCoeffs" << distCoeffs;
-        fs << "imageSize" << imageSize;
-
-        ui->menubar->setEnabled(true);
-        disconnect(camera, SIGNAL(newFrame(Timestamp,cv::Mat)),
-               this, SLOT(collectCameraCalibration(Timestamp,cv::Mat)) );
-        destroyWindow("Camera calibration");
-    }
+	if (option == "calibrate camera")
+		if (cameraCalibration)
+			QMetaObject::invokeMethod(cameraCalibration, "showOptions", Qt::QueuedConnection, Q_ARG(QPoint, this->pos()));
 }
 
 void CameraWidget::startRecording()
@@ -485,6 +418,24 @@ QImage CameraWidget::previewImage(const cv::Mat &frame)
     refPx = max<double>(refPx, 1.0);
 
     return scaled;
+}
+
+void CameraWidget::sendCameraCalibrationSample(const cv::Mat &frame)
+{
+	if (!cameraCalibrationSampleRequested || !cameraCalibration)
+		return;
+	cameraCalibrationSampleRequested = false;
+	QMetaObject::invokeMethod(cameraCalibration, "newSample", Qt::QueuedConnection, Q_ARG(cv::Mat, frame));
+	emit sendCameraCalibrationSample(frame);
+}
+
+void CameraWidget::onCameraCalibrationFinished(bool success)
+{
+	if (!success)
+		return;
+	// TODO: at some point we might consider storing this with a unique camera ID instead of this generic one
+	QString fileName = gCfgDir + "/" + id + "Calibration.xml";
+	QMetaObject::invokeMethod(cameraCalibration, "store", Qt::QueuedConnection, Q_ARG(QString, fileName));
 }
 
 void CameraWidget::drawROI(QPainter &painter)

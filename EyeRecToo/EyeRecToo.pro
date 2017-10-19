@@ -39,7 +39,8 @@ SOURCES +=\
     $${TOP}/src/Reference.cpp \
     $${TOP}/src/LogWidget.cpp \
     $${TOP}/src/PerformanceMonitor.cpp \
-    $${TOP}/src/PerformanceMonitorWidget.cpp
+    $${TOP}/src/PerformanceMonitorWidget.cpp \
+    src/CameraCalibration.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -65,7 +66,8 @@ HEADERS  += \
     $${TOP}/src/Reference.h \
     $${TOP}/src/LogWidget.h \
     $${TOP}/src/PerformanceMonitor.h \
-    $${TOP}/src/PerformanceMonitorWidget.h
+    $${TOP}/src/PerformanceMonitorWidget.h \
+    src/CameraCalibration.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \

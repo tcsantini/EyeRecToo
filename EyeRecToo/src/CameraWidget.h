@@ -17,6 +17,7 @@
 #include "ImageProcessor.h"
 #include "EyeImageProcessor.h"
 #include "FieldImageProcessor.h"
+#include "CameraCalibration.h"
 
 #include "DataRecorder.h"
 
@@ -60,7 +61,9 @@ public slots:
 
     void validatePoint(QPointF &point);
 
-    void collectCameraCalibration(Timestamp t, cv::Mat frame);
+	void requestCameraCalibrationSample() { cameraCalibrationSampleRequested = true; }
+	void sendCameraCalibrationSample(const cv::Mat &frame);
+	void onCameraCalibrationFinished(bool success);
 
 private:
     QString id;
@@ -75,7 +78,7 @@ private:
     QThread *processorThread;
 
     DataRecorderThread *recorder;
-    QThread *recorderThread;
+	QThread *recorderThread;
 
     QActionGroup *optionsGroup;
     QAction *optionAction;
@@ -95,14 +98,8 @@ private:
 
     QImage previewImage(const cv::Mat &frame);
 
-    QElapsedTimer cameraCalTimer;
-    bool calibratingCamera;
-    std::vector< std::vector<cv::Point2f> > imagePoints;
-    int collectionIntervalMs;
-    int collectionCount;
-    cv::Size patternSize;
-    double squareSizeMM;
-
+	CameraCalibration *cameraCalibration;
+	bool cameraCalibrationSampleRequested;
 
     // Drawing functions
     double rw, rh;
