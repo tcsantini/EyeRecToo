@@ -132,8 +132,11 @@ public:
 	cv::Mat cameraMatrix;
 	cv::Mat newCameraMatrix;
 	cv::Mat distCoeffs;
+	cv::Size imageSize;
+	cv::Rect covered;
 	int sampleCount;
 	double coverage;
+	double rms;
 	bool calibrationSuccessful;
 
 signals:
@@ -172,8 +175,7 @@ private:
 	QFutureWatcher<void> watcher;
 
 	std::vector<std::vector<cv::Point2f> > imagePoints;
-	cv::Size imageSize;
-	cv::Rect covered;
+	cv::Mat map1, map2;
 
 	void processSample(const cv::Mat &frame);
 	void undistortSample(const cv::Mat &frame);
@@ -206,8 +208,6 @@ private:
 			setLabelText(coveredQL, pct, "red");
 		}
 	}
-
-	double rms;
 
 private slots:
 	void startCalibration();

@@ -124,9 +124,9 @@ void CameraCalibration::undistortSample(const Mat &frame)
 		return;
 	Mat tmp;
 	if (fishEyeCB->isChecked())
-		cv::fisheye::undistortImage(frame, tmp, newCameraMatrix, distCoeffs);
+		fisheye::undistortImage(frame, tmp, cameraMatrix, distCoeffs);
 	else
-		cv::undistort(frame, tmp, newCameraMatrix, distCoeffs);
+		remap(frame, tmp, map1, map2, CV_INTER_AREA);
 	imshow("Undistorted Image", tmp);
 	this->activateWindow();
 	this->setFocus();
@@ -222,11 +222,15 @@ void CameraCalibration::calibrate()
 
 	Mat rv, tv;
 	if (fishEyeCB->isChecked()) {
-		rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv, 0);
-		fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1);
+		rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
+		fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1, imageSize);
 	} else {
 		rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
 		newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize);
+		initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
+							newCameraMatrix, imageSize, CV_32FC1,
+							map1, map2
+							);
 	}
 	calibrationSuccessful = true;
 }
@@ -258,6 +262,10 @@ void CameraCalibration::load(const QString &fileName)
 		fs["coverage"] >> coverage;
 		fs["rms"] >> rms;
 		calibrationSuccessful = true;
+		initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
+							newCameraMatrix, imageSize, CV_32FC1,
+							map1, map2
+							);
 	}
 	updateCalibrationStatus(calibrationSuccessful);
 }

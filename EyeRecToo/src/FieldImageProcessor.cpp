@@ -104,7 +104,7 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
             Mat emptyDistCoeffs = (Mat_<double>(1,4) << 0, 0, 0, 0);
             estimatePoseSingleMarkers(corners, cfg.collectionMarkerSizeMeters, emptyCameraMatrix, emptyDistCoeffs, rvecs, tvecs);
         } else
-            estimatePoseSingleMarkers(corners, cfg.collectionMarkerSizeMeters, cameraMatrix, distCoeffs, rvecs, tvecs);
+			estimatePoseSingleMarkers(corners, cfg.collectionMarkerSizeMeters, cameraMatrix, distCoeffs, rvecs, tvecs);
     }
 
     for (unsigned int i=0; i<ids.size(); i++) {
@@ -167,9 +167,9 @@ void FieldImageProcessor::sanitizeCameraParameters(Size size)
 
     FileStorage fs( QString(gCfgDir + "/" + id + "Calibration.xml").toStdString(), FileStorage::READ);
     fs["cameraMatrix"] >> cameraMatrix;
-    fs["distCoeffs"] >> distCoeffs;
-    fs["imageSize"] >> imageSize;
-    bool haveCameraParameters = false;
+	fs["distCoeffs"] >> distCoeffs;
+	fs["imageSize"] >> imageSize;
+	bool haveCameraParameters = false;
     if (!cameraMatrix.empty() && !distCoeffs.empty())
         haveCameraParameters = true;
 
@@ -200,7 +200,7 @@ void FieldImageProcessor::sanitizeCameraParameters(Size size)
                             cameraMatrix,
                             distCoeffs,
                             Mat(),
-                            getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 0, imageSize),
+							getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize),
                             imageSize,
                             CV_32FC1,
                             map1,
