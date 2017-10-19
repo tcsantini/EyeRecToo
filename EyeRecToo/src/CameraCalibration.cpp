@@ -17,6 +17,9 @@ void CameraCalibration::toggleCalibration(bool status)
 		calibrationTogglePB->setText("Calibrating...");
 		calibrationTogglePB->setEnabled(false);
 		collectPB->setEnabled(false);
+		setLabelText(rmsQL, "Calculating", "orange");
+		if (dbgCB->isChecked())
+			destroyWindow(DBG_WINDOW_NAME);
 		QMetaObject::invokeMethod(this, "finishCalibration", Qt::QueuedConnection);
 	}
 }
@@ -26,20 +29,29 @@ void CameraCalibration::startCalibration()
 	calibrationTogglePB->setText("Finish");
 	settingsGB->setEnabled(false);
 	collectPB->setEnabled(true);
+	undistortPB->setEnabled(false);
 	imagePoints.clear();
-	sampleCountQL->setText(QString::number(imagePoints.size()));
+	setCoverage();
+	sampleCount = 0;
+	sampleCountQL->setText(QString::number(sampleCount));
+	covered = Rect();
 	if (dbgCB->isChecked())
 		namedWindow(DBG_WINDOW_NAME);
 }
 
 void CameraCalibration::finishCalibration()
 {
-	if (dbgCB->isChecked())
-		destroyWindow(DBG_WINDOW_NAME);
-	calibrate();
+	QFuture<void> future = QtConcurrent::run(this, &CameraCalibration::calibrate);
+	watcher.setFuture(future);
+}
+
+void CameraCalibration::onCalibrated()
+{
+	this->layout()->setEnabled(true);
 	updateCalibrationStatus( calibrationSuccessful );
 	calibrationTogglePB->setText("Start");
 	calibrationTogglePB->setEnabled(true);
+	undistortPB->setEnabled(true);
 	settingsGB->setEnabled(true);
 	emit calibrationFinished( calibrationSuccessful );
 }
@@ -49,18 +61,15 @@ void CameraCalibration::updateCalibrationStatus(bool success)
 	if (success) {
 		qInfo() << "Camera calibration done. RMS Error =" << rms;
 		undistortPB->setEnabled(true);
-		if (rms < 1)
-			rmsQL->setStyleSheet("QLabel { font : bold; color : green }");
-		else {
-			rmsQL->setStyleSheet("QLabel { font : bold; color : red }");
-			qInfo() << "RMS Error is above the expected value. It's recommended to recalibrate.";
-		}
-		rmsQL->setText( QString::number(rms) );
+		setRms(rms);
+		setCoverage(coverage);
+		sampleCountQL->setText(QString::number(sampleCount));
 	} else {
 		qInfo() << "Camera calibration failed.";
 		undistortPB->setEnabled(false);
-		rmsQL->setStyleSheet("QLabel { font : bold; color : black }");
-		rmsQL->setText( "N/A" );
+		setRms();
+		setCoverage();
+		sampleCountQL->setText(QString::number(sampleCount));
 	}
 }
 
@@ -157,6 +166,18 @@ void CameraCalibration::processSample(const Mat &frame)
 			break;
 	}
 
+	if (found) {
+		imagePoints.push_back(pointBuf);
+		sampleCount = imagePoints.size();
+		if (sampleCount == 1)
+			covered = boundingRect(pointBuf);
+		else
+			covered |= boundingRect(pointBuf);
+		sampleCountQL->setText(QString::number(sampleCount));
+		coverage = covered.area() / (double) imageSize.area();
+		setCoverage( coverage );
+	}
+
 	if (dbgCB->isChecked()) {
 		Mat tmp;
 		if (frame.channels() == 1)
@@ -168,12 +189,8 @@ void CameraCalibration::processSample(const Mat &frame)
 			drawChessboardCorners( tmp, patternSize, Mat(pointBuf), found);
 		else
 			putText(tmp, "Pattern not found", Point(0, 0.5*frame.rows), CV_FONT_HERSHEY_PLAIN, 2, Scalar(0,0,255));
+		rectangle(tmp, covered, Scalar(0,255,0), 2);
 		imshow(DBG_WINDOW_NAME, tmp);
-	}
-
-	if (found) {
-		imagePoints.push_back(pointBuf);
-		sampleCountQL->setText(QString::number(imagePoints.size()));
 	}
 
 	collectPB->setEnabled(true);
@@ -188,11 +205,11 @@ void CameraCalibration::calibrate()
 	else
 		distCoeffs = Mat::zeros(8, 1, CV_64F);
 
-	if (imagePoints.size() < 5) {
-		rms = 0;
-		calibrationSuccessful = false;
+	calibrationSuccessful = false;
+	rms = 0;
+
+	if (imagePoints.size() < 5)
 		return;
-	}
 
 	vector<vector<Point3f> > objectPoints(1);
 	calculateBoardCorners(objectPoints[0]);
@@ -216,6 +233,8 @@ void CameraCalibration::store(const QString &fileName)
 	fs << "distCoeffs" << distCoeffs;
 	fs << "imageSize" << imageSize;
 	fs << "newCameraMatrix" << newCameraMatrix;
+	fs << "sampleCount" << sampleCount;
+	fs << "coverage" << coverage;
 	fs << "rms" << rms;
 }
 
@@ -230,6 +249,8 @@ void CameraCalibration::load(const QString &fileName)
 		fs["distCoeffs"] >> distCoeffs;
 		fs["imageSize"] >> imageSize;
 		fs["newCameraMatrix"] >> newCameraMatrix;
+		fs["sampleCount"] >> sampleCount;
+		fs["coverage"] >> coverage;
 		fs["rms"] >> rms;
 		calibrationSuccessful = true;
 	}

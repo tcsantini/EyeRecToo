@@ -16,6 +16,8 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QFileInfo>
+#include <QtConcurrent/QtConcurrent>
+#include <QFutureWatcher>
 
 #include "opencv2/imgproc.hpp"
 #include "opencv2/calib3d.hpp"
@@ -29,7 +31,9 @@ class CameraCalibration : public QDialog
 public:
 	CameraCalibration(QWidget *parent=0)
 		: QDialog(parent),
-		  calibrationSuccessful(false)
+		  calibrationSuccessful(false),
+		  sampleCount(0),
+		  coverage(0)
 	{
 		this->setWindowModality(Qt::ApplicationModal);
 		this->setWindowTitle("Camera Calibration");
@@ -102,14 +106,20 @@ public:
 		sampleCountQL = new QLabel();
 		sampleCountQL->setText(QString::number(0));
 		formLayout->addRow( new QLabel("Samples:"), sampleCountQL);
+		coveredQL = new QLabel();
+		coveredQL->setText(QString::number(0) + " %");
+		formLayout->addRow( new QLabel("Covered:"), coveredQL);
 		rmsQL = new QLabel();
-		rmsQL->setStyleSheet("QLabel { font : bold; color : black }");
-		rmsQL->setText("N/A");
+		setRms();
 		formLayout->addRow( new QLabel("RMS Error:"), rmsQL);
 		controlGB->setLayout(formLayout);
 		hl->addWidget(controlGB);
 
 		setLayout(hl);
+
+		connect(&watcher, SIGNAL(finished()),
+				this, SLOT(onCalibrated()) );
+
 	}
 
 	enum CALIBRATION_PATTERN {
@@ -121,6 +131,8 @@ public:
 	cv::Mat cameraMatrix;
 	cv::Mat newCameraMatrix;
 	cv::Mat distCoeffs;
+	int sampleCount;
+	double coverage;
 	bool calibrationSuccessful;
 
 signals:
@@ -153,21 +165,51 @@ private:
 	QPushButton *collectPB;
 	QPushButton *undistortPB;
 	QLabel *sampleCountQL;
+	QLabel *coveredQL;
 	QLabel *rmsQL;
+
+	QFutureWatcher<void> watcher;
 
 	std::vector<std::vector<cv::Point2f> > imagePoints;
 	cv::Size imageSize;
+	cv::Rect covered;
+
 	void processSample(const cv::Mat &frame);
 	void undistortSample(const cv::Mat &frame);
 	void calculateBoardCorners(std::vector<cv::Point3f> &corners);
 	void calibrate();
 	void updateCalibrationStatus(bool success);
+	void setLabelText(QLabel* label, QString val, QString color) {
+		label->setStyleSheet("QLabel { font : bold; color : " + color + " }");
+		label->setText( val );
+	}
+	void setRms() { setLabelText(rmsQL, "N/A", "black"); }
+	void setRms(double val) {
+		if ( val < 1)
+			setLabelText(rmsQL, QString::number(val), "green");
+		else {
+			setLabelText(rmsQL, QString::number(val), "red");
+			qInfo() << "RMS Error is above the expected value. It's recommended to recalibrate.";
+		}
+	}
+	void setCoverage() { setLabelText(coveredQL, "N/A", "black"); }
+	void setCoverage(double val) {
+		QString pct = QString::number( (int) 100 * val) + " %";
+		if ( val >= 0.8) {
+			setLabelText(coveredQL, pct, "green");
+		} else if (val >= 0.6) {
+			setLabelText(coveredQL, pct, "orange");
+		} else {
+			setLabelText(coveredQL, pct, "red");
+		}
+	}
 
 	double rms;
 
 private slots:
 	void startCalibration();
 	void finishCalibration();
+	void onCalibrated();
 };
 
 #endif // CAMERACALIBRATION_H
