@@ -94,7 +94,11 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
     data.collectionMarker = Marker();
     data.markers.clear();
 
-    // Note that the following is based on the COLLECTION MARKER size.
+	// Note that the following is based on the COLLECTION MARKER size.
+	/* TODO: check whether the pose estimation works with fisheye intrinsic parameters
+	 * An initial (and short) test with a pupil labs wide angle camera at 720p seeemed
+	 * to match the distance measured with a laser distance meter.
+	 */
     if (ids.size() > 0) {
         if (data.undistorted) {
             Mat emptyCameraMatrix = (Mat_<double>(3,3) <<

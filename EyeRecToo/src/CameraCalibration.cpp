@@ -124,7 +124,7 @@ void CameraCalibration::undistortSample(const Mat &frame)
 		return;
 	Mat tmp;
 	if (fishEyeCB->isChecked())
-		fisheye::undistortImage(frame, tmp, cameraMatrix, distCoeffs);
+		remap(frame, tmp, map1, map2, CV_INTER_AREA);
 	else
 		remap(frame, tmp, map1, map2, CV_INTER_AREA);
 	imshow("Undistorted Image", tmp);
@@ -222,13 +222,20 @@ void CameraCalibration::calibrate()
 
 	Mat rv, tv;
 	if (fishEyeCB->isChecked()) {
-		rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
+		int fisheyeFlags = 0;
+		fisheyeFlags |= fisheye::CALIB_RECOMPUTE_EXTRINSIC;
+		fisheyeFlags |= fisheye::CALIB_CHECK_COND;
+		fisheyeFlags |= fisheye::CALIB_FIX_SKEW;
+		rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv, fisheyeFlags);
 		fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1, imageSize);
+		fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
+							newCameraMatrix, imageSize, CV_16SC2,
+							map1, map2);
 	} else {
 		rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
 		newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize);
 		initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
-							newCameraMatrix, imageSize, CV_32FC1,
+							newCameraMatrix, imageSize, CV_16SC2,
 							map1, map2
 							);
 	}
@@ -245,6 +252,7 @@ void CameraCalibration::store(const QString &fileName)
 	fs << "sampleCount" << sampleCount;
 	fs << "coverage" << coverage;
 	fs << "rms" << rms;
+	fs << "fisheye" << fishEyeCB->isChecked();
 }
 
 void CameraCalibration::load(const QString &fileName)
@@ -261,11 +269,19 @@ void CameraCalibration::load(const QString &fileName)
 		fs["sampleCount"] >> sampleCount;
 		fs["coverage"] >> coverage;
 		fs["rms"] >> rms;
+		bool isFisheye;
+		fs["fisheye"] >> isFisheye;
 		calibrationSuccessful = true;
-		initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
+		if (isFisheye) {
+			fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
+							newCameraMatrix, imageSize, CV_16SC2,
+							map1, map2);
+		} else {
+			initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
 							newCameraMatrix, imageSize, CV_32FC1,
 							map1, map2
 							);
+		}
 	}
 	updateCalibrationStatus(calibrationSuccessful);
 }

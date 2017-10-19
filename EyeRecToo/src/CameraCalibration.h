@@ -63,11 +63,10 @@ public:
 		squareSizeMMDSB->setToolTip(squareSizeMMDSB->whatsThis());
 		formLayout->addRow( new QLabel("Square Size:"), squareSizeMMDSB );
 		fishEyeCB = new QCheckBox();
+		// TODO: should fisheye be the default?
 		fishEyeCB->setChecked(false);
-		fishEyeCB->setWhatsThis("Use fish eye camera model instead of pinhole. Untested.");
+		fishEyeCB->setWhatsThis("Use fish eye camera model instead of pinhole.\nThis features is on alpha so use with care.");
 		fishEyeCB->setToolTip(fishEyeCB->whatsThis());
-		// TODO: test fish eye. Until then, disable it
-		fishEyeCB->setEnabled(false);
 		formLayout->addRow( new QLabel("Fish Eye"), fishEyeCB );
 		dbgCB = new QCheckBox();
 		dbgCB->setChecked(true);
