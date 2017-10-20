@@ -14,7 +14,10 @@ class LogWidget : public QMainWindow
 
 public:
     explicit LogWidget(QWidget *parent = 0);
-    ~LogWidget();
+	~LogWidget();
+
+signals:
+	void closed();
 
 public slots:
     void appendMessage(const QString &msg);
@@ -25,7 +28,10 @@ private slots:
     void on_addMsg_clicked();
 
 private:
-    Ui::LogWidget *ui;
+	Ui::LogWidget *ui;
+
+protected:
+	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // LOGWIDGET_H

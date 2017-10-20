@@ -17,13 +17,12 @@ public:
     QString getEnrolled(const unsigned int &idx) { return idx < enrolled.size() ? enrolled[idx] : QString(); }
     unsigned int enrolledCount() { return (unsigned int) enrolled.size(); }
 
-
-    void report();
+	void report();
 
 private:
     std::vector<QString> enrolled;
     unsigned int delayedFrameCount;
-    bool frameDropEnabled;
+	bool frameDropEnabled;
 };
 
 #endif // PERFORMANCEMONITOR_H

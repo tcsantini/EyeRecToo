@@ -35,6 +35,7 @@ signals:
     void loadTuplesFromFile(CollectionTuple::TupleType type, QString fileName);
     void calibrationRequest();
     void setCalibrating(bool v);
+	void closed();
 
 public slots:
 
@@ -87,7 +88,10 @@ private slots:
     void on_granularitySB_valueChanged(int arg1);
     void on_rangeFactorSB_valueChanged(int arg1);
     void on_visualizationGroupBox_toggled(bool arg1);
-    void on_visualizationTimeSpinBox_valueChanged(int arg1);
+	void on_visualizationTimeSpinBox_valueChanged(int arg1);
+
+protected:
+	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // GAZEESTIMATIONWIDGET_H

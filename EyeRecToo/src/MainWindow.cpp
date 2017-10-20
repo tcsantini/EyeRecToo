@@ -2,7 +2,7 @@
 #include "ui_MainWindow.h"
 
 // TODO: refactor MainWindow into a config aware class that can be shared by the
-// widgets
+// widgets. Also add the gui interface there.
 
 void MainWindow::createExtraMenus()
 {
@@ -37,7 +37,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     logWidget = new LogWidget();
     setupWidget(logWidget, cfg.logWidgetPos, cfg.logWidgetSize, cfg.logWidgetVisible, ui->log);
-    gLogWidget = logWidget;
+	connect(logWidget, SIGNAL(closed()),
+			this, SLOT(logWidgetClosed()) );
+	gLogWidget = logWidget;
 
     /*
      * WARNING: DO NOT REMOVE THIS CALL to QCameraInfo::availableCameras()
@@ -52,15 +54,21 @@ MainWindow::MainWindow(QWidget *parent) :
      */
     lEyeWidget = new CameraWidget("LeftEye", ImageProcessor::Eye);
     lEyeWidget->setWindowIcon(QIcon(":/icons/lEyeWidget.png"));
-    setupWidget(lEyeWidget, cfg.leftEyeWidgetPos, cfg.leftEyeWidgetSize, cfg.leftEyeWidgetVisible, ui->leftEyeCam);
-    QThread::msleep(200);
+	setupWidget(lEyeWidget, cfg.leftEyeWidgetPos, cfg.leftEyeWidgetSize, cfg.leftEyeWidgetVisible, ui->leftEyeCam);
+	connect(lEyeWidget, SIGNAL(closed()),
+			this, SLOT(lEyeWidgetClosed()) );
+	QThread::msleep(200);
     rEyeWidget = new CameraWidget("RightEye", ImageProcessor::Eye);
     rEyeWidget->setWindowIcon(QIcon(":/icons/rEyeWidget.png"));
     setupWidget(rEyeWidget, cfg.rightEyeWidgetPos, cfg.rightEyeWidgetSize, cfg.rightEyeWidgetVisible, ui->rightEyeCam);
-    QThread::msleep(200);
+	connect(rEyeWidget, SIGNAL(closed()),
+			this, SLOT(rEyeWidgetClosed()) );
+	QThread::msleep(200);
     fieldWidget = new CameraWidget("Field", ImageProcessor::Field);
     fieldWidget->setWindowIcon(QIcon(":/icons/fieldWidget.png"));
     setupWidget(fieldWidget, cfg.fieldWidgetPos, cfg.fieldWidgetSize, cfg.fieldWidgetVisible, ui->fieldCam);
+	connect(fieldWidget, SIGNAL(closed()),
+			this, SLOT(fieldWidgetClosed()) );
 
     /*
      * Synchronizer
@@ -82,6 +90,8 @@ MainWindow::MainWindow(QWidget *parent) :
             gazeEstimationWidget, SIGNAL(inDataTuple(DataTuple)) );
     connect(fieldWidget, SIGNAL(newClick(Timestamp,QPoint,QSize)),
             gazeEstimationWidget, SIGNAL(newClick(Timestamp,QPoint,QSize)) );
+	connect(gazeEstimationWidget, SIGNAL(closed()),
+			this, SLOT(gazeEstimationWidgetClosed()) );
 
     connect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
             fieldWidget, SLOT(preview(DataTuple)) );
@@ -101,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     performanceMonitorWidget = new PerformanceMonitorWidget();
     setupWidget(performanceMonitorWidget, cfg.performanceMonitorWidgetPos, cfg.performanceMonitorWidgetSize, cfg.performanceMonitorWidgetVisible, ui->performanceMonitor);
+	connect(performanceMonitorWidget, SIGNAL(closed()),
+			this, SLOT(performanceMonitorWidgetClosed()) );
 
     // GUI to Widgets signals
     connect(this, SIGNAL(startRecording()),
@@ -551,5 +563,12 @@ void MainWindow::setupWidget(QMainWindow *window, QPoint &position, const QSize 
         window->show();
 
     if (button)
-        button->setChecked(visible);
+		button->setChecked(visible);
 }
+
+void MainWindow::logWidgetClosed() { ui->log->setChecked(false); }
+void MainWindow::lEyeWidgetClosed() { ui->leftEyeCam->setChecked(false); }
+void MainWindow::rEyeWidgetClosed() { ui->rightEyeCam->setChecked(false); }
+void MainWindow::fieldWidgetClosed() { ui->fieldCam->setChecked(false); }
+void MainWindow::gazeEstimationWidgetClosed() { ui->gazeEstimation->setChecked(false); }
+void MainWindow::performanceMonitorWidgetClosed() { ui->performanceMonitor->setChecked(false); }

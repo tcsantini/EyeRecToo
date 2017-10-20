@@ -172,8 +172,8 @@ private:
     void setSubjectName(QString newSubjectName);
     void setWorkingDirectory(QString dir);
     void widgetButtonReact(QMainWindow *window, bool checked);
-    void createExtraMenus();
-    void setupWidget(QMainWindow *window, QPoint &position, const QSize &size, const bool &visible=true, QPushButton *button=NULL);
+	void createExtraMenus();
+	void setupWidget(QMainWindow *window, QPoint &position, const QSize &size, const bool &visible=true, QPushButton *button=NULL);
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -196,7 +196,14 @@ private slots:
     void showReferencesDialog();
     void showAboutDialog();
     void on_log_clicked();
-    void on_performanceMonitor_clicked();
+	void on_performanceMonitor_clicked();
+
+	void logWidgetClosed();
+	void lEyeWidgetClosed();
+	void rEyeWidgetClosed();
+	void fieldWidgetClosed();
+	void gazeEstimationWidgetClosed();
+	void performanceMonitorWidgetClosed();
 };
 
 #endif // MAINWINDOW_H

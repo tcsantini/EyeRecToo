@@ -20,7 +20,10 @@ class PerformanceMonitorWidget : public QMainWindow
 
 public:
     explicit PerformanceMonitorWidget(QWidget *parent = 0);
-    ~PerformanceMonitorWidget();
+	~PerformanceMonitorWidget();
+
+signals:
+	void closed();
 
 private:
     Ui::PerformanceMonitorWidget *ui;
@@ -34,7 +37,10 @@ private:
 
 private slots:
     void update();
-    void on_resetCounters_clicked();
+	void on_resetCounters_clicked();
+
+protected:
+	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // PERFORMANCEMONITORWIDGET_H

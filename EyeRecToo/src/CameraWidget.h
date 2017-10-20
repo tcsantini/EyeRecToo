@@ -42,7 +42,8 @@ signals:
     void newROI(QPointF sROI, QPointF eROI);
     void newData(EyeData data);
     void newData(FieldData data);
-    void newClick(Timestamp,QPoint,QSize);
+	void newClick(Timestamp,QPoint,QSize);
+	void closed();
 
 public slots:
     void preview(Timestamp t, const cv::Mat &frame);
@@ -108,7 +109,10 @@ private:
     void drawROI(QPainter &painter);
     void drawPupil(const cv::RotatedRect ellipse, QPainter &painter);
     void drawMarker(const Marker &marker, QPainter &painter, QColor color);
-    void drawGaze(const FieldData &field, QPainter &painter);
+	void drawGaze(const FieldData &field, QPainter &painter);
+
+protected:
+	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // CAMERAWIDGET_H
