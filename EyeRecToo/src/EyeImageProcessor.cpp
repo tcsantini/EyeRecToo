@@ -49,8 +49,6 @@ EyeImageProcessor::~EyeImageProcessor()
 
 void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 {
-    Mat prevInput = data.input;
-
     // TODO: parametrize frame drop due to lack of processing power
     if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 50) )
         return;
@@ -59,13 +57,14 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 
     data.timestamp = timestamp;
 
-    // Always force the creation of a new matrix for the input since the old one might still be alive from further down the pipeline
-    if (cfg.inputSize.width > 0 && cfg.inputSize.height > 0) {
-        data.input = Mat::zeros(cfg.inputSize, frame.type() );
-        resize(frame, data.input, cfg.inputSize);
-    }
-    else
-        data.input = frame.clone();
+	Q_ASSERT_X(frame.data != data.input.data, "Eye Image Processing", "Previous and current input image matches!");
+	if (cfg.inputSize.width > 0 && cfg.inputSize.height > 0) {
+		data.input = Mat(cfg.inputSize, frame.type() );
+		resize(frame, data.input, cfg.inputSize);
+	}
+	else {
+		data.input = frame;
+	}
 
     if (cfg.flip != CV_FLIP_NONE)
         flip(data.input, data.input, cfg.flip);
@@ -111,9 +110,8 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
         }
     }
 
-    data.processingTimestamp = gTimer.elapsed();
+	data.processingTimestamp = gTimer.elapsed() - data.timestamp;
 
-    Q_ASSERT_X(prevInput.data != data.input.data, "Eye Image Processing", "Previous and current input image matches!");
     emit newData(data);
 }
 

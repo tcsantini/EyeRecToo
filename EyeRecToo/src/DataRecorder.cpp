@@ -139,5 +139,7 @@ void DataRecorder::storeData(T &data)
     if (videoWriter->isOpened())
         *videoWriter << data.input;
     if (dataStream->status() == QTextStream::Ok)
-        *dataStream << data.toQString() << gDataNewline;
+		*dataStream << data.toQString() << gDataNewline;
+
+	// TODO: add recording timestamp?
 }

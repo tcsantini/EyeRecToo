@@ -160,7 +160,7 @@ bool FrameGrabber::jpeg2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
         return false;
     }
 
-    cvFrame = Mat::zeros(height, width, code);
+	cvFrame = Mat(height, width, code);
     int decode = code == CV_8UC3 ? TJPF_BGR : TJPF_GRAY;
     res = tjDecodeYUV(tjh, yuvBuffer, 4, subsamp, cvFrame.data, width, 0, height, decode, 0);
     if (res < 0)
@@ -193,7 +193,7 @@ bool FrameGrabber::rgb32_2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
 bool FrameGrabber::yuyv_2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
 {
     // TODO: can we optimize this?
-    cvFrame = Mat::zeros(abs(in.height()), abs(in.width()), CV_8UC3);
+	cvFrame = Mat(abs(in.height()), abs(in.width()), CV_8UC3);
     const unsigned char *pyuv = in.bits();
     unsigned char *pbgr = cvFrame.data;
     for(int i = 0; i < in.mappedBytes(); i += 4) {

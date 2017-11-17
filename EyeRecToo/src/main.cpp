@@ -43,7 +43,12 @@ int main(int argc, char *argv[])
 
     makeFolders();
 
-    QApplication a(argc, argv);
+	/*
+	QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL, false);
+	QCoreApplication::setAttribute(Qt::AA_UseOpenGLES, false);
+	QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL, true);
+	*/
+	QApplication a(argc, argv);
     a.setStyle(QStyleFactory::create("Fusion"));
 
 //#define DARK_THEME

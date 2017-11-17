@@ -41,8 +41,6 @@ FieldImageProcessor::~FieldImageProcessor()
 
 void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 {
-    Mat prevInput = data.input;
-
     // TODO: parametrize frame drop due to lack of processing power
     if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 100) )
         return;
@@ -51,13 +49,14 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 
     data.timestamp = timestamp;
 
-    // Always force the creation of a new matrix for the input since the old one might still be alive from further down the pipeline
     if (cfg.inputSize.width > 0 && cfg.inputSize.height > 0) {
         data.input = Mat(cfg.inputSize, frame.type() );
         resize(frame, data.input, cfg.inputSize);
     }
-    else
-        data.input = frame.clone();
+	else {
+		Q_ASSERT_X(frame.data != data.input.data, "Field Image Processing", "Previous and current input image matches!");
+		data.input = frame;
+	}
 
     if (cfg.flip != CV_FLIP_NONE)
         flip(data.input, data.input, cfg.flip);
@@ -74,21 +73,26 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
     // Marker detection and pose estimation
     vector<int> ids;
     vector<vector<Point2f> > corners;
-    if (cfg.processingDownscalingFactor > 1) {
-        Mat downscaled;
+	Mat downscaled;
+	if (cfg.processingDownscalingFactor > 1) {
         resize(data.input, downscaled, Size(),
                1/cfg.processingDownscalingFactor,
                1/cfg.processingDownscalingFactor,
                INTER_AREA);
-        if (cfg.markerDetectionMethod == "aruco") {
-            detectMarkers(downscaled, dict, corners, ids, detectorParameters);
-            for (unsigned int i=0; i<ids.size(); i++)
-                for (unsigned int j=0; j<corners[i].size(); j++)
-                    corners[i][j] = cfg.processingDownscalingFactor*corners[i][j];
-        }
-    } else
-        if (cfg.markerDetectionMethod == "aruco")
-            detectMarkers(data.input, dict, corners, ids, detectorParameters);
+	} else {
+		downscaled = data.input;
+	}
+
+	if (cfg.markerDetectionMethod == "aruco") {
+
+		detectMarkers(downscaled, dict, corners, ids, detectorParameters);
+
+		if (cfg.processingDownscalingFactor > 1) { // Upscale if necessary
+			for (unsigned int i=0; i<ids.size(); i++)
+				for (unsigned int j=0; j<corners[i].size(); j++)
+					corners[i][j] = cfg.processingDownscalingFactor*corners[i][j];
+		}
+	}
 
     // Filling the marker data
     data.collectionMarker = Marker();
@@ -131,9 +135,8 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
     }
 
     data.validGazeEstimate = false;
-    data.processingTimestamp = gTimer.elapsed();
+	data.processingTimestamp = gTimer.elapsed() - data.timestamp;
 
-    Q_ASSERT_X(prevInput.data != data.input.data, "Field Image Processing", "Previous and current input image matches!");
     emit newData(data);
 }
 

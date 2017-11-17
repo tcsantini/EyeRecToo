@@ -35,7 +35,7 @@ class CameraWidget : public QMainWindow, InputWidget
 
 public:
     explicit CameraWidget(QString id, ImageProcessor::Type type, QWidget *parent = 0);
-    ~CameraWidget();
+	~CameraWidget();
 
 signals:
     void setCamera(QCameraInfo cameraInfo);
@@ -84,14 +84,15 @@ private:
     QActionGroup *optionsGroup;
     QAction *optionAction;
 
-    std::list<int> dt;
-    Timestamp lastTimestamp;
+	std::deque<int> tq;
+	Timestamp lastFrameRateUpdate;
     void updateFrameRate(Timestamp t);
 
     QPointF sROI, eROI;
-    bool settingROI;
+	bool settingROI;
+	void setROI(const QPointF &s, const QPointF &e) { sROI=s; eROI=e; emit newROI(sROI, eROI); }
 
-    Timestamp lastUpdate;
+	Timestamp lastUpdate;
     Timestamp updateIntervalMs;
     Timestamp maxAgeMs;
     bool shouldUpdate(Timestamp t);
@@ -102,7 +103,11 @@ private:
 	CameraCalibration *cameraCalibration;
 	bool cameraCalibrationSampleRequested;
 
-    // Drawing functions
+	QSize frameSize = { 0, 0 };
+	void updateWidgetSize( const int &width, const int &height);
+
+	// Drawing functions
+	cv::Mat rgb, resized;
     double rw, rh;
     double refPx;
     QFont font;
