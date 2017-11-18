@@ -8,7 +8,6 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     QMainWindow(parent),
     id(id),
     type(type),
-    lastTimestamp(0),
     sROI(QPoint(0,0)),
     eROI(QPoint(0,0)),
     settingROI(false),
@@ -122,7 +121,10 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     connect(this, SIGNAL(newROI(QPointF,QPointF)),
             imageProcessor, SIGNAL(newROI(QPointF,QPointF)) );
 
-    font.setStyleHint(QFont::Monospace);
+	// Initial roi
+	setROI( QPointF(0.1, 0.1), QPointF(0.9, 0.9) );
+
+	font.setStyleHint(QFont::Monospace);
     QMetaObject::invokeMethod(camera, "loadCfg");
 }
 
@@ -183,7 +185,9 @@ void CameraWidget::preview(EyeData data)
     if (!shouldUpdate(data.timestamp))
         return;
     if (!isDataRecent(data.timestamp))
-        return;
+		return;
+
+	updateWidgetSize(data.input.cols, data.input.rows);
 
     QImage scaled = previewImage(data.input);
 
@@ -212,13 +216,15 @@ void CameraWidget::preview(const DataTuple &data)
     if (!isDataRecent(data.field.timestamp))
         return;
 
-    Mat input = data.field.input;
+	Mat input = data.field.input;
+
+	updateWidgetSize(input.cols, input.rows);
 
     if (data.showGazeEstimationVisualization) {
         if (data.gazeEstimationVisualization.empty())
             return;
         input = data.gazeEstimationVisualization;
-    }
+	}
 
     QImage scaled = previewImage(input);
 
@@ -236,29 +242,34 @@ void CameraWidget::preview(const DataTuple &data)
 
 void CameraWidget::updateFrameRate(Timestamp t)
 {
-    dt.push_back(t-lastTimestamp);
-    lastTimestamp = t;
+	// Simpler version since the status bar update showed some overhead
+	// during tests with OpenGL
+	if (tq.size() == 0) {
+		ui->statusbar->showMessage(
+			QString("%1 @ N/A FPS").arg(
+					camera->currentCameraInfo.description()
+				)
+			);
+		tq.push_back(t);
+		lastFrameRateUpdate = t;
+		return;
+	}
 
-    if (dt.size() < 30) {
-        ui->statusbar->showMessage(
-            QString("%1 @ N/A FPS").arg(
-                camera->currentCameraInfo.description()
-                )
-            );
-        return;
-    }
-    dt.pop_front();
+	tq.push_back(t);
+	if (tq.size() > 30) {
+		tq.pop_front();
+		if (tq.back() - lastFrameRateUpdate > 100) { // update every 100 ms
+			double fps = (tq.size()-1) / (1.0e-3*( tq.back() - tq.front() ) );
+			lastFrameRateUpdate = tq.back();
+			ui->statusbar->showMessage(
+				QString("%1 @ %2 FPS").arg(
+					camera->currentCameraInfo.description()).arg(
+						fps, 0, 'f', 2
+					)
+				);
+		}
+	}
 
-    int acc = 0;
-    for (std::list<int>::iterator it=dt.begin(); it != dt.end(); ++it)
-        acc += *it;
-    double fps = 1000 / (double(acc)/dt.size());
-
-    ui->statusbar->showMessage(
-        QString("%1 @ %2 FPS").arg(
-            camera->currentCameraInfo.description()).arg(
-            fps, 0, 'f', 2)
-        );
 }
 
 void CameraWidget::noCamera(QString msg)
@@ -349,7 +360,7 @@ void CameraWidget::mouseReleaseEvent(QMouseEvent *event)
             sROI = QPointF();
             eROI = QPointF();
         }
-        emit newROI(sROI, eROI);
+		setROI(sROI, eROI);
     }
 }
 
@@ -370,8 +381,18 @@ bool CameraWidget::shouldUpdate(Timestamp t)
     if (!this->isVisible())
         return false;
 
-    // TODO: Right now, we don't update every frame to save resources.
-    // Make this parametrizable or move to faster drawing methods
+	/* TODO: Right now, we don't update every frame to save resources.
+	 * Make this parametrizable or move to faster drawing methods.
+	 *
+	 * Notes: I've tried some initial tests to move to OpenGL, which were
+	 * unsuccessful. This includes using QPainter with QOpenGLWidgets, native
+	 * OpenGL directives (using QUADs, TRIANGLES, and an FBO).
+	 * In all cases I saw a similar behavior: scaling/drawing is faster, but I
+	 * get CPU hogs from other places -- e.g., additional calls to nvogl,
+	 * NtGdiDdDDIEscape (whatever that is!), and calls to wglMakeCurrent
+	 * (which seem to be rather expensive!).
+	 * If anyone who actually knows OpenGL wanna try, be my guest :-)
+	 */
     if (t - lastUpdate > updateIntervalMs) {
         lastUpdate = t;
         return true;
@@ -394,23 +415,38 @@ bool CameraWidget::isDataRecent(Timestamp t)
 
 QImage CameraWidget::previewImage(const cv::Mat &frame)
 {
-    Mat rgb;
     Size previewSize(ui->viewFinder->width(), ui->viewFinder->height());
 
     switch (frame.channels()) {
         case 1:
-            cvtColor(frame, rgb, CV_GRAY2RGB);
-            cv::resize(rgb, rgb, previewSize, CV_INTER_LINEAR);
-            break;
+			cvtColor(frame, rgb, CV_GRAY2RGB);
+			cv::resize(rgb, resized, previewSize, cv::INTER_NEAREST);
+			break;
         case 3:
-            cvtColor(frame, rgb, CV_BGR2RGB);
-            cv::resize(rgb, rgb, previewSize, CV_INTER_LINEAR);
+			cvtColor(frame, rgb, CV_BGR2RGB);
+			cv::resize(rgb, resized, previewSize, cv::INTER_NEAREST);
             break;
         default:
-            rgb = cv::Mat::zeros(previewSize, CV_8UC3);
+			resized = cv::Mat::zeros(previewSize, CV_8UC3);
             break;
-    }
-    QImage scaled = QImage(rgb.data, rgb.cols, rgb.rows, (int) rgb.step, QImage::Format_RGB888).copy();
+	}
+
+	/* TODO: according to http://doc.qt.io/qt-5/qpainter.html
+	 *
+	 * "Raster - This backend implements all rendering in pure software and is
+	 * always used to render into QImages. For optimal performance only use the
+	 * format types QImage::Format_ARGB32_Premultiplied, QImage::Format_RGB32 or
+	 * QImage::Format_RGB16. Any other format, including QImage::Format_ARGB32,
+	 * has significantly worse performance. This engine is used by default for
+	 * QWidget and QPixmap."
+	 *
+	 * However, I've found that resizing with OpenCV using only three bytes
+	 * results in faster and less cpu-intensive code.
+	 * This is relative to ARGB32_Premultiplied (which should be the fastest
+	 * option with QImages, according to http://doc.qt.io/qt-5/qimage.html
+	 *
+	 */
+	QImage scaled = QImage(resized.data, resized.cols, resized.rows, (int) resized.step, QImage::Format_RGB888);
 
     rw = scaled.width() / (float) frame.cols;
     rh = scaled.height() / (float) frame.rows;
@@ -510,3 +546,17 @@ void CameraWidget::drawGaze(const FieldData &field, QPainter &painter)
     painter.resetTransform();
 }
 
+void CameraWidget::updateWidgetSize(const int &width, const int &height)
+{
+	// Logic to limit the size of the camera widgets
+	QSize newFrameSize = { width, height };
+	if (frameSize == newFrameSize)
+		return;
+
+	frameSize = newFrameSize;
+	QSize maxSize = { 960 , 540 };
+	if (frameSize.width() < maxSize.width() && frameSize.height() < maxSize.height() )
+		this->setMaximumSize( frameSize );
+	else
+		this->setMaximumSize( maxSize );
+}
