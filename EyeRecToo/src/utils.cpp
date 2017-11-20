@@ -193,12 +193,15 @@ void loadSoundEffect(QSoundEffect &effect, QString fileName)
 
     QStringList searchPaths;
 	searchPaths << gExeDir + "/../EyeRecToo/effects" << gExeDir + "/effects";
+	bool loaded = false;
     for (int i=0; i<searchPaths.size(); i++) {
         QString target = searchPaths[i] + "/" + fileName;
-        if (QFile(target).exists()) {
-            qDebug() << "Loaded" << target;
+		if (QFile(target).exists()) {
+			loaded = true;
             effect.setSource(QUrl::fromLocalFile(target));
             break;
-        }
-    }
+		}
+	}
+	if (!loaded)
+		qWarning() << "Failed to load" << fileName;
 }

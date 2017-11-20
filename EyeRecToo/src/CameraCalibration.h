@@ -30,11 +30,12 @@ class CameraCalibration : public QDialog
 {
 	Q_OBJECT
 public:
-	CameraCalibration(QWidget *parent=0)
+	CameraCalibration(QString id, QWidget *parent=0)
 		: QDialog(parent),
 		  calibrationSuccessful(false),
 		  sampleCount(0),
-		  coverage(0)
+		  coverage(0),
+		  id(id)
 	{
 		this->setWindowModality(Qt::ApplicationModal);
 		this->setWindowTitle("Camera Calibration");
@@ -170,6 +171,7 @@ private:
 	QLabel *sampleCountQL;
 	QLabel *coveredQL;
 	QLabel *rmsQL;
+	QString id;
 
 	QFutureWatcher<void> watcher;
 

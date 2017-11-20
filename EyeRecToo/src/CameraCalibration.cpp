@@ -62,13 +62,13 @@ void CameraCalibration::onCalibrated()
 void CameraCalibration::updateCalibrationStatus(bool success)
 {
 	if (success) {
-		qInfo() << "Camera calibration done. RMS Error =" << rms;
+		qInfo() << id << "calibrated. RMS Error =" << rms;
 		undistortPB->setEnabled(true);
 		setRms(rms);
 		setCoverage(coverage);
 		sampleCountQL->setText(QString::number(sampleCount));
 	} else {
-		qInfo() << "Camera calibration failed.";
+		qInfo() << id << "calibration failed.";
 		undistortPB->setEnabled(false);
 		setRms();
 		setCoverage();
@@ -173,7 +173,7 @@ void CameraCalibration::processSample(const Mat &frame)
 
 	if (found) {
 		imagePoints.push_back(pointBuf);
-		sampleCount = imagePoints.size();
+		sampleCount = (int) imagePoints.size();
 		if (sampleCount == 1)
 			covered = boundingRect(pointBuf);
 		else

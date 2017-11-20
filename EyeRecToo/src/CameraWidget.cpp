@@ -91,7 +91,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     recorder->moveToThread(recorderThread);
 	QMetaObject::invokeMethod(recorder, "create");
 
-	cameraCalibration = new CameraCalibration();
+	cameraCalibration = new CameraCalibration(id);
 	connect(cameraCalibration, SIGNAL(requestSample()),
 			this, SLOT(requestCameraCalibrationSample()) );
 	connect(cameraCalibration, SIGNAL(calibrationFinished(bool)),
