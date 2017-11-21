@@ -35,14 +35,15 @@ public:
     explicit EyeData(){
         timestamp = 0;
         input = cv::Mat();
-        pupil = cv::RotatedRect(cv::Point2f(0,0), cv::Size2f(0,0), 0);
+		pupil = Pupil();
         validPupil = false;
         processingTimestamp = 0;
     }
 
     cv::Mat input;
-    cv::RotatedRect pupil;
-    bool validPupil;
+	Pupil pupil;
+	bool validPupil;
+	cv::Rect coarseROI;
 
     // TODO: header, toQString, and the reading from file (see the Calibration class) should be unified
     // to avoid placing things in the wrong order / with the wrong string
@@ -60,9 +61,11 @@ public:
         tmp.append(gDataSeparator);
         tmp.append(prefix + "pupil.angle");
         tmp.append(gDataSeparator);
-        tmp.append(prefix + "pupil.valid");
+		tmp.append(prefix + "pupil.confidence");
+		tmp.append(gDataSeparator);
+		tmp.append(prefix + "pupil.valid");
         tmp.append(gDataSeparator);
-        tmp.append(prefix + "processingTimestamp");
+		tmp.append(prefix + "processingTime");
         tmp.append(gDataSeparator);
         return tmp;
     }
@@ -79,7 +82,9 @@ public:
         tmp.append(gDataSeparator);
         tmp.append(QString::number(pupil.size.height));
         tmp.append(gDataSeparator);
-        tmp.append(QString::number(pupil.angle));
+		tmp.append(QString::number(pupil.angle));
+		tmp.append(gDataSeparator);
+		tmp.append(QString::number(pupil.confidence));
         tmp.append(gDataSeparator);
         tmp.append(QString::number(validPupil));
         tmp.append(gDataSeparator);
@@ -99,14 +104,16 @@ public:
         :
           inputSize(cv::Size(0, 0)),
           flip(CV_FLIP_NONE),
-          undistort(false),
+		  undistort(false),
+		  coarseDetection(true),
           processingDownscalingFactor(2),
           pupilDetectionMethod(ElSe::desc.c_str())
     {}
 
     cv::Size inputSize;
     CVFlip flip;
-    bool undistort;
+	bool undistort;
+	bool coarseDetection;
     double processingDownscalingFactor;
     QString pupilDetectionMethod;
 
@@ -117,7 +124,8 @@ public:
         settings->setValue("height", inputSize.height);
         settings->setValue("flip", flip);
         settings->setValue("undistort", undistort);
-        settings->setValue("processingDownscalingFactor", processingDownscalingFactor);
+		settings->setValue("coarseDetection", coarseDetection);
+		settings->setValue("processingDownscalingFactor", processingDownscalingFactor);
         settings->setValue("pupilDetectionMethod", pupilDetectionMethod);
     }
 
@@ -128,7 +136,8 @@ public:
         set(settings, "height", inputSize.height);
         set(settings, "flip", flip);
         set(settings, "undistort", undistort);
-        set(settings, "processingDownscalingFactor", processingDownscalingFactor);
+		set(settings, "coarseDetection", coarseDetection);
+		set(settings, "processingDownscalingFactor", processingDownscalingFactor);
         set(settings, "pupilDetectionMethod", pupilDetectionMethod);
     }
 };
@@ -192,13 +201,17 @@ public:
         layout->addWidget(box);
 
 
-        hBoxLayout = new QHBoxLayout();
-        box = new QGroupBox("Pupil Detection");
-        box->setWhatsThis("Selects pupil detection method.");
+		formLayout = new QFormLayout();
+		box = new QGroupBox("Pupil Detection");
+		box->setWhatsThis("Selects pupil detection method.");
         box->setToolTip(box->whatsThis());
-        box->setLayout(hBoxLayout);
-        pupilDetectionComboBox = new QComboBox();
-        hBoxLayout->addWidget(pupilDetectionComboBox);
+		box->setLayout(formLayout);
+		coarseDetectionBox = new QCheckBox();
+		coarseDetectionBox->setWhatsThis("Estimate a coarse location for the pupil location prior to detection.");
+		coarseDetectionBox->setToolTip(box->whatsThis());
+		formLayout->addRow( new QLabel("Coarse Detection:"), coarseDetectionBox );
+		pupilDetectionComboBox = new QComboBox();
+		formLayout->addRow(pupilDetectionComboBox);
         layout->addWidget(box);
 
         applyButton = new QPushButton("Apply");
@@ -223,7 +236,8 @@ public slots:
 
         widthSB->setValue(cfg.inputSize.width);
         heightSB->setValue(cfg.inputSize.height);
-        downscalingSB->setValue(cfg.processingDownscalingFactor);
+		downscalingSB->setValue(cfg.processingDownscalingFactor);
+		coarseDetectionBox->setChecked(cfg.coarseDetection);
         for (int i=0; i<flipComboBox->count(); i++)
             if (flipComboBox->itemData(i).toInt() == cfg.flip)
                 flipComboBox->setCurrentIndex(i);
@@ -238,8 +252,9 @@ public slots:
         EyeImageProcessorConfig cfg;
         cfg.inputSize.width = widthSB->value();
         cfg.inputSize.height = heightSB->value();
-        cfg.processingDownscalingFactor = downscalingSB->value();
-        cfg.flip = (CVFlip) flipComboBox->currentData().toInt();
+		cfg.processingDownscalingFactor = downscalingSB->value();
+		cfg.flip = (CVFlip) flipComboBox->currentData().toInt();
+		cfg.coarseDetection = coarseDetectionBox->isChecked();
         cfg.pupilDetectionMethod = pupilDetectionComboBox->currentData().toString();
         cfg.save(settings);
         emit updateConfig();
@@ -248,9 +263,10 @@ public slots:
 private:
     QPushButton *applyButton;
     QSpinBox *widthSB, *heightSB;
-    QCheckBox *undistortBox;
-    QComboBox *flipComboBox;
-    QDoubleSpinBox *downscalingSB;
+	QCheckBox *undistortBox;
+	QCheckBox *coarseDetectionBox;
+	QComboBox *flipComboBox;
+	QDoubleSpinBox *downscalingSB;
 };
 
 class EyeImageProcessor : public QObject

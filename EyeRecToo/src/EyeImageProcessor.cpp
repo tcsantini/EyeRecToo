@@ -66,48 +66,61 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 		data.input = frame;
 	}
 
-    if (cfg.flip != CV_FLIP_NONE)
-        flip(data.input, data.input, cfg.flip);
+	if (cfg.flip != CV_FLIP_NONE)
+		flip(data.input, data.input, cfg.flip);
 
-    if (data.input.channels() > 1) // TODO: make it algorithm dependent
-        cvtColor(data.input, data.input, CV_BGR2GRAY);
+	if (data.input.channels() > 1) // TODO: make it algorithm dependent
+		cvtColor(data.input, data.input, CV_BGR2GRAY);
 
-    data.pupil = RotatedRect();
-    data.validPupil = false;
-    if (pupilDetectionMethod != NULL)  {
+	data.pupil = Pupil();
+	data.validPupil = false;
+	if (pupilDetectionMethod != NULL)  {
 
-        Rect tmp = Rect(
-                Point(sROI.x() * data.input.cols, sROI.y() * data.input.rows),
-                Point( eROI.x() * data.input.cols, eROI.y() * data.input.rows)
-            );
-        Point start = tmp.tl();
-        Point end = tmp.br();
+		Rect userROI = Rect(
+				Point(sROI.x() * data.input.cols, sROI.y() * data.input.rows),
+				Point( eROI.x() * data.input.cols, eROI.y() * data.input.rows)
+			);
 
-        Mat roi = data.input(Rect(start, end));
+		float scalingFactor = 1;
+		if (cfg.processingDownscalingFactor > 1)
+			scalingFactor = 1.0 / cfg.processingDownscalingFactor;
 
-        if (cfg.processingDownscalingFactor > 1) {
-            resize(roi, roi, Size(),
-                   1/cfg.processingDownscalingFactor,
-                   1/cfg.processingDownscalingFactor,
-                   INTER_AREA);
+		/*
+		 *  From here on, our reference frame is the scaled user ROI
+		 */
+		Mat downscaled;
+		resize(data.input(userROI), downscaled, Size(),
+			   scalingFactor, scalingFactor,
+			   INTER_AREA);
+		Rect coarseROI = {0, 0, downscaled.cols, downscaled.rows };
+
+		// If the user wants a coarse location and the method has none embedded,
+		// we further constrain the search using the generic one
+		if (!pupilDetectionMethod->hasCoarseLocation() && cfg.coarseDetection) {
+			coarseROI = PupilDetectionMethod::coarsePupilDetection( downscaled );
+			data.coarseROI = Rect(
+								 userROI.tl() + coarseROI.tl() / scalingFactor,
+								 userROI.tl() + coarseROI.br() / scalingFactor
+							);
+		} else
+			data.coarseROI = Rect();
+
+		// Actual detection
+		if (coarseROI.width > 10 && coarseROI.height > 10) { // minimum size otherwise some algorithms might crash
+			pupilDetectionMethod->run( downscaled, coarseROI, data.pupil );
+			if ( ! pupilDetectionMethod->hasConfidence() )
+				data.pupil.confidence = PupilDetectionMethod::outlineContrastConfidence(downscaled, data.pupil);
         }
 
-        if (roi.rows > 10 && roi.cols > 10) { // minimum size otherwise some algorithms might crash
-            if (roi.rows <= 640 && roi.cols <= 640) // TODO: fix ExCuSe and ElSe size limit
-                data.pupil = pupilDetectionMethod->run(roi);
-        }
+		if (data.pupil.center.x > 0 && data.pupil.center.y > 0) {
+			// Upscale
+			data.pupil.resize( 1.0 / scalingFactor );
 
-        if (data.pupil.center.x > 0 && data.pupil.center.y > 0) {
-            if (cfg.processingDownscalingFactor > 1) {
-                data.pupil.center.x *= cfg.processingDownscalingFactor;
-                data.pupil.center.y *= cfg.processingDownscalingFactor;
-                data.pupil.size.width *= cfg.processingDownscalingFactor;
-                data.pupil.size.height *= cfg.processingDownscalingFactor;
-            }
-            data.pupil.center.x += start.x;
-            data.pupil.center.y += start.y;
-            data.validPupil = true;
-        }
+			// User region shift
+			data.pupil.shift( userROI.tl() );
+			data.validPupil = true;
+		}
+
     }
 
 	data.processingTimestamp = gTimer.elapsed() - data.timestamp;

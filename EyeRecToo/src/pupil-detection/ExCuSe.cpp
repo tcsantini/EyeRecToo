@@ -1720,19 +1720,29 @@ else{
 
 }
 
-
-
-
-
-
-
-
-
 RotatedRect ExCuSe::run(const Mat &frame)
 {
+	if (frame.rows > IMG_SIZE || frame.cols > IMG_SIZE)
+		return RotatedRect();
     Mat target;
     normalize(frame, target, 0, 255, NORM_MINMAX, CV_8U);
     Mat pic_th = Mat::zeros(target.rows, target.cols, CV_8U);
     Mat th_edges = Mat::zeros(target.rows, target.cols, CV_8U);
     return runexcuse(&target, &pic_th, &th_edges, 15);
+}
+
+void ExCuSe::run(const cv::Mat &frame, const cv::Rect roi, Pupil &pupil, const float &minPupilDiameterPx, const float &maxPupilDiameterPx)
+{
+	if (roi.area() < 10) {
+		qWarning() << "Bad ROI: falling back to regular detection.";
+		PupilDetectionMethod::run(frame, pupil);
+		return;
+	}
+
+	(void) minPupilDiameterPx;
+	(void) maxPupilDiameterPx;
+
+	pupil = run( frame(roi) );
+	if (pupil.center.x > 0 && pupil.center.y > 0)
+		pupil.shift( roi.tl() );
 }

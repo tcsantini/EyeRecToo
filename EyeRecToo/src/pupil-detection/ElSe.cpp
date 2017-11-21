@@ -7,6 +7,8 @@
 using namespace cv;
 
 std::string ElSe::desc = "ElSe (Fuhl et al. 2016)";
+float ElSe::minArea = 0;
+float ElSe::maxArea = 0;
 
 #define IMG_SIZE 680 //400
 
@@ -283,8 +285,8 @@ static std::vector<std::vector<Point>> get_curves(Mat *pic, Mat *edge, Mat *magn
 
 
                     if(add_curve){ // pupil area
-                        if(ellipse.size.width*ellipse.size.height < pic->cols*pic->rows*0.005 ||
-                            ellipse.size.width*ellipse.size.height > pic->cols*pic->rows*0.2)//0.1
+						if(ellipse.size.width*ellipse.size.height < ElSe::minArea ||
+							ellipse.size.width*ellipse.size.height > ElSe::maxArea)
                             add_curve=false;
                     }
 
@@ -1328,6 +1330,12 @@ if(pos.y>0 && pos.y<pic->rows && pos.x>0 && pos.x<pic->cols){
 
 RotatedRect ElSe::run(const Mat &frame)
 {
+	RotatedRect ellipse;
+	Point pos(0,0);
+
+	if (frame.rows > IMG_SIZE || frame.cols > IMG_SIZE)
+		return ellipse;
+
     Mat pic;
     normalize(frame, pic, 0, 255, NORM_MINMAX, CV_8U);
 
@@ -1335,8 +1343,6 @@ RotatedRect ElSe::run(const Mat &frame)
     double mean_dist=3;
     int inner_color_range=0;
 
-    RotatedRect ellipse;
-    Point pos(0,0);
 
     int start_x=(int)floor(double(pic.cols)*border);
     int start_y=(int)floor(double(pic.rows)*border);
@@ -1373,4 +1379,24 @@ RotatedRect ElSe::run(const Mat &frame)
     }
 
     return ellipse;
+}
+
+void ElSe::run(const cv::Mat &frame, const cv::Rect roi, Pupil &pupil, const float &minPupilDiameterPx, const float &maxPupilDiameterPx)
+{
+	if (roi.area() < 10) {
+		qWarning() << "Bad ROI: falling back to regular detection.";
+		PupilDetectionMethod::run(frame, pupil);
+		return;
+	}
+	if (minPupilDiameterPx > 0 && maxPupilDiameterPx > 0 ) {
+		minArea = pow(minPupilDiameterPx,2);
+		maxArea = pow(maxPupilDiameterPx,2);
+	} else {
+		minArea = frame.cols * frame.rows * 0.005;
+		maxArea = frame.cols * frame.rows * 0.2;
+	}
+
+	pupil = run( frame(roi) );
+	if (pupil.center.x > 0 && pupil.center.y > 0)
+		pupil.shift( roi.tl() );
 }

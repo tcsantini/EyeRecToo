@@ -20,8 +20,13 @@ class ElSe : public PupilDetectionMethod
 public:
     ElSe() { mDesc = desc; }
     cv::RotatedRect run(const cv::Mat &frame);
-    bool hasPupilOutline() { return true; }
-    static std::string desc;
+	void run(const cv::Mat &frame, const cv::Rect roi, Pupil &pupil, const float &minPupilDiameterPx=-1, const float &maxPupilDiameterPx=-1);
+	bool hasConfidence() { return false; }
+	bool hasCoarseLocation() { return false; }
+	static std::string desc;
+
+	static float minArea;
+	static float maxArea;
 };
 
 #endif // ELSE_H

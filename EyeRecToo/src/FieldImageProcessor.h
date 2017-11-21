@@ -102,7 +102,7 @@ public:
         tmp.append(gDataSeparator);
         tmp.append(prefix + "markers");
         tmp.append(gDataSeparator);
-        tmp.append(prefix + "processingTimestamp");
+		tmp.append(prefix + "processingTime");
         tmp.append(gDataSeparator);
         return tmp;
     }
