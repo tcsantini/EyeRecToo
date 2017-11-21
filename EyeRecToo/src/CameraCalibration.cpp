@@ -220,26 +220,31 @@ void CameraCalibration::calibrate()
 	calculateBoardCorners(objectPoints[0]);
 	objectPoints.resize(imagePoints.size(),objectPoints[0]);
 
-	Mat rv, tv;
-	if (fishEyeCB->isChecked()) {
-		int fisheyeFlags = 0;
-		fisheyeFlags |= fisheye::CALIB_RECOMPUTE_EXTRINSIC;
-		fisheyeFlags |= fisheye::CALIB_CHECK_COND;
-		fisheyeFlags |= fisheye::CALIB_FIX_SKEW;
-		rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv, fisheyeFlags);
-		fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1, imageSize);
-		fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
-							newCameraMatrix, imageSize, CV_16SC2,
-							map1, map2);
-	} else {
-		rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
-		newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize);
-		initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
-							newCameraMatrix, imageSize, CV_16SC2,
-							map1, map2
-							);
+	try {
+		Mat rv, tv;
+		if (fishEyeCB->isChecked()) {
+			int fisheyeFlags = 0;
+			fisheyeFlags |= fisheye::CALIB_RECOMPUTE_EXTRINSIC;
+			fisheyeFlags |= fisheye::CALIB_CHECK_COND;
+			fisheyeFlags |= fisheye::CALIB_FIX_SKEW;
+			rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv, fisheyeFlags);
+			fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1, imageSize);
+			fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
+								newCameraMatrix, imageSize, CV_16SC2,
+								map1, map2);
+		} else {
+			rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
+			newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize);
+			initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
+								newCameraMatrix, imageSize, CV_16SC2,
+								map1, map2
+								);
+		}
+		calibrationSuccessful = true;
+	} catch (cv::Exception &e) {
+		qWarning() << "Calibration failed:" << e.what();
+		calibrationSuccessful = false;
 	}
-	calibrationSuccessful = true;
 }
 
 void CameraCalibration::store(const QString &fileName)

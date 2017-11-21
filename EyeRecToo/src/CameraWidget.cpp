@@ -471,7 +471,8 @@ void CameraWidget::onCameraCalibrationFinished(bool success)
 		return;
 	// TODO: at some point we might consider storing this with a unique camera ID instead of this generic one
 	QString fileName = gCfgDir + "/" + id + "Calibration.xml";
-	QMetaObject::invokeMethod(cameraCalibration, "store", Qt::QueuedConnection, Q_ARG(QString, fileName));
+	// Do the store here with a direct call to guarantee it will be done before the updateConfig
+	QMetaObject::invokeMethod(cameraCalibration, "store", Qt::DirectConnection, Q_ARG(QString, fileName));
 	QMetaObject::invokeMethod(imageProcessor,  "updateConfig", Qt::QueuedConnection);
 }
 
