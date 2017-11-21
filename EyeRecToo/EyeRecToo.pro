@@ -41,7 +41,8 @@ SOURCES +=\
     $${TOP}/src/PerformanceMonitor.cpp \
     $${TOP}/src/PerformanceMonitorWidget.cpp \
 	$${TOP}/src/CameraCalibration.cpp \
-	$${TOP}/src/pupil-detection/PupilDetectionMethod.cpp
+	$${TOP}/src/pupil-detection/PupilDetectionMethod.cpp \
+	$${TOP}/src/Overlay.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -68,7 +69,8 @@ HEADERS  += \
     $${TOP}/src/LogWidget.h \
     $${TOP}/src/PerformanceMonitor.h \
     $${TOP}/src/PerformanceMonitorWidget.h \
-	$${TOP}/src/CameraCalibration.h
+	$${TOP}/src/CameraCalibration.h \
+	$${TOP}/src/Overlay.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \

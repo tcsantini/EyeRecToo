@@ -124,7 +124,6 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
 	// Initial roi
 	setROI( QPointF(0.1, 0.1), QPointF(0.9, 0.9) );
 
-	font.setStyleHint(QFont::Monospace);
     QMetaObject::invokeMethod(camera, "loadCfg");
 }
 
@@ -172,7 +171,6 @@ void CameraWidget::preview(Timestamp t, const cv::Mat &frame)
     QImage scaled = previewImage(frame);
 
     QPainter painter(&scaled);
-    drawROI(painter);
     ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
 }
 
@@ -189,12 +187,23 @@ void CameraWidget::preview(EyeData data)
 
 	updateWidgetSize(data.input.cols, data.input.rows);
 
-    QImage scaled = previewImage(data.input);
+	QImage scaled = previewImage(data.input);
+	QRectF userROI = {
+			QPointF( ui->viewFinder->width()*sROI.x(), ui->viewFinder->height()*sROI.y() ),
+			QPointF( ui->viewFinder->width()*(eROI.x()), ui->viewFinder->height()*(eROI.y()) )
+		};
+	QRectF coarseROI = {
+		QPointF(
+			ui->viewFinder->width() * data.coarseROI.tl().x / (float) data.input.cols,
+			ui->viewFinder->height() * data.coarseROI.tl().y / (float) data.input.rows
+			),
+		QPointF(
+			ui->viewFinder->width() * data.coarseROI.br().x / (float) data.input.cols,
+			ui->viewFinder->height() * data.coarseROI.br().y / (float) data.input.rows
+			)
+		};
 
-    QPainter painter(&scaled);
-    drawROI(painter);
-    if (data.validPupil)
-        drawPupil(data.pupil, painter);
+	eyeOverlay.drawOverlay(data, userROI, coarseROI, scaled);
 	ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
 
 	sendCameraCalibrationSample(data.input);
@@ -216,25 +225,16 @@ void CameraWidget::preview(const DataTuple &data)
     if (!isDataRecent(data.field.timestamp))
         return;
 
-	Mat input = data.field.input;
+	Mat input;
+	if (data.showGazeEstimationVisualization && !data.gazeEstimationVisualization.empty())
+		input = data.gazeEstimationVisualization;
+	else
+		input = data.field.input;
 
 	updateWidgetSize(input.cols, input.rows);
 
-    if (data.showGazeEstimationVisualization) {
-        if (data.gazeEstimationVisualization.empty())
-            return;
-        input = data.gazeEstimationVisualization;
-	}
-
-    QImage scaled = previewImage(input);
-
-    QPainter painter(&scaled);
-    for (int i=0; i<data.field.markers.size(); i++)
-        drawMarker(data.field.markers[i], painter, Qt::cyan);
-    if (data.field.collectionMarker.id != -1)
-        drawMarker(data.field.collectionMarker, painter, Qt::green);
-    if (data.field.validGazeEstimate)
-        drawGaze(data.field, painter);
+	QImage scaled = previewImage(input);
+	fieldOverlay.drawOverlay(data, scaled);;
 	ui->viewFinder->setPixmap(QPixmap::fromImage(scaled));
 
 	sendCameraCalibrationSample(input);
@@ -330,7 +330,7 @@ void CameraWidget::mousePressEvent(QMouseEvent *event)
             validatePoint(sROI);
             sROI.setX( sROI.x() / ui->viewFinder->width());
             sROI.setY( sROI.y() / ui->viewFinder->height());
-            eROI = QPointF();
+			eROI = sROI;
             settingROI = true;
         }
     }
@@ -446,14 +446,7 @@ QImage CameraWidget::previewImage(const cv::Mat &frame)
 	 * option with QImages, according to http://doc.qt.io/qt-5/qimage.html
 	 *
 	 */
-	QImage scaled = QImage(resized.data, resized.cols, resized.rows, (int) resized.step, QImage::Format_RGB888);
-
-    rw = scaled.width() / (float) frame.cols;
-    rh = scaled.height() / (float) frame.rows;
-    refPx = 0.01*max<int>(frame.cols, frame.rows);
-    refPx = max<double>(refPx, 1.0);
-
-    return scaled;
+	return QImage(resized.data, resized.cols, resized.rows, (int) resized.step, QImage::Format_RGB888);
 }
 
 void CameraWidget::sendCameraCalibrationSample(const cv::Mat &frame)
@@ -476,77 +469,6 @@ void CameraWidget::onCameraCalibrationFinished(bool success)
 	QMetaObject::invokeMethod(imageProcessor,  "updateConfig", Qt::QueuedConnection);
 }
 
-void CameraWidget::drawROI(QPainter &painter)
-{
-    QPen pen(Qt::green, 1, Qt::DotLine);
-    painter.setPen(pen);
-    if (sROI.isNull() || eROI.isNull())
-        return;
-    painter.drawRect(
-                ui->viewFinder->width()*sROI.x(),
-                ui->viewFinder->height()*sROI.y(),
-                ui->viewFinder->width()*(eROI.x()-sROI.x()),
-                ui->viewFinder->height()*(eROI.y()-sROI.y())
-                );
-}
-
-void CameraWidget::drawPupil(const cv::RotatedRect ellipse, QPainter &painter)
-{
-
-    painter.scale(rw, rh);
-    painter.setPen(QPen(Qt::green, 0.75*refPx, Qt::SolidLine));
-    painter.setBrush(Qt::green);
-    // center
-    double r = 0.5*refPx;
-    painter.drawEllipse(QPointF(ellipse.center.x, ellipse.center.y), r, r);
-    painter.setBrush(QBrush(Qt::NoBrush));
-    // outline
-    if (ellipse.size.width > 0 && ellipse.size.height > 0){
-        painter.translate(ellipse.center.x, ellipse.center.y);
-        painter.rotate(ellipse.angle);
-        painter.drawEllipse( -0.5*ellipse.size.width, -0.5*ellipse.size.height, ellipse.size.width, ellipse.size.height );
-    }
-    painter.resetTransform();
-}
-
-void CameraWidget::drawMarker(const Marker &marker, QPainter &painter, QColor color)
-{
-    painter.setPen(QPen(color, 0.25*refPx, Qt::SolidLine));
-    font.setPointSize(2*refPx);
-    painter.setFont(font);
-
-    painter.scale(rw, rh);
-
-    QPointF contour[4];
-    for (unsigned int i=0; i<4; i++)
-        contour[i] = QPointF(marker.corners[i].x, marker.corners[i].y);
-    painter.drawConvexPolygon(contour, 4);
-    int delta = 10*refPx;
-    painter.drawText(
-                QRectF(marker.center.x-delta/2, marker.center.y-delta/2, delta, delta),
-                Qt::AlignCenter|Qt::TextWordWrap,
-                QString("%1\n(%2)").arg(marker.id).arg(marker.center.z, 0, 'g', 2)
-            );
-    //painter.drawText(marker.center.x, marker.center.y, QString("%1 (%2)").arg(marker.id).arg(marker.center.z, 0, 'g', 2));
-    //for (int i=0; i<4; i++)
-    //    painter.drawText(contour[i], QString::number(i));
-    painter.drawPoint(marker.center.x, marker.center.y);
-    painter.resetTransform();
-}
-
-void CameraWidget::drawGaze(const FieldData &field, QPainter &painter)
-{
-    painter.setPen(QPen(Qt::red, 0.5*refPx, Qt::SolidLine));
-    double radius = 2.5*refPx; // TODO: change based on evaluation error :-)
-    painter.scale(rw, rh);
-    if (radius > 0) {
-        painter.drawEllipse(field.gazeEstimate.x - radius, field.gazeEstimate.y - radius , 2*radius, 2*radius);
-        painter.drawLine( field.gazeEstimate.x, 0, field.gazeEstimate.x, field.width );
-        painter.drawLine( 0, field.gazeEstimate.y, field.width, field.gazeEstimate.y );
-    }
-    painter.resetTransform();
-}
-
 void CameraWidget::updateWidgetSize(const int &width, const int &height)
 {
 	// Logic to limit the size of the camera widgets
@@ -561,3 +483,10 @@ void CameraWidget::updateWidgetSize(const int &width, const int &height)
 	else
 		this->setMaximumSize( maxSize );
 }
+
+
+/*
+ * Drawing Functions
+ */
+
+

@@ -25,6 +25,8 @@
 
 #include "utils.h"
 
+#include "Overlay.h"
+
 namespace Ui {
 class CameraWidget;
 }
@@ -106,15 +108,11 @@ private:
 	QSize frameSize = { 0, 0 };
 	void updateWidgetSize( const int &width, const int &height);
 
-	// Drawing functions
+	// Drawing functionality
 	cv::Mat rgb, resized;
-    double rw, rh;
-    double refPx;
-    QFont font;
-    void drawROI(QPainter &painter);
-    void drawPupil(const cv::RotatedRect ellipse, QPainter &painter);
-    void drawMarker(const Marker &marker, QPainter &painter, QColor color);
-	void drawGaze(const FieldData &field, QPainter &painter);
+	EyeOverlay eyeOverlay;
+	FieldOverlay fieldOverlay;
+
 
 protected:
 	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
