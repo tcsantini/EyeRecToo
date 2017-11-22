@@ -8,22 +8,21 @@
 #include <QFormLayout>
 #include <QLabel>
 
+#include "ERWidget.h"
+
 #include "utils.h"
 
 namespace Ui {
 class PerformanceMonitorWidget;
 }
 
-class PerformanceMonitorWidget : public QMainWindow
+class PerformanceMonitorWidget : public ERWidget
 {
     Q_OBJECT
 
 public:
     explicit PerformanceMonitorWidget(QWidget *parent = 0);
 	~PerformanceMonitorWidget();
-
-signals:
-	void closed();
 
 private:
     Ui::PerformanceMonitorWidget *ui;
@@ -38,9 +37,6 @@ private:
 private slots:
     void update();
 	void on_resetCounters_clicked();
-
-protected:
-	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // PERFORMANCEMONITORWIDGET_H

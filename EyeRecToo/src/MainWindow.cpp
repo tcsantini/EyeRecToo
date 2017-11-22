@@ -1,8 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-// TODO: refactor MainWindow into a config aware class that can be shared by the
-// widgets. Also add the gui interface there.
+// TODO: factor config aware class into ERWidget
 
 void MainWindow::createExtraMenus()
 {
@@ -11,7 +10,7 @@ void MainWindow::createExtraMenus()
 }
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+	ERWidget(parent),
     lEyeWidget(NULL),
     rEyeWidget(NULL),
     fieldWidget(NULL),
@@ -55,14 +54,10 @@ MainWindow::MainWindow(QWidget *parent) :
     lEyeWidget = new CameraWidget("LeftEye", ImageProcessor::Eye);
     lEyeWidget->setWindowIcon(QIcon(":/icons/lEyeWidget.png"));
 	setupWidget(lEyeWidget, cfg.leftEyeWidgetPos, cfg.leftEyeWidgetSize, cfg.leftEyeWidgetVisible, ui->leftEyeCam);
-	connect(lEyeWidget, SIGNAL(closed()),
-			this, SLOT(lEyeWidgetClosed()) );
 	QThread::msleep(200);
     rEyeWidget = new CameraWidget("RightEye", ImageProcessor::Eye);
     rEyeWidget->setWindowIcon(QIcon(":/icons/rEyeWidget.png"));
     setupWidget(rEyeWidget, cfg.rightEyeWidgetPos, cfg.rightEyeWidgetSize, cfg.rightEyeWidgetVisible, ui->rightEyeCam);
-	connect(rEyeWidget, SIGNAL(closed()),
-			this, SLOT(rEyeWidgetClosed()) );
 	QThread::msleep(200);
     fieldWidget = new CameraWidget("Field", ImageProcessor::Field);
     fieldWidget->setWindowIcon(QIcon(":/icons/fieldWidget.png"));
@@ -132,12 +127,26 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(startRecording()),
             journal, SIGNAL(startRecording()) );
     connect(this, SIGNAL(stopRecording()),
-            journal, SIGNAL(stopRecording()) );
+			journal, SIGNAL(stopRecording()) );
 
     loadSoundEffect(recStartSound, "rec-start.wav");
     loadSoundEffect(recStopSound, "rec-stop.wav");
 
-    setupWidget(this, cfg.mainWindowPos, cfg.mainWindowSize, true);
+	setupWidget(this, cfg.mainWindowPos, cfg.mainWindowSize, true);
+
+	// Commands
+	connect(&commandManager, SIGNAL(toggleCalibration()),
+			gazeEstimationWidget, SLOT(toggleCalibration()) );
+	connect(&commandManager, SIGNAL(enableMarkerCollection()),
+			gazeEstimationWidget, SLOT(enableMarkerCollection()) );
+	connect(&commandManager, SIGNAL(disableMarkerCollection()),
+			gazeEstimationWidget, SLOT(disableMarkerCollection()) );
+	connect(&commandManager, SIGNAL(toggleRecording()),
+			this, SLOT(toggleRecording()) );
+	connect(&commandManager, SIGNAL(freezeCameraImages()),
+			this, SLOT(freezeCameraImages()) );
+	connect(&commandManager, SIGNAL(unfreezeCameraImages()),
+			this, SLOT(unfreezeCameraImages()) );
 }
 
 MainWindow::~MainWindow()
@@ -444,34 +453,19 @@ void MainWindow::on_performanceMonitor_clicked()
     widgetButtonReact(performanceMonitorWidget, ui->performanceMonitor->isChecked());
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *event)
+void MainWindow::freezeCameraImages()
 {
-    if (event->isAutoRepeat())
-        return;
-    switch (event->key()) {
-        case Qt::Key_F:
-            disconnect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
-                fieldWidget, SLOT(preview(DataTuple)) );
-            break;
-        default:
-            break;
-    }
+	disconnect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
+		fieldWidget, SLOT(preview(DataTuple)) );
+	// TODO: freeze eye cameras
 }
 
-void MainWindow::keyReleaseEvent(QKeyEvent *event)
+void MainWindow::unfreezeCameraImages()
 {
-    if (event->isAutoRepeat())
-        return;
-    switch (event->key()) {
-        case Qt::Key_F:
-            connect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
-                fieldWidget, SLOT(preview(DataTuple)) );
-            break;
-        default:
-            break;
-    }
+	connect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
+		fieldWidget, SLOT(preview(DataTuple)) );
+	// TODO: unfreeze eye cameras
 }
-
 
 void MainWindow::menuOption(QAction* action)
 {
@@ -546,7 +540,7 @@ void MainWindow::showAboutDialog()
     QMessageBox::about(this, "About", msg);
 }
 
-void MainWindow::setupWidget(QMainWindow *window, QPoint &position, const QSize &size, const bool &visible, QPushButton *button)
+void MainWindow::setupWidget(ERWidget *widget, QPoint &position, const QSize &size, const bool &visible, QPushButton *button)
 {
     // Sanitize position first
     bool inScreen = false;
@@ -556,14 +550,19 @@ void MainWindow::setupWidget(QMainWindow *window, QPoint &position, const QSize 
     if (!inScreen)
         position = QApplication::desktop()->screenGeometry().topLeft();
 
-    window->move(position);
-    window->resize(size);
+	widget->move(position);
+	widget->resize(size);
 
     if (visible)
-        window->show();
+		widget->show();
 
     if (button)
 		button->setChecked(visible);
+
+	connect(widget, SIGNAL(keyPress(QKeyEvent*)),
+			&commandManager, SLOT(keyPress(QKeyEvent*)) );
+	connect(widget, SIGNAL(keyRelease(QKeyEvent*)),
+			&commandManager, SLOT(keyRelease(QKeyEvent*)) );
 }
 
 void MainWindow::logWidgetClosed() { ui->log->setChecked(false); }
@@ -572,3 +571,12 @@ void MainWindow::rEyeWidgetClosed() { ui->rightEyeCam->setChecked(false); }
 void MainWindow::fieldWidgetClosed() { ui->fieldCam->setChecked(false); }
 void MainWindow::gazeEstimationWidgetClosed() { ui->gazeEstimation->setChecked(false); }
 void MainWindow::performanceMonitorWidgetClosed() { ui->performanceMonitor->setChecked(false); }
+
+void MainWindow::toggleRecording()
+{
+	if ( ! ui->recordingToggle->isChecked()) {
+		if (ui->subject->text().isEmpty()) // Unset remote recording
+			setSubjectName("remote");
+	}
+	ui->recordingToggle->click();
+}

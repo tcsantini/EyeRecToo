@@ -4,7 +4,7 @@
 using namespace std;
 
 PerformanceMonitorWidget::PerformanceMonitorWidget(QWidget *parent) :
-    QMainWindow(parent),
+	ERWidget(parent),
     updateTimeMs(250),
     formLayout(NULL),
     ui(new Ui::PerformanceMonitorWidget)

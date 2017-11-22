@@ -605,7 +605,7 @@ void GazeEstimation::drawGazeEstimationInfo(DataTuple &dataTuple)
     dataTuple.showGazeEstimationVisualization = true;
 
     // frame is already old; display old visualization instead to save processing
-    if (current - dataTuple.field.timestamp > 100)
+	if (current - dataTuple.field.timestamp > 100)
         return;
 
     vis  = dataTuple.field.input.clone();

@@ -14,6 +14,8 @@
 #include <QDesktopWidget>
 #include <QDebug>
 
+#include "ERWidget.h"
+
 #include "CameraWidget.h"
 #include "Synchronizer.h"
 
@@ -24,6 +26,8 @@
 
 #include "LogWidget.h"
 #include "PerformanceMonitorWidget.h"
+
+#include "CommandManager.h"
 
 #include "utils.h"
 
@@ -134,7 +138,7 @@ namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+class MainWindow : public ERWidget
 {
     Q_OBJECT
 
@@ -160,7 +164,8 @@ private:
     DataRecorderThread *journal;
     NetworkStream * networkStream;
     LogWidget *logWidget;
-    PerformanceMonitorWidget *performanceMonitorWidget;
+	PerformanceMonitorWidget *performanceMonitorWidget;
+	CommandManager commandManager;
 
     QElapsedTimer elapsedTime;
     int elapsedTimeUpdateTimer;
@@ -173,7 +178,7 @@ private:
     void setWorkingDirectory(QString dir);
     void widgetButtonReact(QMainWindow *window, bool checked);
 	void createExtraMenus();
-	void setupWidget(QMainWindow *window, QPoint &position, const QSize &size, const bool &visible=true, QPushButton *button=NULL);
+	void setupWidget(ERWidget *widget, QPoint &position, const QSize &size, const bool &visible=true, QPushButton *button=NULL);
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -188,15 +193,17 @@ private slots:
     void on_fieldCam_clicked();
     void on_gazeEstimation_clicked();
 
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
-    void effectiveRecordingStart();
+	void effectiveRecordingStart();
 
     void menuOption(QAction*);
     void showReferencesDialog();
     void showAboutDialog();
     void on_log_clicked();
 	void on_performanceMonitor_clicked();
+
+	void toggleRecording();
+	void freezeCameraImages();
+	void unfreezeCameraImages();
 
 	void logWidgetClosed();
 	void lEyeWidgetClosed();

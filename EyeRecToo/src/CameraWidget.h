@@ -10,6 +10,8 @@
 #include <QFont>
 #include <QMessageBox>
 
+#include "ERWidget.h"
+
 #include "opencv2/imgproc.hpp"
 #include "opencv2/calib3d.hpp"
 
@@ -31,7 +33,7 @@ namespace Ui {
 class CameraWidget;
 }
 
-class CameraWidget : public QMainWindow, InputWidget
+class CameraWidget : public ERWidget, InputWidget
 {
     Q_OBJECT
 
@@ -45,7 +47,6 @@ signals:
     void newData(EyeData data);
     void newData(FieldData data);
 	void newClick(Timestamp,QPoint,QSize);
-	void closed();
 
 public slots:
     void preview(Timestamp t, const cv::Mat &frame);
@@ -113,9 +114,6 @@ private:
 	EyeOverlay eyeOverlay;
 	FieldOverlay fieldOverlay;
 
-
-protected:
-	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // CAMERAWIDGET_H

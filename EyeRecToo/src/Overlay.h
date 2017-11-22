@@ -10,7 +10,7 @@
 
 class Overlay {
 protected:
-	Overlay() {  font.setStyleHint(QFont::Monospace); qDebug() << "Called"; }
+	Overlay() { font.setStyleHint(QFont::Monospace); }
 	void epilogue(const cv::Mat &frame, QPaintDevice &paintDevice) {
 		painter.begin(&paintDevice);
 		scale = { paintDevice.width() / (float) frame.cols, paintDevice.height() / (float) frame.rows };

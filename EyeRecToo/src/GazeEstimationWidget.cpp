@@ -9,7 +9,7 @@ static int gVectorCollectionTupleId = qRegisterMetaType<std::vector<CollectionTu
 static int gCollectionTupleTypeId = qRegisterMetaType<CollectionTuple::TupleType>("CollectionTuple::TupleType");
 
 GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
-    QMainWindow(parent),
+	ERWidget(parent),
     isCollecting(false),
     isSampling(false),
     lastStatus(false),
@@ -284,6 +284,7 @@ void GazeEstimationWidget::on_collectionTypeComboBox_currentIndexChanged(int ind
     currentTupleType = static_cast<CollectionTuple::TupleType>( ui->collectionTypeComboBox->itemData(index).toInt() );
 }
 
+/*
 void GazeEstimationWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->isAutoRepeat())
@@ -316,6 +317,29 @@ void GazeEstimationWidget::keyReleaseEvent(QKeyEvent *event)
             break;
     }
 }
+*/
+
+void GazeEstimationWidget::toggleCalibration()
+{
+	ui->startFinishButton->click();
+	//ui->startFinishButton->setChecked(!ui->startFinishButton->isChecked());
+}
+
+void GazeEstimationWidget::enableMarkerCollection()
+{
+	if (isCollecting) {
+		connect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
+		collectedSound.play();
+	}
+}
+
+void GazeEstimationWidget::disableMarkerCollection()
+{
+	disconnect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
+	if (isCollecting)
+		collectedSound.play();
+}
+
 void GazeEstimationWidget::collectMarkerTuple(DataTuple dataTuple)
 {
     if (dataTuple.field.collectionMarker.id == -1)

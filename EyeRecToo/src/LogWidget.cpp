@@ -2,7 +2,7 @@
 #include "ui_LogWidget.h"
 
 LogWidget::LogWidget(QWidget *parent) :
-    QMainWindow(parent),
+	ERWidget(parent),
     ui(new Ui::LogWidget)
 {
     ui->setupUi(this);

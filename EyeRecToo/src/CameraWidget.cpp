@@ -5,7 +5,7 @@ using namespace std;
 using namespace cv;
 
 CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *parent) :
-    QMainWindow(parent),
+	ERWidget(parent),
     id(id),
     type(type),
     sROI(QPoint(0,0)),
@@ -482,10 +482,3 @@ void CameraWidget::updateWidgetSize(const int &width, const int &height)
 	else
 		this->setMaximumSize( maxSize );
 }
-
-
-/*
- * Drawing Functions
- */
-
-

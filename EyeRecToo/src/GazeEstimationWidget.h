@@ -9,6 +9,8 @@
 #include <QKeyEvent>
 #include <QSoundEffect>
 
+#include "ERWidget.h"
+
 #include "Synchronizer.h"
 #include "GazeEstimation.h"
 
@@ -16,7 +18,7 @@ namespace Ui {
 class GazeEstimationWidget;
 }
 
-class GazeEstimationWidget : public QMainWindow
+class GazeEstimationWidget : public ERWidget
 {
     Q_OBJECT
 
@@ -35,9 +37,11 @@ signals:
     void loadTuplesFromFile(CollectionTuple::TupleType type, QString fileName);
     void calibrationRequest();
     void setCalibrating(bool v);
-	void closed();
 
 public slots:
+	void toggleCalibration();
+	void enableMarkerCollection();
+	void disableMarkerCollection();
 
 private:
     QThread *gazeEstimationThread;
@@ -56,10 +60,11 @@ private:
 
     QLabel *statusBarLabel;
 
-    QSoundEffect startSound, successSound, failureSound, collectedSound;
+	QSoundEffect startSound, successSound, failureSound, collectedSound;
+
 
 private slots:
-    void startSampling(Timestamp timestamp, QPoint calibrationPoint, QSize previewSize);
+	void startSampling(Timestamp timestamp, QPoint calibrationPoint, QSize previewSize);
     void newSample(DataTuple dataTuple);
     void finishSampling();
     void collectMarkerTuple(DataTuple dataTuple);
@@ -69,9 +74,6 @@ private slots:
     void on_loadTuples_clicked();
     void on_startFinishButton_toggled(bool checked);
     void on_collectionTypeComboBox_currentIndexChanged(int index);
-
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
 
     void updateConfig();
     void on_samplingTimeMsCheckBox_editingFinished();
@@ -90,8 +92,6 @@ private slots:
     void on_visualizationGroupBox_toggled(bool arg1);
 	void on_visualizationTimeSpinBox_valueChanged(int arg1);
 
-protected:
-	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
 };
 
 #endif // GAZEESTIMATIONWIDGET_H

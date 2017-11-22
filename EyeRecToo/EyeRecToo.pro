@@ -42,7 +42,9 @@ SOURCES +=\
     $${TOP}/src/PerformanceMonitorWidget.cpp \
 	$${TOP}/src/CameraCalibration.cpp \
 	$${TOP}/src/pupil-detection/PupilDetectionMethod.cpp \
-	$${TOP}/src/Overlay.cpp
+	$${TOP}/src/Overlay.cpp \
+	$${TOP}/src/CommandManager.cpp \
+	$${TOP}/src/ERWidget.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -70,7 +72,9 @@ HEADERS  += \
     $${TOP}/src/PerformanceMonitor.h \
     $${TOP}/src/PerformanceMonitorWidget.h \
 	$${TOP}/src/CameraCalibration.h \
-	$${TOP}/src/Overlay.h
+	$${TOP}/src/Overlay.h \
+	$${TOP}/src/CommandManager.h \
+	$${TOP}/src/ERWidget.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \
