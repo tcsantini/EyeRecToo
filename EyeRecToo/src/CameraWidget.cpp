@@ -122,8 +122,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             imageProcessor, SIGNAL(newROI(QPointF,QPointF)) );
 
 	// Initial roi
-	setROI( QPointF(0.1, 0.1), QPointF(0.9, 0.9) );
-
+	setROI( QPointF(0, 0), QPointF(1, 1) );
     QMetaObject::invokeMethod(camera, "loadCfg");
 }
 
