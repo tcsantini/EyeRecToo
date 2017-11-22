@@ -7,6 +7,9 @@ using namespace std;
 
 // TODO: handle user closing the calibration window during calibration
 
+// TODO: move rectified map initialization and undistortion to a single interface;
+// use this interface where appropriate (e.g., the image processors).
+
 void CameraCalibration::toggleCalibration(bool status)
 {
 	Q_UNUSED(status);
