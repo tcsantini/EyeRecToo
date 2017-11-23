@@ -2,6 +2,8 @@
 
 #include <QDebug>
 
+// TODO: make these keys configurable
+
 void CommandManager::keyPress(QKeyEvent *event)
 {
 	if (event->isAutoRepeat())
@@ -16,6 +18,7 @@ void CommandManager::keyPress(QKeyEvent *event)
 			emit toggleCalibration();
 			break;
 		case Qt::Key_R:
+		case Qt::Key_B:
 			emit toggleRecording();
 			break;
 		case Qt::Key_F:
