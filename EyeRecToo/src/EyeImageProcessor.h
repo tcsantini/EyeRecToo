@@ -18,6 +18,7 @@
 
 #include "InputWidget.h"
 
+#include "pupil-detection/PuRe.h"
 #include "pupil-detection/ElSe.h"
 #include "pupil-detection/ExCuSe.h"
 #ifdef STARBURST
@@ -27,6 +28,9 @@
 #include "pupil-detection/Swirski.h"
 #endif
 #include "pupil-detection/PupilDetectionMethod.h"
+
+#include "pupil-tracking/PuReTy.h"
+#include "pupil-tracking/PupilTrackingMethod.h"
 
 #include "utils.h"
 
@@ -94,7 +98,7 @@ public:
     }
 };
 
-Q_DECLARE_METATYPE(EyeData)
+Q_DECLARE_METATYPE(EyeData);
 
 
 class EyeImageProcessorConfig
@@ -107,7 +111,7 @@ public:
 		  undistort(false),
 		  coarseDetection(true),
           processingDownscalingFactor(2),
-          pupilDetectionMethod(ElSe::desc.c_str())
+		  pupilDetectionMethod(PuRe::desc.c_str())
     {}
 
     cv::Size inputSize;
@@ -282,7 +286,7 @@ signals:
     void newData(EyeData data);
 
 public slots:
-    void process(Timestamp t, const cv::Mat &frame);
+	void process(Timestamp t, const cv::Mat &frame);
 	void updateConfig();
 	void newROI(QPointF sROI, QPointF eROI);
 
@@ -294,6 +298,7 @@ private:
     QPointF sROI, eROI;
 
     PupilDetectionMethod *pupilDetectionMethod;
+	PupilTrackingMethod *pupilTrackingMethod;
 
     unsigned int pmIdx;
 };

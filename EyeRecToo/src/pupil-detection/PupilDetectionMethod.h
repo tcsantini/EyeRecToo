@@ -1,6 +1,9 @@
 #ifndef PUPILDETECTIONMETHOD_H
 #define PUPILDETECTIONMETHOD_H
 
+#include <QMetaType>
+#include <QDebug>
+
 #include <string>
 #include <deque>
 
@@ -52,10 +55,13 @@ public:
 			confidence > confidenceThreshold;
 	}
 
-	bool hasOutline() const {
-		return size.width > 0 && size.height > 0;
-	}
+	bool hasOutline() const { return size.width > 0 && size.height > 0; }
+	int majorAxis() const { return std::max<int>(size.width, size.height); }
+	int minorAxis() const { return std::min<int>(size.width, size.height); }
+	int diameter() const { return majorAxis(); }
 };
+
+Q_DECLARE_METATYPE(Pupil);
 
 class PupilDetectionMethod
 {
@@ -73,11 +79,19 @@ public:
 		pupil = run(frame);
 		pupil.confidence = 1;
     }
-	virtual void run(const cv::Mat &frame, const cv::Rect roi, Pupil &pupil, const float &minPupilDiameterPx=-1, const float &maxPupilDiameterPx=-1) {
+	virtual void run(const cv::Mat &frame, const cv::Rect &roi, Pupil &pupil, const float &minPupilDiameterPx=-1, const float &maxPupilDiameterPx=-1) {
 		(void) roi;
 		(void) minPupilDiameterPx;
 		(void) maxPupilDiameterPx;
 		run(frame, pupil);
+	}
+
+	// Pupil detection interface used in the tracking; uses an homogeneous confidence measure
+	Pupil runWithConfidence(const cv::Mat &frame, const cv::Rect &roi, const float &minPupilDiameterPx=-1, const float &maxPupilDiameterPx=-1) {
+		Pupil pupil;
+		run(frame, roi, pupil, minPupilDiameterPx, maxPupilDiameterPx);
+		pupil.confidence = outlineContrastConfidence(frame, pupil);
+		return pupil;
 	}
 
 	// Generic coarse pupil detection
@@ -86,8 +100,10 @@ public:
 	// Generic confidence metrics
 	static float outlineContrastConfidence(const cv::Mat &frame, const Pupil &pupil, const int &bias=5);
 
+	//Pupil test(const cv::Mat &frame, const cv::Rect &roi, Pupil pupil) { return pupil; }
 protected:
 	std::string mDesc;
 };
+
 
 #endif // PUPILDETECTIONMETHOD_H

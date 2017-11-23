@@ -44,7 +44,10 @@ SOURCES +=\
 	$${TOP}/src/pupil-detection/PupilDetectionMethod.cpp \
 	$${TOP}/src/Overlay.cpp \
 	$${TOP}/src/CommandManager.cpp \
-	$${TOP}/src/ERWidget.cpp
+	$${TOP}/src/ERWidget.cpp \
+    src/pupil-tracking/PupiTtrackingMethod.cpp \
+    src/pupil-tracking/PuReTy.cpp \
+    src/pupil-detection/PuRe.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -74,7 +77,10 @@ HEADERS  += \
 	$${TOP}/src/CameraCalibration.h \
 	$${TOP}/src/Overlay.h \
 	$${TOP}/src/CommandManager.h \
-	$${TOP}/src/ERWidget.h
+	$${TOP}/src/ERWidget.h \
+	$${TOP}/src/pupil-tracking/PupilTrackingMethod.h \
+    src/pupil-tracking/PuReTy.h \
+    src/pupil-detection/PuRe.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \

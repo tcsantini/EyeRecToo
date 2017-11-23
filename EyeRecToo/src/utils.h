@@ -15,12 +15,18 @@
 #include <QTextStream>
 #include <QMutex>
 #include <QCameraViewfinderSettings>
+
 #include <QCameraInfo>
+Q_DECLARE_METATYPE(QCameraInfo)
+
 #include <QWidget>
 #include <QSettings>
 #include <QSoundEffect>
 
 #include <opencv/cv.h>
+Q_DECLARE_METATYPE(cv::Rect);
+Q_DECLARE_METATYPE(cv::Mat);
+
 #include <opencv2/imgproc.hpp>
 #include <opencv2/calib3d.hpp>
 
@@ -35,6 +41,7 @@ extern QElapsedTimer gTimer;
 
 typedef qint64 Timestamp;
 extern Timestamp maxTimestamp;
+Q_DECLARE_METATYPE(Timestamp)
 
 extern QString gExeDir;
 extern QString gCfgDir;
@@ -102,5 +109,6 @@ extern LogWidget *gLogWidget;
 extern std::vector<QString> gLogBuffer;
 
 extern PerformanceMonitor gPerformanceMonitor;
+
 
 #endif // UTILS_H

@@ -8,12 +8,14 @@ static int gEyeDataId = qRegisterMetaType<EyeData>("EyeData");
 EyeImageProcessor::EyeImageProcessor(QString id, QObject *parent)
     : id(id),
       pupilDetectionMethod(NULL),
-      sROI(QPointF(0,0)),
+	  pupilTrackingMethod(NULL),
+	  sROI(QPointF(0,0)),
       eROI(QPointF(1,1)),
       QObject(parent)
 {
-    availablePupilDetectionMethods.push_back(new ElSe());
-    availablePupilDetectionMethods.push_back(new ExCuSe());
+	availablePupilDetectionMethods.push_back(new PuRe());
+	availablePupilDetectionMethods.push_back(new ElSe());
+	availablePupilDetectionMethods.push_back(new ExCuSe());
 #ifdef STARBURST
     availablePupilDetectionMethods.push_back(new Starburst());
 #endif
@@ -23,7 +25,9 @@ EyeImageProcessor::EyeImageProcessor(QString id, QObject *parent)
     settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor", QSettings::IniFormat);
     updateConfig();
 
-    pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");
+	pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");
+
+	pupilTrackingMethod = new PuReTy();
 }
 
 void EyeImageProcessor::updateConfig()
@@ -97,7 +101,7 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 		// If the user wants a coarse location and the method has none embedded,
 		// we further constrain the search using the generic one
 		if (!pupilDetectionMethod->hasCoarseLocation() && cfg.coarseDetection) {
-			coarseROI = PupilDetectionMethod::coarsePupilDetection( downscaled );
+			coarseROI = PupilDetectionMethod::coarsePupilDetection( downscaled, 0.5f );
 			data.coarseROI = Rect(
 								 userROI.tl() + coarseROI.tl() / scalingFactor,
 								 userROI.tl() + coarseROI.br() / scalingFactor
@@ -105,12 +109,15 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 		} else
 			data.coarseROI = Rect();
 
-		// Actual detection
-		if (coarseROI.width > 10 && coarseROI.height > 10) { // minimum size otherwise some algorithms might crash
+		bool tracking = true;
+		if (tracking && pupilTrackingMethod) {
+			pupilTrackingMethod->run(timestamp, downscaled, coarseROI, data.pupil, *pupilDetectionMethod);
+		} else {
 			pupilDetectionMethod->run( downscaled, coarseROI, data.pupil );
+			// TODO: expose this to the user
 			if ( ! pupilDetectionMethod->hasConfidence() )
 				data.pupil.confidence = PupilDetectionMethod::outlineContrastConfidence(downscaled, data.pupil);
-        }
+		}
 
 		if (data.pupil.center.x > 0 && data.pupil.center.y > 0) {
 			// Upscale

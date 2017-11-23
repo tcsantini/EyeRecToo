@@ -150,7 +150,7 @@ public:
     }
 };
 
-Q_DECLARE_METATYPE(FieldData)
+Q_DECLARE_METATYPE(FieldData);
 
 class FieldImageProcessorConfig
 {

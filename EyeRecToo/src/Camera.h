@@ -176,8 +176,4 @@ private slots:
     void reset();
 };
 
-Q_DECLARE_METATYPE(cv::Mat)
-Q_DECLARE_METATYPE(QCameraInfo)
-Q_DECLARE_METATYPE(Timestamp)
-
 #endif // CAMERA_H

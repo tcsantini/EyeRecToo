@@ -1731,7 +1731,7 @@ RotatedRect ExCuSe::run(const Mat &frame)
     return runexcuse(&target, &pic_th, &th_edges, 15);
 }
 
-void ExCuSe::run(const cv::Mat &frame, const cv::Rect roi, Pupil &pupil, const float &minPupilDiameterPx, const float &maxPupilDiameterPx)
+void ExCuSe::run(const cv::Mat &frame, const Rect &roi, Pupil &pupil, const float &minPupilDiameterPx, const float &maxPupilDiameterPx)
 {
 	if (roi.area() < 10) {
 		qWarning() << "Bad ROI: falling back to regular detection.";
