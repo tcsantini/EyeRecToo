@@ -42,7 +42,7 @@ Synchronizer::~Synchronizer()
 
 void Synchronizer::newRightEyeData(EyeData eyeData)
 {
-    rEyeList.push_back(eyeData);
+	rEyeList.emplace_back(eyeData);
     if (rEyeList.size() > maxListSize)
         rEyeList.pop_front();
     updated = true;
@@ -52,7 +52,7 @@ void Synchronizer::newRightEyeData(EyeData eyeData)
 
 void Synchronizer::newLeftEyeData(EyeData eyeData)
 {
-    lEyeList.push_back(eyeData);
+	lEyeList.emplace_back(eyeData);
     if (lEyeList.size() > maxListSize)
         lEyeList.pop_front();
     updated = true;
@@ -63,7 +63,7 @@ void Synchronizer::newLeftEyeData(EyeData eyeData)
 
 void Synchronizer::newFieldData(FieldData fieldData)
 {
-    fieldList.push_back(fieldData);
+	fieldList.emplace_back(fieldData);
     if (fieldList.size() > maxListSize)
         fieldList.pop_front();
     updated = true;

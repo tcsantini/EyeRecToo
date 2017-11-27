@@ -476,9 +476,15 @@ void CameraWidget::updateWidgetSize(const int &width, const int &height)
 		return;
 
 	frameSize = newFrameSize;
+	QSize minMaxSize = { 640 , 480 };
 	QSize maxSize = { 960 , 540 };
-	if (frameSize.width() < maxSize.width() && frameSize.height() < maxSize.height() )
+	if (frameSize.width() < maxSize.width() && frameSize.height() < maxSize.height() ) {
+		if (frameSize.width() < minMaxSize.width() && frameSize.height() < minMaxSize.height()) {
+			float ratio = minMaxSize.width() / (float) frameSize.width();
+			frameSize.setWidth(minMaxSize.width());
+			frameSize.setHeight(ratio * minMaxSize.height());
+		}
 		this->setMaximumSize( frameSize );
-	else
+	} else
 		this->setMaximumSize( maxSize );
 }
