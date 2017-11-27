@@ -72,12 +72,14 @@ void FieldOverlay::drawGaze()
 
 	painter.scale(scale.width(), scale.height());
 
-	painter.setPen(QPen( QColor(0, 255, 0, alpha), refPx, Qt::SolidLine));
+	painter.setPen(QPen( QColor(0, 255, 0, alpha), 2*refPx, Qt::SolidLine));
 	double radius = 6*refPx; // TODO: change based on evaluation error :-)
 	if (radius > 0) {
+		radius *= 1.25;
 		painter.drawEllipse(dataTuple->field.gazeEstimate.x - radius, dataTuple->field.gazeEstimate.y - radius , 2*radius, 2*radius);
-		painter.drawLine(dataTuple->field.gazeEstimate.x, 0, dataTuple->field.gazeEstimate.x, dataTuple->field.width );
-		painter.drawLine(0, dataTuple->field.gazeEstimate.y, dataTuple->field.width, dataTuple->field.gazeEstimate.y );
+		//painter.drawEllipse(dataTuple->field.gazeEstimate.x - radius, dataTuple->field.gazeEstimate.y - radius , 2*radius, 2*radius);
+		//painter.drawLine(dataTuple->field.gazeEstimate.x, 0, dataTuple->field.gazeEstimate.x, dataTuple->field.width );
+		//painter.drawLine(0, dataTuple->field.gazeEstimate.y, dataTuple->field.width, dataTuple->field.gazeEstimate.y );
 	}
 
 	painter.resetTransform();

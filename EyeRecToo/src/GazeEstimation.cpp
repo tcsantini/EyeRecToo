@@ -261,8 +261,8 @@ void GazeEstimation::estimate(DataTuple dataTuple)
 
     if (calibrated) {
         GazeEstimationMethod::InputType inputType = cfg.inputType;
-        bool lValid = dataTuple.lEye.pupil.center.x > 0 && dataTuple.lEye.pupil.center.y > 0;
-        bool rValid = dataTuple.rEye.pupil.center.x > 0 && dataTuple.rEye.pupil.center.y > 0;
+		bool lValid = dataTuple.lEye.pupil.center.x > 0 && dataTuple.lEye.pupil.center.y > 0 && dataTuple.lEye.pupil.confidence > 0.66;
+		bool rValid = dataTuple.rEye.pupil.center.x > 0 && dataTuple.rEye.pupil.center.y > 0 && dataTuple.rEye.pupil.confidence > 0.66;
 
         switch(inputType) {
             case GazeEstimationMethod::BINOCULAR:

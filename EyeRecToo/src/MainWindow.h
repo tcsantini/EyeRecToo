@@ -31,6 +31,8 @@
 
 #include "utils.h"
 
+#include "Evaluation.h"
+
 class MainWindowConfig
 {
 public:
@@ -166,6 +168,7 @@ private:
     LogWidget *logWidget;
 	PerformanceMonitorWidget *performanceMonitorWidget;
 	CommandManager commandManager;
+	Evaluation *evaluation;
 
     QElapsedTimer elapsedTime;
     int elapsedTimeUpdateTimer;
@@ -205,12 +208,6 @@ private slots:
 	void freezeCameraImages();
 	void unfreezeCameraImages();
 
-	void logWidgetClosed();
-	void lEyeWidgetClosed();
-	void rEyeWidgetClosed();
-	void fieldWidgetClosed();
-	void gazeEstimationWidgetClosed();
-	void performanceMonitorWidgetClosed();
 };
 
 #endif // MAINWINDOW_H

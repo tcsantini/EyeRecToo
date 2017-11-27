@@ -59,6 +59,11 @@ public:
 	int majorAxis() const { return std::max<int>(size.width, size.height); }
 	int minorAxis() const { return std::min<int>(size.width, size.height); }
 	int diameter() const { return majorAxis(); }
+	float circumference() const {
+		float a = 0.5*majorAxis();
+		float b = 0.5*minorAxis();
+		return CV_PI * abs( 3*(a+b) - sqrt( 10*a*b + 3*( pow(a,2) + pow(b,2) ) ) );
+	}
 };
 
 Q_DECLARE_METATYPE(Pupil);
@@ -86,19 +91,23 @@ public:
 		run(frame, pupil);
 	}
 
-	// Pupil detection interface used in the tracking; uses an homogeneous confidence measure
+	// Pupil detection interface used in the tracking
 	Pupil runWithConfidence(const cv::Mat &frame, const cv::Rect &roi, const float &minPupilDiameterPx=-1, const float &maxPupilDiameterPx=-1) {
 		Pupil pupil;
 		run(frame, roi, pupil, minPupilDiameterPx, maxPupilDiameterPx);
-		pupil.confidence = outlineContrastConfidence(frame, pupil);
+		if ( ! hasConfidence() )
+			pupil.confidence = outlineContrastConfidence(frame, pupil);
 		return pupil;
 	}
+
+	virtual Pupil getNextCandidate() { return Pupil(); }
 
 	// Generic coarse pupil detection
 	static cv::Rect coarsePupilDetection(const cv::Mat &frame, const float &minCoverage=0.5f, const int &workingWidth=80, const int &workingHeight=60);
 
 	// Generic confidence metrics
 	static float outlineContrastConfidence(const cv::Mat &frame, const Pupil &pupil, const int &bias=5);
+	static float edgeRatioConfidence(const cv::Mat &edgeImage, const Pupil &pupil, std::vector<cv::Point> &edgePoints, const int &band=5);
 
 	//Pupil test(const cv::Mat &frame, const cv::Rect &roi, Pupil pupil) { return pupil; }
 protected:

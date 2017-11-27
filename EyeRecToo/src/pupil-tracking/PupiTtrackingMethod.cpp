@@ -10,6 +10,31 @@ void PupilTrackingMethod::reset()
 {
 	previousPupils.clear();
 	previousPupil = TrackedPupil();
+	pupilDiameterKf.statePost.ptr<float>(0)[0] = 0.5*expectedFrameSize.width;
+}
+
+void PupilTrackingMethod::registerPupil( const Timestamp &ts, Pupil &pupil ) {
+	Mat measurement = ( Mat_<float>(1,1) << pupil.majorAxis() );
+	//if (predictedMaxPupilDiameter > 0) {
+	//	float &majorAxis = measurement.ptr<float>(0)[0];
+	//	if ( majorAxis > predictedMaxPupilDiameter) {
+	//		pupil.clear();
+	//		return;
+	//	}
+	//}
+
+	if (pupil.confidence > minDetectionConfidence) {
+		previousPupil = TrackedPupil(ts, pupil);
+		previousPupils.emplace_back( previousPupil );
+		pupilDiameterKf.correct(measurement);
+	} else
+		previousPupil = TrackedPupil();
+
+	//if (pupil.confidence > minDetectionConfidence) {
+	//	previousPupil = TrackedPupil(ts, pupil);
+	//	previousPupils.push_back( previousPupil );
+	//} else
+	//	previousPupil = TrackedPupil();
 }
 
 void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const cv::Rect &roi, Pupil &pupil, PupilDetectionMethod &pupilDetectionMethod)
@@ -29,7 +54,20 @@ void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const c
 			break;
 	}
 
+	pupil.clear();
+	predictMaxPupilDiameter();
 
+	if ( previousPupil.confidence == NO_CONFIDENCE ) {
+		pupil = pupilDetectionMethod.runWithConfidence(frame, roi, -1, predictedMaxPupilDiameter);
+	} else {
+		run(frame, roi, previousPupil, pupil);
+	}
+
+	registerPupil(ts, pupil);
+	return;
+
+
+	/*
 	int minPupilDiameterPx = -1;
 	int maxPupilDiameterPx = -1;
 	if ( ! previousPupils.empty() ) {
@@ -80,24 +118,5 @@ void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const c
 		} else
 			updatePreviousPupil(ts, pupil);
 	}
-
-
-	/*
-		// Track
-		Pupil previousPupil = previousPupils.back();
-		run(frame, previousPupil, pupil);
-
-		if ( ! shouldTrack(pupil, minTrackConfidence) ) {
-			//qDebug() << pupil.confidence << pupil.valid();
-			// Tracking failed, run detection
-			//qDebug() << "tracking failed, detect";
-			detectAndTrack(ts, frame, pupil, pupilDetectionMethod);
-			return;
-		}
-
-		redetect(ts, frame, pupil, pupilDetectionMethod);
-		//qDebug() << (redetect(ts, frame, pupil, pupilDetectionMethod) ? "redetected" : "tracked");
-
-		track(ts, pupil);
-		*/
+	*/
 }

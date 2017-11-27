@@ -111,7 +111,8 @@ public:
 		  undistort(false),
 		  coarseDetection(true),
           processingDownscalingFactor(2),
-		  pupilDetectionMethod(PuRe::desc.c_str())
+		  pupilDetectionMethod(PuRe::desc.c_str()),
+		  tracking(true)
     {}
 
     cv::Size inputSize;
@@ -119,7 +120,8 @@ public:
 	bool undistort;
 	bool coarseDetection;
     double processingDownscalingFactor;
-    QString pupilDetectionMethod;
+	QString pupilDetectionMethod;
+	bool tracking;
 
     void save(QSettings *settings)
     {
@@ -131,7 +133,8 @@ public:
 		settings->setValue("coarseDetection", coarseDetection);
 		settings->setValue("processingDownscalingFactor", processingDownscalingFactor);
         settings->setValue("pupilDetectionMethod", pupilDetectionMethod);
-    }
+		settings->setValue("tracking", tracking);
+	}
 
     void load(QSettings *settings)
     {
@@ -143,7 +146,8 @@ public:
 		set(settings, "coarseDetection", coarseDetection);
 		set(settings, "processingDownscalingFactor", processingDownscalingFactor);
         set(settings, "pupilDetectionMethod", pupilDetectionMethod);
-    }
+		set(settings, "tracking", tracking);
+	}
 };
 
 class EyeImageProcessorUI : public QDialog
@@ -216,7 +220,11 @@ public:
 		formLayout->addRow( new QLabel("Coarse Detection:"), coarseDetectionBox );
 		pupilDetectionComboBox = new QComboBox();
 		formLayout->addRow(pupilDetectionComboBox);
-        layout->addWidget(box);
+		trackingBox = new QCheckBox();
+		trackingBox->setWhatsThis("Track the pupil after detection.");
+		trackingBox->setToolTip(box->whatsThis());
+		formLayout->addRow( new QLabel("Tracking:"), trackingBox );
+		layout->addWidget(box);
 
         applyButton = new QPushButton("Apply");
         applyButton->setWhatsThis("Applies current configuration.");
@@ -248,7 +256,8 @@ public slots:
         for (int i=0; i<pupilDetectionComboBox->count(); i++)
             if (pupilDetectionComboBox->itemData(i).toString() == cfg.pupilDetectionMethod)
                 pupilDetectionComboBox->setCurrentIndex(i);
-        move(pos);
+		trackingBox->setChecked(cfg.tracking);
+		move(pos);
         show();
     }
     void applyConfig()
@@ -260,7 +269,8 @@ public slots:
 		cfg.flip = (CVFlip) flipComboBox->currentData().toInt();
 		cfg.coarseDetection = coarseDetectionBox->isChecked();
         cfg.pupilDetectionMethod = pupilDetectionComboBox->currentData().toString();
-        cfg.save(settings);
+		cfg.tracking = trackingBox->isChecked();
+		cfg.save(settings);
         emit updateConfig();
 	}
 
@@ -271,6 +281,7 @@ private:
 	QCheckBox *coarseDetectionBox;
 	QComboBox *flipComboBox;
 	QDoubleSpinBox *downscalingSB;
+	QCheckBox *trackingBox;
 };
 
 class EyeImageProcessor : public QObject
@@ -281,6 +292,8 @@ public:
     ~EyeImageProcessor();
     QSettings *settings;
     QVector<PupilDetectionMethod*> availablePupilDetectionMethods;
+	EyeImageProcessorConfig cfg;
+	EyeData data;
 
 signals:
     void newData(EyeData data);
@@ -292,15 +305,13 @@ public slots:
 
 private:
     QString id;
-    EyeImageProcessorConfig cfg;
-    QMutex cfgMutex;
-    EyeData data;
+	QMutex cfgMutex;
     QPointF sROI, eROI;
 
     PupilDetectionMethod *pupilDetectionMethod;
 	PupilTrackingMethod *pupilTrackingMethod;
 
-    unsigned int pmIdx;
+	unsigned int pmIdx;
 };
 
 #endif // EYEIMAGEPROCESSOR_H

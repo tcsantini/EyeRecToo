@@ -254,7 +254,8 @@ void GazeEstimationWidget::on_loadTuples_clicked()
 
 void GazeEstimationWidget::on_startFinishButton_toggled(bool checked)
 {
-    if (checked) {
+	if (checked) {
+		gCalibrating = true;
         ui->startFinishButton->setText("Finish");
         statusBarLabel->setText("Calibrating: click on the field widget\nor hold 'c' to collect from marker.");
         statusBarLabel->setStyleSheet("QLabel { color : black; font : bold }");
@@ -267,7 +268,8 @@ void GazeEstimationWidget::on_startFinishButton_toggled(bool checked)
         startSound.play();
         isCollecting = true;
     } else {
-        ui->startFinishButton->setText("Start");
+		gCalibrating = false;
+		ui->startFinishButton->setText("Start");
         ui->loadTuples->setEnabled(true);
         ui->saveTuples->setEnabled(true);
         disconnect(this, SIGNAL(newClick(Timestamp,QPoint,QSize)),

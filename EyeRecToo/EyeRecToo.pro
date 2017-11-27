@@ -47,7 +47,8 @@ SOURCES +=\
 	$${TOP}/src/ERWidget.cpp \
     src/pupil-tracking/PupiTtrackingMethod.cpp \
     src/pupil-tracking/PuReTy.cpp \
-    src/pupil-detection/PuRe.cpp
+    src/pupil-detection/PuRe.cpp \
+    src/Evaluation.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -80,14 +81,16 @@ HEADERS  += \
 	$${TOP}/src/ERWidget.h \
 	$${TOP}/src/pupil-tracking/PupilTrackingMethod.h \
     src/pupil-tracking/PuReTy.h \
-    src/pupil-detection/PuRe.h
+    src/pupil-detection/PuRe.h \
+    src/Evaluation.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \
     $${TOP}/src/CameraWidget.ui \
     $${TOP}/src/GazeEstimationWidget.ui \
     $${TOP}/src/LogWidget.ui \
-    $${TOP}/src/PerformanceMonitorWidget.ui
+    $${TOP}/src/PerformanceMonitorWidget.ui \
+    src/Evaluation.ui
 
 RESOURCES += \
     $${TOP}/resources.qrc
@@ -117,7 +120,8 @@ LIBS += \
     -lopencv_imgcodecs$${CV_SUFFIX} \
     -lopencv_imgproc$${CV_SUFFIX} \
     -lopencv_videoio$${CV_SUFFIX} \
-    -lopencv_aruco$${CV_SUFFIX}
+	-lopencv_video$${CV_SUFFIX} \
+	-lopencv_aruco$${CV_SUFFIX}
 
 # JPEG-TURBO
 contains(DEFINES, TURBOJPEG) {

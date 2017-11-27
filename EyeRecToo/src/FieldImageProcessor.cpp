@@ -83,7 +83,7 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 		downscaled = data.input;
 	}
 
-	if (cfg.markerDetectionMethod == "aruco") {
+	if (cfg.markerDetectionMethod == "aruco" || gCalibrating) {
 
 		detectMarkers(downscaled, dict, corners, ids, detectorParameters);
 

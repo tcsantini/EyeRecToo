@@ -54,8 +54,8 @@ EyeImageProcessor::~EyeImageProcessor()
 void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 {
     // TODO: parametrize frame drop due to lack of processing power
-    if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 50) )
-        return;
+	//if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 50) )
+	//	return;
 
     QMutexLocker locker(&cfgMutex);
 
@@ -109,8 +109,7 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 		} else
 			data.coarseROI = Rect();
 
-		bool tracking = true;
-		if (tracking && pupilTrackingMethod) {
+		if (cfg.tracking && pupilTrackingMethod) {
 			pupilTrackingMethod->run(timestamp, downscaled, coarseROI, data.pupil, *pupilDetectionMethod);
 		} else {
 			pupilDetectionMethod->run( downscaled, coarseROI, data.pupil );

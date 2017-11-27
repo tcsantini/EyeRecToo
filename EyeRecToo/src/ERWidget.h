@@ -11,14 +11,14 @@ public:
 	explicit ERWidget(QWidget *parent = 0);
 
 signals:
-	void closed();
+	void closed(bool b);
 	void keyPress(QKeyEvent *event);
 	void keyRelease(QKeyEvent *event);
 
 public slots:
 
 protected:
-	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(); }
+	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(false); }
 	void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE { emit keyPress(event); }
 	void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE { emit keyRelease(event); }
 };

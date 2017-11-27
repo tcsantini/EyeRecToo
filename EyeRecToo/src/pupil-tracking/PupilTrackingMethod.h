@@ -5,7 +5,9 @@
 #include <deque>
 #include <QFuture>
 
-#include <opencv2/core.hpp>
+#include "opencv2/core.hpp"
+#include "opencv2/video/tracking.hpp"
+
 #include "pupil-detection/PupilDetectionMethod.h"
 
 #include "utils.h"
@@ -29,7 +31,14 @@ public:
 class PupilTrackingMethod
 {
 public:
-	PupilTrackingMethod() {}
+	PupilTrackingMethod() {
+		pupilDiameterKf.init(1, 1);
+		pupilDiameterKf.transitionMatrix = ( cv::Mat_<float>(1, 1) << 1 );
+		cv::setIdentity( pupilDiameterKf.measurementMatrix );
+		cv::setIdentity( pupilDiameterKf.processNoiseCov, cv::Scalar::all(1e-4) );
+		cv::setIdentity( pupilDiameterKf.measurementNoiseCov, cv::Scalar::all(1e-2) );
+		cv::setIdentity( pupilDiameterKf.errorCovPost, cv::Scalar::all(1e-1) );
+	}
 	~PupilTrackingMethod() {}
 
 	// Tracking and detection logic
@@ -56,13 +65,15 @@ protected:
 	float minDetectionConfidence = 0.7f;
 	float minTrackConfidence = 0.9f;
 
-	void updatePreviousPupil( const Timestamp &ts, const Pupil &pupil ) {
-		if (pupil.confidence > minDetectionConfidence) {
-			previousPupil = TrackedPupil(ts, pupil);
-			previousPupils.push_back( previousPupil );
-		} else
-			previousPupil = TrackedPupil();
+	cv::KalmanFilter pupilDiameterKf;
+	float predictedMaxPupilDiameter = -1;
+
+	void predictMaxPupilDiameter() {
+		predictedMaxPupilDiameter = 1.5*pupilDiameterKf.predict().ptr<float>(0)[0];
+		if (previousPupils.size() < 20)
+			predictedMaxPupilDiameter = -1;
 	}
+	void registerPupil(const Timestamp &ts, Pupil &pupil);
 
 	void reset();
 };

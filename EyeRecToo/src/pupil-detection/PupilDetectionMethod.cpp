@@ -404,3 +404,15 @@ float PupilDetectionMethod::outlineContrastConfidence(const Mat &frame, const Pu
 
 	return validCount / (float) evaluated;
 }
+
+float PupilDetectionMethod::edgeRatioConfidence(const Mat &edgeImage, const Pupil &pupil, vector<Point> &edgePoints, const int &band)
+{
+	if (!pupil.valid())
+		return NO_CONFIDENCE;
+	Mat outlineMask = Mat::zeros(edgeImage.rows, edgeImage.cols, CV_8U);
+	ellipse(outlineMask, pupil, Scalar(255), band);
+	Mat inBandEdges = edgeImage.clone();
+	inBandEdges.setTo(0, 255 - outlineMask);
+	findNonZero(inBandEdges, edgePoints);
+	return min<float>( edgePoints.size() / pupil.circumference(), 1.0 );
+}

@@ -110,5 +110,6 @@ extern std::vector<QString> gLogBuffer;
 
 extern PerformanceMonitor gPerformanceMonitor;
 
+extern bool gCalibrating;
 
 #endif // UTILS_H
