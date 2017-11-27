@@ -41,9 +41,9 @@ unsigned int PerformanceMonitor::enrol(const QString &id, const QString &stage)
     return idx;
 }
 
-bool PerformanceMonitor::shouldDrop(const unsigned int &idx, const unsigned int &delay, const unsigned int &maxDelay)
+bool PerformanceMonitor::shouldDrop(const unsigned int &idx, const int &delay, const int &maxDelay)
 {
-    if (delay > maxDelay) {
+	if (delay > maxDelay) {
         droppedFrameCount[idx]++;
         return frameDropEnabled;
     }

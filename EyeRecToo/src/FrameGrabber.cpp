@@ -9,8 +9,8 @@ FrameGrabber::FrameGrabber(QString id, int code, QObject *parent) :
     code(code),
     yuvBuffer(NULL),
     yuvBufferSize(0),
-    timestampOffset(INT_MAX),
-    timeoutMs(2e3)
+	timestampOffset(0),
+	timeoutMs(2e3)
 {
 #ifdef TURBOJPEG
     tjh = tjInitDecompress();
@@ -21,7 +21,7 @@ FrameGrabber::FrameGrabber(QString id, int code, QObject *parent) :
 
     // for the first frame, we give a bit of extra leeway becase gstreamer is slow...
     //watchdog->start(timeoutMs);
-    watchdog->start(15e3);
+	watchdog->start(15e3);
 
     pmIdx = gPerformanceMonitor.enrol(id, "Frame Grabber");
 }
@@ -86,11 +86,15 @@ bool FrameGrabber::present(const QVideoFrame &frame)
     Timestamp t = gTimer.elapsed();
 
     QVariant ft = frame.metaData("timestamp");
-    if (ft.isValid() ) {
-        if (timestampOffset == INT_MAX) // offset between gTimer and frame timer
-            timestampOffset = t - ft.toInt();
-        t = ft.toInt() + timestampOffset;
-    }
+	if (ft.isValid() ) {
+		if ( timestampOffsetEstimators.size() < 30) {
+			// Use median of first N frames to estimate the offset
+			timestampOffsetEstimators.emplace_back( t - ft.toInt() );
+			std::sort(timestampOffsetEstimators.begin(), timestampOffsetEstimators.end());
+			timestampOffset = timestampOffsetEstimators[ 0.5*(timestampOffsetEstimators.size()-1) ];
+		}
+		t = ft.toInt() + timestampOffset;
+	}
 
     if (!frame.isValid())
         return false;
@@ -117,8 +121,8 @@ bool FrameGrabber::present(const QVideoFrame &frame)
     copy.unmap();
 
     if (success && !cvFrame.empty()) {
-        watchdog->start(timeoutMs);
-        emit newFrame(t, cvFrame);
+		watchdog->start(timeoutMs);
+		emit newFrame(t, cvFrame);
     } else
         gPerformanceMonitor.account(pmIdx);
 

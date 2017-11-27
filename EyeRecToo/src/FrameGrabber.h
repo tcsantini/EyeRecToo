@@ -35,7 +35,8 @@ public slots:
 private:
     QTimer *watchdog;
     int timeoutMs;
-    int timestampOffset;
+	Timestamp timestampOffset;
+	std::vector<Timestamp> timestampOffsetEstimators;
 #ifdef TURBOJPEG
     tjhandle tjh;
 #endif
