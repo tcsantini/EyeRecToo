@@ -87,7 +87,7 @@ private:
     QActionGroup *optionsGroup;
     QAction *optionAction;
 
-	std::deque<int> tq;
+	std::deque<Timestamp> tq;
 	Timestamp lastFrameRateUpdate;
     void updateFrameRate(Timestamp t);
 
