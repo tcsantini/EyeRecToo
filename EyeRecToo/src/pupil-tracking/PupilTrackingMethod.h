@@ -68,11 +68,7 @@ protected:
 	cv::KalmanFilter pupilDiameterKf;
 	float predictedMaxPupilDiameter = -1;
 
-	void predictMaxPupilDiameter() {
-		predictedMaxPupilDiameter = 1.5*pupilDiameterKf.predict().ptr<float>(0)[0];
-		if (previousPupils.size() < 20)
-			predictedMaxPupilDiameter = -1;
-	}
+	void predictMaxPupilDiameter();
 	void registerPupil(const Timestamp &ts, Pupil &pupil);
 
 	void reset();

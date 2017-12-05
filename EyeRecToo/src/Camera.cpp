@@ -62,13 +62,13 @@ QCameraViewfinderSettings Camera::getViewfinderSettings(const QCameraInfo camera
     // Recommend based on known cameras
     QString description = cameraInfo.description();
     if (description == "Pupil Cam1 ID0") {
-        recommended.setMaximumFrameRate(120);
-        recommended.setMinimumFrameRate(120);
+		recommended.setMaximumFrameRate(90);
+		recommended.setMinimumFrameRate(90);
         recommended.setResolution(640, 480);
         recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
     } else if (description == "Pupil Cam1 ID1") {
-        recommended.setMaximumFrameRate(120);
-        recommended.setMinimumFrameRate(120);
+		recommended.setMaximumFrameRate(90);
+		recommended.setMinimumFrameRate(90);
         recommended.setResolution(640, 480);
         recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
     } else if (description == "Pupil Cam1 ID2") {

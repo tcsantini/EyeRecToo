@@ -11,17 +11,19 @@ void CommandManager::keyPress(QKeyEvent *event)
 	switch (event->key()) {
 		case Qt::Key_C:
 		case Qt::Key_PageDown:
+			emit toggleCalibration();
 			emit enableMarkerCollection();
 			break;
-		case Qt::Key_S:
-		case Qt::Key_PageUp:
-			emit toggleCalibration();
-			break;
+		//case Qt::Key_S:
+		//case Qt::Key_PageUp:
+		//	emit toggleCalibration();
+		//	break;
 		case Qt::Key_R:
 		case Qt::Key_B:
 			emit toggleRecording();
 			break;
 		case Qt::Key_F:
+		case Qt::Key_PageUp:
 			emit freezeCameraImages();
 			break;
 		default:
@@ -37,8 +39,10 @@ void CommandManager::keyRelease(QKeyEvent *event)
 		case Qt::Key_C:
 		case Qt::Key_PageDown:
 			emit disableMarkerCollection();
+			emit toggleCalibration();
 			break;
 		case Qt::Key_F:
+		case Qt::Key_PageUp:
 			emit unfreezeCameraImages();
 			break;
 		default:

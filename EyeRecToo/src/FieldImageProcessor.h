@@ -163,7 +163,7 @@ public:
           collectionMarkerSizeMeters(0.10),
           processingDownscalingFactor(2),
           undistort(false),
-          markerDetectionMethod("aruco")
+		  markerDetectionMethod("")
     {
     }
 

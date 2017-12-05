@@ -37,6 +37,12 @@ void PupilTrackingMethod::registerPupil( const Timestamp &ts, Pupil &pupil ) {
 	//	previousPupil = TrackedPupil();
 }
 
+void PupilTrackingMethod::predictMaxPupilDiameter() {
+	predictedMaxPupilDiameter = 1.5*pupilDiameterKf.predict().ptr<float>(0)[0];
+	if (previousPupils.size() < 20)
+		predictedMaxPupilDiameter = -1;
+}
+
 void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const cv::Rect &roi, Pupil &pupil, PupilDetectionMethod &pupilDetectionMethod)
 {
 	cv::Size frameSize = { frame.cols, frame.rows };
