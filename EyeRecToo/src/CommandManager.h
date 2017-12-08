@@ -20,6 +20,9 @@ signals:
 	void disableMarkerCollection();
 	void freezeCameraImages();
 	void unfreezeCameraImages();
+
+private:
+	bool calibrating = false;
 };
 
 #endif // COMMANDMANAGER_H
