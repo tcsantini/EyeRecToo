@@ -120,7 +120,7 @@ void DataRecorder::storeData(T &data)
          *
          */
         QString fileName = id + ".mp4";
-        int codec = 0x20;
+		int codec = 0x6C;
 
         if (videoWriter->isOpened())
             videoWriter->release();
