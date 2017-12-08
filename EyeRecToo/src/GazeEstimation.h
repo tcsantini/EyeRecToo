@@ -39,7 +39,7 @@ public:
         cv::RotatedRect el(cv::Point(x,y), cv::Size(w,h), 0);
         if (selected){
             cv::ellipse(in, el, CV_GREEN, 0.5*r);
-            cv::circle( in, to2D(selected->field.collectionMarker.center), r, CV_BLACK, -1);
+			cv::circle( in, to2D(selected->field.collectionMarker.center), r, CV_ALMOST_BLACK, -1);
             cv::circle( in, to2D(selected->field.collectionMarker.center), r+1, CV_GREEN, r);
         } else
             cv::ellipse(in, el, CV_RED, 0.5*r);
@@ -207,6 +207,9 @@ private:
     std::vector<ErrorVector> errorVectors;
     QElapsedTimer autoVisualizationTimer;
     cv::Mat vis;
+	cv::Mat overlay;
+	int lastOverlayIdx;
+
 
 private slots:
     void detectOutliers();

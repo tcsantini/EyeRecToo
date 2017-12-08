@@ -7,7 +7,8 @@ GazeEstimation::GazeEstimation(QObject *parent)
     : QObject(parent),
       calibrated(false),
       isCalibrating(false),
-      gazeEstimationMethod(NULL),
+	  gazeEstimationMethod(NULL),
+	  lastOverlayIdx(0),
       settings(NULL)
 {
     availableGazeEstimationMethods.push_back( new PolyFit(PolyFit::POLY_1_X_Y_XY_XX_YY_XYY_YXX_XXYY) );
@@ -37,7 +38,7 @@ void GazeEstimation::reset(CollectionTuple::TupleType type)
 {
     for (size_t i=collectedTuples.size(); i-->0;)
         if (collectedTuples[i].tupleType == type)
-            collectedTuples.erase(collectedTuples.begin() + i);
+			collectedTuples.erase(collectedTuples.begin() + i);
 }
 
 bool GazeEstimation::isPupilOutlineValid(const EyeData &cur)
@@ -595,52 +596,66 @@ void GazeEstimation::drawGazeEstimationInfo(DataTuple &dataTuple)
     if (!shouldDisplay)
         return;
 
-    // avoid drawing every single frame
-    static Timestamp lastGazeEstimationVisualizationTimestamp = 0;
-    Timestamp current = gTimer.elapsed();
-    bool shouldDraw = current - lastGazeEstimationVisualizationTimestamp > 40;
-    if (!shouldDraw)
-        return;
+	dataTuple.showGazeEstimationVisualization = true;
+	dataTuple.gazeEstimationVisualization = vis;
 
-    dataTuple.showGazeEstimationVisualization = true;
+	// avoid drawing every single frame
+	static Timestamp lastGazeEstimationVisualizationTimestamp = 0;
+	Timestamp current = gTimer.elapsed();
+	bool shouldDraw = current - lastGazeEstimationVisualizationTimestamp > 40;
+	if (!shouldDraw)
+		return;
+	lastGazeEstimationVisualizationTimestamp = current;
 
-    // frame is already old; display old visualization instead to save processing
-	if (current - dataTuple.field.timestamp > 100)
-        return;
-
-    vis  = dataTuple.field.input.clone();
+	vis  = dataTuple.field.input.clone();
     int r = max<int>( 1, 0.003125*max<int>(vis.rows, vis.cols) );
 
-    if (isCalibrating) {
-        for (size_t i=0; i<collectedTuples.size(); i++) {
-            circle(vis, to2D(collectedTuples[i].field.collectionMarker.center), r, CV_BLACK, -1);
-            if (collectedTuples[i].isCalibration())
-                circle(vis, to2D(collectedTuples[i].field.collectionMarker.center), r+1, CV_GREEN, 0.5*r);
-            else
-                circle(vis, to2D(collectedTuples[i].field.collectionMarker.center), r+1, CV_CYAN, 0.5*r);
-        }
-    } else {
-        if (!interpolationHull.empty()) {
+	if (isCalibrating) {
+
+		if (lastOverlayIdx > collectedTuples.size()) // sample removed, restart
+			lastOverlayIdx = 0;
+
+		if (lastOverlayIdx == 0)
+			overlay = Mat::zeros( vis.rows, vis.cols, CV_8UC3);
+
+		for ( ; lastOverlayIdx < collectedTuples.size(); lastOverlayIdx++) {
+			circle(overlay, to2D(collectedTuples[lastOverlayIdx].field.collectionMarker.center), r, CV_ALMOST_BLACK, -1);
+			if (collectedTuples[lastOverlayIdx].isCalibration())
+				circle(overlay, to2D(collectedTuples[lastOverlayIdx].field.collectionMarker.center), r+1, CV_GREEN, 0.5*r);
+			else
+				circle(overlay, to2D(collectedTuples[lastOverlayIdx].field.collectionMarker.center), r+1, CV_CYAN, 0.5*r);
+		}
+
+	} else {
+		// Calibration finished; overlay results and restart
+		overlay = Mat::zeros( vis.rows, vis.cols, CV_8UC3);
+		lastOverlayIdx = 0;
+
+		if (!interpolationHull.empty()) {
             vector< vector<Point> > contours;
             contours.push_back(interpolationHull);
-            drawContours(vis, contours, 0, CV_GREEN, r);
+			drawContours(overlay, contours, 0, CV_GREEN, r);
         }
 
         for (size_t i=0; i<errorVectors.size(); i++)
-            errorVectors[i].draw(vis, 2, CV_RED);
+			errorVectors[i].draw(overlay, 2, CV_RED);
 
         if (cfg.autoEvaluation)
             for (size_t i=0; i<evaluationRegions.size(); i++)
-                evaluationRegions[i].draw(vis, r);
+				evaluationRegions[i].draw(overlay, r);
 
-        for (size_t i=0; i<collectedTuples.size(); i++) {
-            if (!collectedTuples[i].isCalibration()) {
-                circle(vis, to2D(collectedTuples[i].field.collectionMarker.center), r, CV_BLACK, -1);
-                circle(vis, to2D(collectedTuples[i].field.collectionMarker.center), r+1, CV_CYAN, 0.5*r);
-            }
-        }
-    }
-    dataTuple.gazeEstimationVisualization = vis;
+		for (size_t i=0; i<collectedTuples.size(); i++) {
+			if (!collectedTuples[i].isCalibration()) {
+				circle(overlay, to2D(collectedTuples[i].field.collectionMarker.center), r, CV_BLACK, -1);
+				circle(overlay, to2D(collectedTuples[i].field.collectionMarker.center), r+1, CV_CYAN, 0.5*r);
+			}
+		}
+
+	}
+
+	// Overlay on visualization image; notice we use CV_ALMOST_BLACK instead of
+	// CV_BLACK so we don't need to create an additional mask :-)
+	overlay.copyTo(vis, overlay);
 }
 
 void GazeEstimation::setCalibrating(bool v)

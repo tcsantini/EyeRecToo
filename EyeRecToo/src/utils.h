@@ -93,6 +93,7 @@ Q_DECLARE_METATYPE(enum CVFlip)
 #define CV_MAGENT   cv::Scalar(0x81,0x40,0xff)
 #define CV_WHITE	cv::Scalar(0xff,0xff,0xff)
 #define CV_BLACK	cv::Scalar(0x00,0x00,0x00)
+#define CV_ALMOST_BLACK	cv::Scalar(0x01,0x01,0x01)
 
 template<typename T> void set(const QSettings *settings, const QString key, T &v)
 {
