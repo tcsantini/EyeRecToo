@@ -20,7 +20,7 @@ FieldImageProcessor::FieldImageProcessor(QString id, QObject *parent)
     dict = getPredefinedDictionary(DICT_4X4_250);
     detectorParameters = new DetectorParameters();
     detectorParameters->markerBorderBits = 2;
-    detectorParameters->minMarkerPerimeterRate = 0.10; // TODO: determine a good value for these based on the fov and maximum detection distance
+	detectorParameters->minMarkerPerimeterRate = 0.05; // TODO: determine a good value for these based on the fov and maximum detection distance
     //printMarkers(); // TODO: parametrize me
 
     pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");

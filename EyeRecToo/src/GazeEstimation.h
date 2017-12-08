@@ -186,7 +186,7 @@ public slots:
     void calibrate();
     void estimate(DataTuple dataTuple);
     void evaluate();
-    void printAccuracyInfo(const cv::Mat &errors, const QString &which, const double &diagonal);
+	void printAccuracyInfo(const cv::Mat &errors, const QString &which, const double &diagonal, float &mu, float &sigma);
 
     void updateConfig();
 
@@ -202,7 +202,13 @@ private:
     GazeEstimationMethod *gazeEstimationMethod;
     QMutex cfgMutex;
 
-    std::vector<cv::Point> interpolationHull;
+	float centralHullCoverage;
+	float peripheralHullCoverage;
+	float evaluationRegionCoverage;
+	float meanEvaluationError;
+	float stdEvaluationError;
+
+	std::vector<cv::Point> interpolationHull;
     std::vector<EvaluationRegion> evaluationRegions;
     std::vector<ErrorVector> errorVectors;
     QElapsedTimer autoVisualizationTimer;

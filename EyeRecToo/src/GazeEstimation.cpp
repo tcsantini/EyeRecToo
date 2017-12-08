@@ -224,9 +224,11 @@ void GazeEstimation::calibrate()
 
     if (cfg.autoEvaluation)
         selectEvaluationTuples(cfg.granularity, cfg.horizontalStride, cfg.verticalStride, cfg.rangeFactor);
-    else
-        for (unsigned int i=0; i<calibrationTuples.size(); i++)
-            calibrationTuples[i]->autoEval = CollectionTuple::AE_NO;
+	else {
+		for (unsigned int i=0; i<calibrationTuples.size(); i++) {
+			calibrationTuples[i]->autoEval = CollectionTuple::AE_NO;
+		}
+	}
 
     vector<CollectionTuple> calibrationInliers;
     for (unsigned int i=0; i<calibrationTuples.size(); i++)
@@ -298,17 +300,19 @@ void GazeEstimation::estimate(DataTuple dataTuple)
     emit gazeEstimationDone(dataTuple);
 }
 
-void GazeEstimation::printAccuracyInfo(const cv::Mat &errors, const QString &which, const double &diagonal)
+void GazeEstimation::printAccuracyInfo(const cv::Mat &errors, const QString &which, const double &diagonal, float &mu, float &sigma)
 {
     Scalar m, std;
     meanStdDev(errors, m, std);
     qInfo() << which.toLatin1().data() <<  "Error ( N =" << errors.rows << "):";
     //qInfo() << QString("m = %1 ( std = %2 ) pixels."
     //    ).arg(m[0], 6, 'f', 2
-    //    ).arg(std[0], 6, 'f', 2).toLatin1().data();
-    qInfo() << QString("m = %1 ( std = %2 ) % of the image diagonal."
-        ).arg(100 * m[0] / diagonal, 6, 'f', 2
-        ).arg(100 * std[0] / diagonal, 6, 'f', 2).toLatin1().data();
+	//    ).arg(std[0], 6, 'f', 2).toLatin1().data();
+	mu = m[0] / diagonal;
+	sigma = std[0] / diagonal;
+	qInfo() << QString("m = %1 ( std = %2 ) % of the image diagonal."
+		).arg(100 * mu, 6, 'f', 2
+		).arg(100 * sigma, 6, 'f', 2).toLatin1().data();
 }
 
 void GazeEstimation::evaluate()
@@ -319,12 +323,51 @@ void GazeEstimation::evaluate()
     evaluationTuples.clear();
     for (unsigned int i=0; i<collectedTuples.size(); i++)
         if (collectedTuples[i].isEvaluation() || (cfg.autoEvaluation && collectedTuples[i].isAutoEval()) )
-            evaluationTuples.push_back(&collectedTuples[i]);
+			evaluationTuples.push_back(&collectedTuples[i]);
+
+	centralHullCoverage = 0;
+	peripheralHullCoverage = 0;
+	if (!interpolationHull.empty()) {
+		float delta = 0.25;
+		Size size(calibrationTuples[0]->field.width, calibrationTuples[0]->field.height);
+		Mat centralRegion = Mat::zeros(size, CV_8U);
+		rectangle(centralRegion, Point(delta*size.width, delta*size.height), Point((1-delta)*size.width, (1-delta)*size.height), Scalar(255), -1);
+		Mat peripheralRegion = 255 - centralRegion;
+
+		Mat hullRegion = Mat::zeros(size, CV_8U);
+		vector< vector<Point> > contours;
+		contours.push_back(interpolationHull);
+		drawContours(hullRegion, contours, 0, Scalar(255), -1);
+
+		vector<Point> nonZero;
+		findNonZero(centralRegion, nonZero);
+		float centralPixels = nonZero.size();
+		findNonZero(peripheralRegion, nonZero);
+		float peripheralPixels = nonZero.size();
+
+		Mat intersection;
+		bitwise_and( hullRegion, centralRegion, intersection);
+		findNonZero(intersection, nonZero);
+		centralHullCoverage = nonZero.size() / centralPixels;
+
+		bitwise_and( hullRegion, peripheralRegion, intersection);
+		findNonZero(intersection, nonZero);
+		peripheralHullCoverage = nonZero.size() / peripheralPixels;
+
+		qInfo() << QString("Central Interpolation Coverage: %1 %"
+					   ).arg(100 * centralHullCoverage , 0, 'f', 2).toLatin1().data();
+		qInfo() << QString("Peripheral Interpolation Coverage: %1 %"
+					   ).arg(100 * peripheralHullCoverage , 0, 'f', 2).toLatin1().data();
+	}
+
+	meanEvaluationError = 0;
+	stdEvaluationError = 0;
+	evaluationRegionCoverage = 1;
 
     if (evaluationTuples.size() <= 0 || calibrationTuples.size() <= 0)
-        return;
+		return;
 
-    // evaluate for known points
+	// evaluate for known points
     errorVectors.clear();
     Mat errors;
     for (unsigned int i=0; i<evaluationTuples.size(); i++) {
@@ -335,7 +378,7 @@ void GazeEstimation::evaluate()
     }
 
     double imDiagonal = sqrt( pow(evaluationTuples[0]->field.width,2) + pow(evaluationTuples[0]->field.height, 2) );
-    printAccuracyInfo(errors, "Gaze Evaluation", imDiagonal);
+	printAccuracyInfo(errors, "Gaze Evaluation", imDiagonal, meanEvaluationError, stdEvaluationError);
 
     if (cfg.autoEvaluation) {
         double evaluationRegionsCount = pow(1 + 2*cfg.granularity, 2);
@@ -343,9 +386,12 @@ void GazeEstimation::evaluate()
         for (unsigned int i=0; i<collectedTuples.size(); i++)
             if ( collectedTuples[i].isAutoEval() )
                 evaluationRegionsSelected++;
-        qInfo() << QString("Auto Evaluation Region Coverage: %1 %"
-                           ).arg(100 * evaluationRegionsSelected / evaluationRegionsCount, 0, 'f', 2).toLatin1().data();
-    }
+		evaluationRegionCoverage = evaluationRegionsSelected / evaluationRegionsCount;
+		qInfo() << QString("Auto Evaluation Region Coverage: %1 %"
+						   ).arg(100 * evaluationRegionCoverage, 0, 'f', 2).toLatin1().data();
+	}
+
+
 }
 
 /*
@@ -593,19 +639,21 @@ void GazeEstimation::drawGazeEstimationInfo(DataTuple &dataTuple)
                 autoVisualizationTimer.invalidate();
         }
     }
-    if (!shouldDisplay)
-        return;
+	if (!shouldDisplay) {
+		lastOverlayIdx = 0;
+		return;
+	}
 
 	dataTuple.showGazeEstimationVisualization = true;
 	dataTuple.gazeEstimationVisualization = vis;
 
 	// avoid drawing every single frame
-	static Timestamp lastGazeEstimationVisualizationTimestamp = 0;
-	Timestamp current = gTimer.elapsed();
-	bool shouldDraw = current - lastGazeEstimationVisualizationTimestamp > 40;
-	if (!shouldDraw)
-		return;
-	lastGazeEstimationVisualizationTimestamp = current;
+	//static Timestamp lastGazeEstimationVisualizationTimestamp = 0;
+	//Timestamp current = gTimer.elapsed();
+	//bool shouldDraw = current - lastGazeEstimationVisualizationTimestamp > 40;
+	//if (!shouldDraw)
+	//	return;
+	//lastGazeEstimationVisualizationTimestamp = current;
 
 	vis  = dataTuple.field.input.clone();
     int r = max<int>( 1, 0.003125*max<int>(vis.rows, vis.cols) );
