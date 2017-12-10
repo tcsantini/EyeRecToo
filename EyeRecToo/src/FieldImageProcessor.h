@@ -20,6 +20,8 @@
 #include <opencv2/aruco.hpp>
 #include <opencv2/aruco/charuco.hpp>
 
+#include "CameraCalibration.h"
+
 #include "InputWidget.h"
 
 #include "utils.h"
@@ -56,8 +58,6 @@ public:
         extrapolatedGazeEstimate = 0;
         markers = std::vector<Marker>();
         collectionMarker = Marker();
-        cameraMatrix = cv::Mat();
-        distCoeffs = cv::Mat();
         undistorted = false;
         width = 0;
         height = 0;
@@ -69,9 +69,8 @@ public:
     int extrapolatedGazeEstimate;
     Marker collectionMarker;
     std::vector<Marker> markers;
-    cv::Mat cameraMatrix, distCoeffs;
-    bool undistorted;
-    unsigned int width;
+	bool undistorted;
+	unsigned int width;
     unsigned int height;
 
     QString header(QString prefix = "") const {
@@ -355,6 +354,7 @@ public:
     explicit FieldImageProcessor(QString id, QObject *parent = 0);
     ~FieldImageProcessor();
     QSettings *settings;
+	CameraCalibration *cameraCalibration;
 
 signals:
     void newData(FieldData data);
@@ -374,12 +374,12 @@ private:
     cv::Ptr<cv::aruco::Dictionary> dict;
     cv::Ptr<cv::aruco::DetectorParameters> detectorParameters;
 
-    // Undistortion
-    cv::Mat cameraMatrix, newCameraMatrix, distCoeffs;
-    cv::Mat rvecs, tvecs;
-    cv::Mat map1, map2;
-    cv::Size imageSize, newImageSize;
-    bool forceSanitize;
+
+	// Undistortion
+	cv::Mat cameraMatrix, newCameraMatrix, distCoeffs;
+	cv::Mat rvecs, tvecs;
+	bool forceSanitize;
+	cv::Size expectedSize;
     void sanitizeCameraParameters(cv::Size size);
 
     unsigned int pmIdx;

@@ -64,7 +64,8 @@ void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const c
 	predictMaxPupilDiameter();
 
 	if ( previousPupil.confidence == NO_CONFIDENCE ) {
-		pupil = pupilDetectionMethod.runWithConfidence(frame, roi, -1, predictedMaxPupilDiameter);
+		//pupil = pupilDetectionMethod.runWithConfidence(frame, roi, -1, predictedMaxPupilDiameter);
+		pupil = pupilDetectionMethod.runWithConfidence(frame, roi, -1, -1);
 	} else {
 		run(frame, roi, previousPupil, pupil);
 	}

@@ -90,7 +90,7 @@ void FieldOverlay::drawMarker(const Marker &marker)
 	for (unsigned int i=0; i<4; i++)
 		contour[i] = QPointF(marker.corners[i].x, marker.corners[i].y);
 	painter.drawConvexPolygon(contour, 4);
-	int delta = 15*refPx;
+	int delta = 30*refPx;
 	painter.drawText(
 				QRectF(marker.center.x-delta/2, marker.center.y-delta/2, delta, delta),
 				Qt::AlignCenter|Qt::TextWordWrap,

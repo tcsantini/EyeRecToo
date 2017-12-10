@@ -32,7 +32,7 @@ class CameraCalibration : public QDialog
 public:
 	CameraCalibration(QString id, QWidget *parent=0)
 		: QDialog(parent),
-		  calibrationSuccessful(false),
+		  calibrated(false),
 		  sampleCount(0),
 		  coverage(0),
 		  id(id)
@@ -129,15 +129,39 @@ public:
 		CHESSBOARD = 2,
 	};
 
-	cv::Mat cameraMatrix;
-	cv::Mat newCameraMatrix;
-	cv::Mat distCoeffs;
-	cv::Size imageSize;
-	cv::Rect covered;
-	int sampleCount;
-	double coverage;
-	double rms;
-	bool calibrationSuccessful;
+
+	void undistort(const cv::Mat &in, cv::Mat &out) {
+		if ( !calibrated || in.cols != imageSize.width || in.rows != imageSize.height ) {
+			out = in.clone();
+			return;
+		}
+
+		if (fishEye)
+			remap(in, out, map1, map2, CV_INTER_AREA);
+		else
+			remap(in, out, map1, map2, CV_INTER_AREA);
+	}
+	cv::Mat getCameraMatrix(cv::Size size) {
+		if ( !calibrated || size != imageSize ) {
+			return (cv::Mat_<double>(3,3) <<
+						size.width, 0, 0.5*size.width,
+						0, size.width, 0.5*size.height,
+						0, 0 ,1 );
+
+		}
+
+		return cameraMatrix;
+	}
+	cv::Mat getDistortionCoefficients(cv::Size size) {
+		if ( !calibrated || size != imageSize )
+			return (cv::Mat_<double>(4,1) << 0, 0, 0, 0);
+
+		// our coefficients are k1,k2,k3,k4, but estimatePoseSingleMarkers wants (k1,k2,p1,p2[,k3[,k4,k5,k6],[s1,s2,s3,s4]])
+		if (fishEye)
+			return (cv::Mat_<double>(4,1) << distCoeffs.at<double>(0,0), distCoeffs.at<double>(1,0), 0, 0);
+		else
+			return distCoeffs;
+	}
 
 signals:
 	void requestSample();
@@ -176,6 +200,16 @@ private:
 	QFutureWatcher<void> watcher;
 
 	std::vector<std::vector<cv::Point2f> > imagePoints;
+	cv::Mat cameraMatrix;
+	cv::Mat newCameraMatrix;
+	cv::Mat distCoeffs;
+	cv::Size imageSize;
+	cv::Rect covered;
+	int sampleCount;
+	double coverage;
+	double rms;
+	bool fishEye;
+	std::atomic<bool> calibrated;
 	cv::Mat map1, map2;
 
 	void processSample(const cv::Mat &frame);
@@ -183,6 +217,7 @@ private:
 	void calculateBoardCorners(std::vector<cv::Point3f> &corners);
 	void calibrate();
 	void updateCalibrationStatus(bool success);
+	void internalInitUndistortRectifyMap();
 	void setLabelText(QLabel* label, QString val, QString color) {
 		label->setStyleSheet("QLabel { font : bold; color : " + color + " }");
 		label->setText( val );

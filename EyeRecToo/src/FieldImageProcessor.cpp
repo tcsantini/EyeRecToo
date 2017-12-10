@@ -11,8 +11,9 @@ FieldImageProcessor::FieldImageProcessor(QString id, QObject *parent)
     : id(id),
       sROI(QPointF(0,0)),
       eROI(QPointF(1,1)),
-      forceSanitize(false),
-      QObject(parent)
+	  forceSanitize(false),
+	  cameraCalibration(NULL),
+	  QObject(parent)
 {
     settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor", QSettings::IniFormat);
     updateConfig();
@@ -59,16 +60,21 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 	}
 
     if (cfg.flip != CV_FLIP_NONE)
-        flip(data.input, data.input, cfg.flip);
+		flip(data.input, data.input, cfg.flip);
 
-    sanitizeCameraParameters( Size(data.input.cols, data.input.rows) );
+	sanitizeCameraParameters( Size(data.input.cols, data.input.rows) );
 
-    data.undistorted = cfg.undistort;
-    if (data.undistorted)
-        remap(data.input, data.input, map1, map2, CV_INTER_AREA);
+	data.undistorted = cfg.undistort;
+	if (data.undistorted) {
+		if (cameraCalibration) {
+			Mat tmp;
+			cameraCalibration->undistort(data.input, tmp);
+			data.input = tmp;
+		}
+	}
 
     data.width = data.input.cols;
-    data.height = data.input.rows;
+	data.height = data.input.rows;
 
     // Marker detection and pose estimation
     vector<int> ids;
@@ -84,7 +90,6 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 	}
 
 	if (cfg.markerDetectionMethod == "aruco" || gCalibrating) {
-
 		detectMarkers(downscaled, dict, corners, ids, detectorParameters);
 
 		if (cfg.processingDownscalingFactor > 1) { // Upscale if necessary
@@ -103,15 +108,12 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 	 * An initial (and short) test with a pupil labs wide angle camera at 720p seeemed
 	 * to match the distance measured with a laser distance meter.
 	 */
-    if (ids.size() > 0) {
-        if (data.undistorted) {
-            Mat emptyCameraMatrix = (Mat_<double>(3,3) <<
-                           data.width,          0, data.width/2,
-                           0         , data.width, data.height/2,
-                           0         ,0          , 1);
-            Mat emptyDistCoeffs = (Mat_<double>(1,4) << 0, 0, 0, 0);
-            estimatePoseSingleMarkers(corners, cfg.collectionMarkerSizeMeters, emptyCameraMatrix, emptyDistCoeffs, rvecs, tvecs);
-        } else
+	if (ids.size() > 0) {
+		if (data.undistorted) {
+			qWarning() << "Marker pose estimation using undistorted image is not implemented yet.";
+			// TODO: undistort the corners, then apply the estimation
+			estimatePoseSingleMarkers(corners, cfg.collectionMarkerSizeMeters, cameraMatrix, distCoeffs, rvecs, tvecs);
+		} else
 			estimatePoseSingleMarkers(corners, cfg.collectionMarkerSizeMeters, cameraMatrix, distCoeffs, rvecs, tvecs);
     }
 
@@ -152,63 +154,12 @@ void FieldImageProcessor::newROI(QPointF sROI, QPointF eROI)
     }
 }
 
-void FieldImageProcessor::sanitizeCameraParameters(Size size)
+void FieldImageProcessor::sanitizeCameraParameters(cv::Size size)
 {
-    if (!forceSanitize) {
-        if ( (size == imageSize) && !map1.empty() && !map2.empty() )
-            return;
-    } else
-        forceSanitize = false;
-
-	/* TODO:
-	 *
-	 * 1) Move camera parameters logic to the Camera instead so it's
-	 * considered for the eye cameras as well.
-	 *
-	 * 2) Drop the logic for resizing the intrinsic parameters since it's not
-	 * throughly tested.
-	 *
-	 */
-
-    FileStorage fs( QString(gCfgDir + "/" + id + "Calibration.xml").toStdString(), FileStorage::READ);
-    fs["cameraMatrix"] >> cameraMatrix;
-	fs["distCoeffs"] >> distCoeffs;
-	fs["imageSize"] >> imageSize;
-	bool haveCameraParameters = false;
-    if (!cameraMatrix.empty() && !distCoeffs.empty())
-        haveCameraParameters = true;
-
-    double currentAspectRatio = size.width / (float) size.height;
-    double originalAspectRatio = imageSize.width / (float) imageSize.height;
-
-    if (haveCameraParameters && (currentAspectRatio == originalAspectRatio) ) {
-        qInfo() << "Found intrinsic parameters.";
-        double rx = imageSize.width  / (double) size.width;
-        double ry = imageSize.height / (double) size.height;
-        cameraMatrix.at<double>(0,2) = cameraMatrix.at<double>(0,2) / rx;
-        cameraMatrix.at<double>(1,2) = cameraMatrix.at<double>(1,2) / ry;
-        cameraMatrix.at<double>(0,0) = cameraMatrix.at<double>(0,0) / rx;
-        cameraMatrix.at<double>(1,1) = cameraMatrix.at<double>(1,1) / rx;
-        imageSize = size;
-    } else {
-        qInfo() << "No valid intrinsic parameters available. Using dummy values";
-        // Dummy estimation
-        cameraMatrix = (Mat_<double>(3,3) <<
-		                size.width, 0, 0.5*size.width,
-		                0, size.width, 0.5*size.height,
-                        0, 0 ,1 );
-        distCoeffs = (Mat_<double>(1,4) << 0, 0, 0, 0);
-        imageSize = size;
-    }
-
-    initUndistortRectifyMap(
-                            cameraMatrix,
-                            distCoeffs,
-                            Mat(),
-							getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize),
-                            imageSize,
-                            CV_32FC1,
-                            map1,
-                            map2
-                            );
+	if (!forceSanitize && size == expectedSize)
+		return;
+	forceSanitize = false;
+	expectedSize = size;
+	cameraMatrix = cameraCalibration->getCameraMatrix(size);
+	distCoeffs = cameraCalibration->getDistortionCoefficients(size);
 }

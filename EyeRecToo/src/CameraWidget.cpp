@@ -53,15 +53,23 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             this, SLOT(noCamera(QString)));
     // debugging preview
     //connect(camera, SIGNAL(newFrame(Timestamp, const cv::Mat&)),
-    //    this, SLOT(preview(Timestamp, const cv::Mat&)) );
+	//    this, SLOT(preview(Timestamp, const cv::Mat&)) );
+
+	cameraCalibration = new CameraCalibration(id);
+	connect(cameraCalibration, SIGNAL(requestSample()),
+			this, SLOT(requestCameraCalibrationSample()) );
+	connect(cameraCalibration, SIGNAL(calibrationFinished(bool)),
+			this, SLOT(onCameraCalibrationFinished(bool)) );
+	cameraCalibration->load(gCfgDir + "/" + id + "Calibration.xml");
 
     // Image Processor
     processorThread = new QThread();
     processorThread->setObjectName(id + " Processor");
     processorThread->start();
     processorThread->setPriority(QThread::TimeCriticalPriority);
-    imageProcessor = new ImageProcessor(id, type);
-    imageProcessor->moveToThread(processorThread);
+	imageProcessor = new ImageProcessor(id, type);
+	imageProcessor->cameraCalibration = cameraCalibration;
+	imageProcessor->moveToThread(processorThread);
     switch (type) {
         case ImageProcessor::Eye:
             imageProcessor->eyeProcessorUI = new EyeImageProcessorUI;
@@ -70,8 +78,8 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             connect(imageProcessor, SIGNAL(newData(EyeData)),
                     this, SIGNAL(newData(EyeData)) );
             break;
-        case ImageProcessor::Field:
-            imageProcessor->fieldProcessorUI = new FieldImageProcessorUI;
+		case ImageProcessor::Field:
+			imageProcessor->fieldProcessorUI = new FieldImageProcessorUI;
             connect(imageProcessor, SIGNAL(newData(FieldData)),
                 this, SLOT(preview(FieldData)) );
             connect(imageProcessor, SIGNAL(newData(FieldData)),
@@ -79,7 +87,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             break;
     }
     QMetaObject::invokeMethod(imageProcessor, "create");
-    connect(camera, SIGNAL(newFrame(Timestamp, const cv::Mat&)),
+	connect(camera, SIGNAL(newFrame(Timestamp, const cv::Mat&)),
         imageProcessor, SIGNAL(process(Timestamp, const cv::Mat&)) );
 
     // Data Recorder
@@ -90,13 +98,6 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     recorder = new DataRecorderThread(id, type == ImageProcessor::Eye ? EyeData().header() : FieldData().header());
     recorder->moveToThread(recorderThread);
 	QMetaObject::invokeMethod(recorder, "create");
-
-	cameraCalibration = new CameraCalibration(id);
-	connect(cameraCalibration, SIGNAL(requestSample()),
-			this, SLOT(requestCameraCalibrationSample()) );
-	connect(cameraCalibration, SIGNAL(calibrationFinished(bool)),
-			this, SLOT(onCameraCalibrationFinished(bool)) );
-	cameraCalibration->load(gCfgDir + "/" + id + "Calibration.xml");
 
     // GUI
     optionsGroup = new QActionGroup(this);

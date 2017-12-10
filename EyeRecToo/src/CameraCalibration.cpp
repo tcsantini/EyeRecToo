@@ -47,6 +47,7 @@ void CameraCalibration::startCalibration()
 
 void CameraCalibration::finishCalibration()
 {
+	calibrated = false;
 	QFuture<void> future = QtConcurrent::run(this, &CameraCalibration::calibrate);
 	watcher.setFuture(future);
 }
@@ -54,12 +55,12 @@ void CameraCalibration::finishCalibration()
 void CameraCalibration::onCalibrated()
 {
 	this->layout()->setEnabled(true);
-	updateCalibrationStatus( calibrationSuccessful );
+	updateCalibrationStatus( calibrated );
 	calibrationTogglePB->setText("Start");
 	calibrationTogglePB->setEnabled(true);
 	undistortPB->setEnabled(true);
 	settingsGB->setEnabled(true);
-	emit calibrationFinished( calibrationSuccessful );
+	emit calibrationFinished( calibrated );
 }
 
 void CameraCalibration::updateCalibrationStatus(bool success)
@@ -121,15 +122,13 @@ void CameraCalibration::newSample(const Mat &frame)
 		undistortSample(frame);
 }
 
+
 void CameraCalibration::undistortSample(const Mat &frame)
 {
 	if (undistortPB->isEnabled())
 		return;
 	Mat tmp;
-	if (fishEyeCB->isChecked())
-		remap(frame, tmp, map1, map2, CV_INTER_AREA);
-	else
-		remap(frame, tmp, map1, map2, CV_INTER_AREA);
+	undistort(frame, tmp);
 	imshow("Undistorted Image", tmp);
 	this->activateWindow();
 	this->setFocus();
@@ -153,7 +152,7 @@ void CameraCalibration::processSample(const Mat &frame)
 	Size patternSize( hPatternSizeSB->value(), vPatternSizeSB->value() );
 
 	int chessBoardFlags = CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE;
-	if( !fishEyeCB->isChecked())
+	if( !fishEye)
 		chessBoardFlags |= CALIB_CB_FAST_CHECK;
 
 	switch( patternCB->currentData().toInt() )
@@ -204,16 +203,36 @@ void CameraCalibration::processSample(const Mat &frame)
 	collectPB->setEnabled(true);
 }
 
+void CameraCalibration::internalInitUndistortRectifyMap()
+{
+	float alpha = 1;
+	if (fishEye) {
+		fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, alpha, imageSize);
+		fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
+										 newCameraMatrix, imageSize, CV_16SC2,
+										 map1, map2
+										 );
+	} else {
+		newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, alpha, imageSize);
+		initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(),
+								 newCameraMatrix, imageSize, CV_16SC2,
+								 map1, map2
+								 );
+	}
+}
+
 void CameraCalibration::calibrate()
 {
+	calibrated = false;
+
 	qInfo() << "Calibrating, this might take some time; please wait.";
 	cameraMatrix = Mat::eye(3, 3, CV_64F);
-	if (fishEyeCB->isChecked())
+	fishEye = fishEyeCB->isChecked();
+	if (fishEye)
 		distCoeffs = Mat::zeros(4, 1, CV_64F);
 	else
 		distCoeffs = Mat::zeros(8, 1, CV_64F);
 
-	calibrationSuccessful = false;
 	rms = 0;
 
 	if (imagePoints.size() < 5)
@@ -225,28 +244,20 @@ void CameraCalibration::calibrate()
 
 	try {
 		Mat rv, tv;
-		if (fishEyeCB->isChecked()) {
+		if (fishEye) {
 			int fisheyeFlags = 0;
 			fisheyeFlags |= fisheye::CALIB_RECOMPUTE_EXTRINSIC;
 			fisheyeFlags |= fisheye::CALIB_CHECK_COND;
 			fisheyeFlags |= fisheye::CALIB_FIX_SKEW;
 			rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv, fisheyeFlags);
-			fisheye::estimateNewCameraMatrixForUndistortRectify(cameraMatrix, distCoeffs, imageSize, Matx33d::eye(), newCameraMatrix, 1, imageSize);
-			fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
-								newCameraMatrix, imageSize, CV_16SC2,
-								map1, map2);
 		} else {
 			rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv);
-			newCameraMatrix = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize);
-			initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
-								newCameraMatrix, imageSize, CV_16SC2,
-								map1, map2
-								);
 		}
-		calibrationSuccessful = true;
+		internalInitUndistortRectifyMap();
+		calibrated = true;
 	} catch (cv::Exception &e) {
 		qWarning() << "Calibration failed:" << e.what();
-		calibrationSuccessful = false;
+		calibrated = false;
 	}
 }
 
@@ -260,14 +271,14 @@ void CameraCalibration::store(const QString &fileName)
 	fs << "sampleCount" << sampleCount;
 	fs << "coverage" << coverage;
 	fs << "rms" << rms;
-	fs << "fisheye" << fishEyeCB->isChecked();
+	fs << "fishEye" << fishEye;
 }
 
 void CameraCalibration::load(const QString &fileName)
 {
 	QFileInfo info(fileName);
 	if ( !info.exists() ) {
-		calibrationSuccessful = false;
+		calibrated = false;
 	} else {
 		FileStorage fs( QString(fileName).toStdString(), FileStorage::READ);
 		fs["cameraMatrix"] >> cameraMatrix;
@@ -277,19 +288,10 @@ void CameraCalibration::load(const QString &fileName)
 		fs["sampleCount"] >> sampleCount;
 		fs["coverage"] >> coverage;
 		fs["rms"] >> rms;
-		bool isFisheye;
-		fs["fisheye"] >> isFisheye;
-		calibrationSuccessful = true;
-		if (isFisheye) {
-			fisheye::initUndistortRectifyMap(cameraMatrix, distCoeffs, Matx33d::eye(),
-							newCameraMatrix, imageSize, CV_16SC2,
-							map1, map2);
-		} else {
-			initUndistortRectifyMap( cameraMatrix, distCoeffs, Mat(),
-							newCameraMatrix, imageSize, CV_32FC1,
-							map1, map2
-							);
-		}
+		fs["fishEye"] >> fishEye;
+		fishEyeCB->setChecked(fishEye);
+		internalInitUndistortRectifyMap();
+		calibrated = true;
 	}
-	updateCalibrationStatus(calibrationSuccessful);
+	updateCalibrationStatus(calibrated);
 }

@@ -13,11 +13,12 @@ class ImageProcessor : public QObject
     Q_OBJECT
 public:
     enum Type { Eye, Field };
-    explicit ImageProcessor(QString id, Type type, QObject *parent = 0);
+	explicit ImageProcessor(QString id, Type type, QObject *parent = 0);
 
     ~ImageProcessor();
-    EyeImageProcessorUI* eyeProcessorUI;
-    FieldImageProcessorUI* fieldProcessorUI;
+	CameraCalibration *cameraCalibration;
+	EyeImageProcessorUI* eyeProcessorUI;
+	FieldImageProcessorUI* fieldProcessorUI;
 
 signals:
     void process(Timestamp t, cv::Mat frame);
@@ -33,8 +34,8 @@ public slots:
 private:
     QString id;
     Type type;
-    EyeImageProcessor* eyeProcessor;
-    FieldImageProcessor* fieldProcessor;
+	EyeImageProcessor* eyeProcessor;
+	FieldImageProcessor* fieldProcessor;
 
 };
 

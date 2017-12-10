@@ -2,7 +2,8 @@
 
 ImageProcessor::ImageProcessor(QString id, Type type, QObject *parent)
     : id(id),
-      type(type),
+	  type(type),
+	  cameraCalibration(NULL),
       eyeProcessor(NULL),
       fieldProcessor(NULL),
       eyeProcessorUI(NULL),
@@ -36,7 +37,7 @@ void ImageProcessor::create()
         this->type = type;
         switch (type) {
             case Eye:
-                eyeProcessor = new EyeImageProcessor(id);
+				eyeProcessor = new EyeImageProcessor(id);
                 connect(this, SIGNAL(process(Timestamp,const cv::Mat&)),
                     eyeProcessor, SLOT(process(Timestamp,const cv::Mat&)) );
                 connect(this, SIGNAL(newROI(QPointF,QPointF)),
@@ -60,7 +61,8 @@ void ImageProcessor::create()
 						eyeProcessor, SLOT(updateConfig()) );
                 break;
             case Field:
-                fieldProcessor = new FieldImageProcessor(id);
+				fieldProcessor = new FieldImageProcessor(id);
+				fieldProcessor->cameraCalibration = cameraCalibration;
                 connect(this, SIGNAL(process(Timestamp,const cv::Mat&)),
                     fieldProcessor, SLOT(process(Timestamp,const cv::Mat&)) );
                 connect(this, SIGNAL(newROI(QPointF,QPointF)),
