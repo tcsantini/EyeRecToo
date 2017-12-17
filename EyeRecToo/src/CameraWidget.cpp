@@ -311,11 +311,11 @@ void CameraWidget::startRecording()
 
 void CameraWidget::stopRecording()
 {
-    QMetaObject::invokeMethod(recorder, "stopRecording");
-    disconnect(imageProcessor, SIGNAL(newData(EyeData)),
-            recorder, SIGNAL(newData(EyeData)) );
-    disconnect(imageProcessor, SIGNAL(newData(FieldData)),
-            recorder, SIGNAL(newData(FieldData)) );
+	disconnect(imageProcessor, SIGNAL(newData(EyeData)),
+			recorder, SIGNAL(newData(EyeData)) );
+	disconnect(imageProcessor, SIGNAL(newData(FieldData)),
+			recorder, SIGNAL(newData(FieldData)) );
+	QMetaObject::invokeMethod(recorder, "stopRecording", Qt::QueuedConnection);
     ui->menubar->setEnabled(true);
 }
 
