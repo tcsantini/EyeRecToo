@@ -21,8 +21,9 @@ FieldImageProcessor::FieldImageProcessor(QString id, QObject *parent)
     dict = getPredefinedDictionary(DICT_4X4_250);
     detectorParameters = new DetectorParameters();
     detectorParameters->markerBorderBits = 2;
-	detectorParameters->minMarkerPerimeterRate = 0.05; // TODO: determine a good value for these based on the fov and maximum detection distance
-    //printMarkers(); // TODO: parametrize me
+	detectorParameters->minMarkerPerimeterRate = 0.1; // TODO: determine a good value for these based on the fov and maximum detection distance
+	detectorParameters->doCornerRefinement = false;
+	//printMarkers(); // TODO: parametrize me
 
     pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");
 }
@@ -43,7 +44,7 @@ FieldImageProcessor::~FieldImageProcessor()
 void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 {
     // TODO: parametrize frame drop due to lack of processing power
-    if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 100) )
+	if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 100) )
         return;
 
     QMutexLocker locker(&cfgMutex);
