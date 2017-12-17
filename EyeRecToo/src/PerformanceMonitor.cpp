@@ -18,7 +18,7 @@
  */
 
 PerformanceMonitor::PerformanceMonitor() :
-    frameDropEnabled(true),
+	frameDropEnabled(false),
     delayedFrameCount(0)
 {
 

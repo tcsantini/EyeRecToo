@@ -15,7 +15,8 @@ public:
 	bool shouldDrop(const unsigned int &idx, const int &delay, const int &maxDelay=50);
     void account(const unsigned int &idx);
     QString getEnrolled(const unsigned int &idx) { return idx < enrolled.size() ? enrolled[idx] : QString(); }
-    unsigned int enrolledCount() { return (unsigned int) enrolled.size(); }
+	unsigned int enrolledCount() { return (unsigned int) enrolled.size(); }
+	void setFrameDrop(bool enabled = true) { frameDropEnabled = enabled; }
 
 	void report();
 
