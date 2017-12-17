@@ -27,7 +27,7 @@ EyeImageProcessor::EyeImageProcessor(QString id, QObject *parent)
 
 	pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");
 
-	pupilTrackingMethod = new PuReTy();
+	pupilTrackingMethod = new PuReST();
 }
 
 void EyeImageProcessor::updateConfig()
@@ -54,8 +54,8 @@ EyeImageProcessor::~EyeImageProcessor()
 void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 {
     // TODO: parametrize frame drop due to lack of processing power
-	//if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 50) )
-	//	return;
+	if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - timestamp, 50) )
+		return;
 
     QMutexLocker locker(&cfgMutex);
 
@@ -79,7 +79,6 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 	data.pupil = Pupil();
 	data.validPupil = false;
 	if (pupilDetectionMethod != NULL)  {
-
 		Rect userROI = Rect(
 				Point(sROI.x() * data.input.cols, sROI.y() * data.input.rows),
 				Point( eROI.x() * data.input.cols, eROI.y() * data.input.rows)

@@ -29,7 +29,7 @@
 #endif
 #include "pupil-detection/PupilDetectionMethod.h"
 
-#include "pupil-tracking/PuReTy.h"
+#include "pupil-tracking/PuReST.h"
 #include "pupil-tracking/PupilTrackingMethod.h"
 
 #include "utils.h"

@@ -46,7 +46,7 @@ SOURCES +=\
 	$${TOP}/src/CommandManager.cpp \
 	$${TOP}/src/ERWidget.cpp \
     src/pupil-tracking/PupiTtrackingMethod.cpp \
-    src/pupil-tracking/PuReTy.cpp \
+	src/pupil-tracking/PuReST.cpp \
     src/pupil-detection/PuRe.cpp \
     src/Evaluation.cpp
 
@@ -80,9 +80,9 @@ HEADERS  += \
 	$${TOP}/src/CommandManager.h \
 	$${TOP}/src/ERWidget.h \
 	$${TOP}/src/pupil-tracking/PupilTrackingMethod.h \
-    src/pupil-tracking/PuReTy.h \
     src/pupil-detection/PuRe.h \
-    src/Evaluation.h
+    src/Evaluation.h \
+	src/pupil-tracking/PuReST.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \

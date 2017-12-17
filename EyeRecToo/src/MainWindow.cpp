@@ -46,7 +46,9 @@ MainWindow::MainWindow(QWidget *parent) :
      * properly by CoInitializing it in the main thread.
      */
     volatile QList<QCameraInfo> tmp = QCameraInfo::availableCameras();
-    Q_UNUSED(tmp);
+	Q_UNUSED(tmp);
+
+	gPerformanceMonitor.setFrameDrop(true);
 
     /*
      * Asynchronous elements
@@ -142,6 +144,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(&commandManager, SIGNAL(unfreezeCameraImages()),
 			this, SLOT(unfreezeCameraImages()) );
 #else
+	gPerformanceMonitor.setFrameDrop(false);
 	evaluation = new Evaluation();
 	evaluation->show();
 	QMetaObject::invokeMethod(evaluation, "run", Qt::QueuedConnection);

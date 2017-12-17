@@ -6,6 +6,7 @@
 
 #include <string>
 #include <deque>
+#include <bitset>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -108,6 +109,8 @@ public:
 	// Generic confidence metrics
 	static float outlineContrastConfidence(const cv::Mat &frame, const Pupil &pupil, const int &bias=5);
 	static float edgeRatioConfidence(const cv::Mat &edgeImage, const Pupil &pupil, std::vector<cv::Point> &edgePoints, const int &band=5);
+	static float angularSpreadConfidence(const std::vector<cv::Point> &points, const cv::Point2f &center);
+	static float aspectRatioConfidence(const Pupil &pupil);
 
 	//Pupil test(const cv::Mat &frame, const cv::Rect &roi, Pupil pupil) { return pupil; }
 protected:

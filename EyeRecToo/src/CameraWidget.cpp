@@ -12,7 +12,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     eROI(QPoint(0,0)),
     settingROI(false),
     lastUpdate(0),
-    updateIntervalMs(50),
+    updateIntervalMs(80),
 	maxAgeMs(300),
 	cameraCalibrationSampleRequested(false),
     ui(new Ui::CameraWidget)
@@ -24,7 +24,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
 
     switch (type) {
         case ImageProcessor::Eye:
-            ui->viewFinder->setToolTip("You can select a region of interest by clicking and holding the right mouse button.");
+			ui->viewFinder->setToolTip("You can select a region of interest by clicking and holding the left mouse button.");
             break;
         case ImageProcessor::Field:
             ui->viewFinder->setToolTip("After starting the collection you can select points by clicking in this view with the left mouse button.");
@@ -123,7 +123,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
             imageProcessor, SIGNAL(newROI(QPointF,QPointF)) );
 
 	// Initial roi
-	setROI( QPointF(0, 0), QPointF(1, 1) );
+	setROI( QPointF(0.15, 0.1), QPointF(0.85, 0.9) );
     QMetaObject::invokeMethod(camera, "loadCfg");
 }
 
@@ -322,10 +322,10 @@ void CameraWidget::stopRecording()
 void CameraWidget::mousePressEvent(QMouseEvent *event)
 {
     if (ui->viewFinder->underMouse()) {
-        if (event->button() == Qt::LeftButton)
+		if (event->button() == Qt::LeftButton && type == ImageProcessor::Field)
             emit newClick( gTimer.elapsed(), ui->viewFinder->mapFromGlobal(this->mapToGlobal(event->pos())), ui->viewFinder->size());
 
-        if (event->button() == Qt::RightButton) {
+		if (event->button() == Qt::LeftButton && type == ImageProcessor::Eye) {
             sROI = ui->viewFinder->mapFrom(this, event->pos());
             validatePoint(sROI);
             sROI.setX( sROI.x() / ui->viewFinder->width());
@@ -350,7 +350,7 @@ void CameraWidget::mouseMoveEvent(QMouseEvent *event)
 
 void CameraWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton) {
+	if (event->button() == Qt::LeftButton && type == ImageProcessor::Eye) {
         eROI = ui->viewFinder->mapFrom(this, event->pos());
         validatePoint(eROI);
         eROI.setX( eROI.x() / ui->viewFinder->width());
@@ -471,6 +471,12 @@ void CameraWidget::onCameraCalibrationFinished(bool success)
 
 void CameraWidget::updateWidgetSize(const int &width, const int &height)
 {
+	if ( this->type == ImageProcessor::Eye)
+		this->setMaximumSize(320, 240);
+	if ( this->type == ImageProcessor::Field)
+		this->setMaximumSize(640, 360);
+	return;
+
 	// Logic to limit the size of the camera widgets
 	QSize newFrameSize = { width, height };
 	if (frameSize == newFrameSize)

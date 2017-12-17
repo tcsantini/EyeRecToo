@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QKeyEvent>
+#include <QScrollBar>
 #include <QDebug>
 
 #include "ERWidget.h"

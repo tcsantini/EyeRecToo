@@ -7,6 +7,9 @@ using namespace aruco;
 
 static int gFieldDataId = qRegisterMetaType<FieldData>("FieldData");
 
+static int markerDetectionCounter = 0;
+static int redetectMarkerCounter = 1;
+
 FieldImageProcessor::FieldImageProcessor(QString id, QObject *parent)
     : id(id),
       sROI(QPointF(0,0)),
@@ -91,6 +94,20 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 	}
 
 	if (cfg.markerDetectionMethod == "aruco" || gCalibrating) {
+#define LIMIT_MARKER_DETECTION
+#ifdef LIMIT_MARKER_DETECTION
+		if ( markerDetectionCounter == redetectMarkerCounter ) {
+			detectMarkers(downscaled, dict, corners, ids, detectorParameters);
+
+			if (cfg.processingDownscalingFactor > 1) { // Upscale if necessary
+				for (unsigned int i=0; i<ids.size(); i++)
+					for (unsigned int j=0; j<corners[i].size(); j++)
+						corners[i][j] = cfg.processingDownscalingFactor*corners[i][j];
+			}
+			markerDetectionCounter = 0;
+		} else
+			markerDetectionCounter++;
+#else
 		detectMarkers(downscaled, dict, corners, ids, detectorParameters);
 
 		if (cfg.processingDownscalingFactor > 1) { // Upscale if necessary
@@ -98,6 +115,7 @@ void FieldImageProcessor::process(Timestamp timestamp, const Mat &frame)
 				for (unsigned int j=0; j<corners[i].size(); j++)
 					corners[i][j] = cfg.processingDownscalingFactor*corners[i][j];
 		}
+#endif
 	}
 
     // Filling the marker data

@@ -18,7 +18,8 @@ LogWidget::~LogWidget()
 
 void LogWidget::appendMessage(const QString &msg)
 {
-    ui->log->appendPlainText(msg.trimmed());
+	ui->log->appendPlainText( msg.trimmed() );
+	ui->log->verticalScrollBar()->setValue( ui->log->verticalScrollBar()->maximum() );
 }
 
 void LogWidget::on_usrMsg_returnPressed()

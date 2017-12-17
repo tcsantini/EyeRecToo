@@ -133,7 +133,7 @@ void DataRecorder::storeData(T &data)
         videoIdx++;
     }
 
-    if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - data.timestamp, 1000) )
+	if ( gPerformanceMonitor.shouldDrop(pmIdx, gTimer.elapsed() - data.timestamp, 2000) )
         return;
 
     if (videoWriter->isOpened())

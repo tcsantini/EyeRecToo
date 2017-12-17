@@ -12,7 +12,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 	// We can afford to work on a very small input for haar features, but retain the aspect ratio
 	float xr = frame.cols / (float) workingWidth;
 	float yr = frame.rows / (float) workingHeight;
-	float r = min( xr, yr );
+	float r = max( xr, yr );
 
 	Mat downscaled;
 	resize(frame, downscaled, Size(), 1/r, 1/r, CV_INTER_LINEAR);
@@ -405,6 +405,38 @@ float PupilDetectionMethod::outlineContrastConfidence(const Mat &frame, const Pu
 	return validCount / (float) evaluated;
 }
 
+float PupilDetectionMethod::angularSpreadConfidence(const vector<Point> &points, const Point2f &center)
+{
+	enum {
+		Q0 = 0,
+		Q1 = 1,
+		Q2 = 2,
+		Q3 = 3,
+	};
+
+	std::bitset<4> anchorPointSlices;
+	anchorPointSlices.reset();
+	for (auto p=points.begin(); p!=points.end(); p++) {
+		if (p->x - center.x < 0) {
+			if (p->y - center.y < 0)
+				anchorPointSlices.set(Q0);
+			else
+				anchorPointSlices.set(Q3);
+		} else  {
+			if (p->y - center.y < 0)
+				anchorPointSlices.set(Q1);
+			else
+				anchorPointSlices.set(Q2);
+		}
+	}
+	return anchorPointSlices.count() / (float) anchorPointSlices.size();
+}
+
+float PupilDetectionMethod::aspectRatioConfidence(const Pupil &pupil)
+{
+	return pupil.minorAxis() / (float) pupil.majorAxis();
+}
+
 float PupilDetectionMethod::edgeRatioConfidence(const Mat &edgeImage, const Pupil &pupil, vector<Point> &edgePoints, const int &band)
 {
 	if (!pupil.valid())
@@ -416,3 +448,4 @@ float PupilDetectionMethod::edgeRatioConfidence(const Mat &edgeImage, const Pupi
 	findNonZero(inBandEdges, edgePoints);
 	return min<float>( edgePoints.size() / pupil.circumference(), 1.0 );
 }
+

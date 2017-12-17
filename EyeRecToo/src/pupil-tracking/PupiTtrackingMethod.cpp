@@ -64,7 +64,6 @@ void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const c
 	predictMaxPupilDiameter();
 
 	if ( previousPupil.confidence == NO_CONFIDENCE ) {
-		//pupil = pupilDetectionMethod.runWithConfidence(frame, roi, -1, predictedMaxPupilDiameter);
 		pupil = pupilDetectionMethod.runWithConfidence(frame, roi, -1, -1);
 	} else {
 		run(frame, roi, previousPupil, pupil);
@@ -72,58 +71,4 @@ void PupilTrackingMethod::run(const Timestamp &ts, const cv::Mat &frame, const c
 
 	registerPupil(ts, pupil);
 	return;
-
-
-	/*
-	int minPupilDiameterPx = -1;
-	int maxPupilDiameterPx = -1;
-	if ( ! previousPupils.empty() ) {
-		float meanDiameterPx = std::accumulate( previousPupils.begin(), previousPupils.end(), 0,
-			[](int sum, const TrackedPupil &p) { return sum + max<int>( p.size.width, p.size.height ); } ) / (float) previousPupils.size();
-		minPupilDiameterPx = 0.75 * meanDiameterPx;
-		maxPupilDiameterPx = 1.25 * meanDiameterPx;
-	}
-
-	if ( previousPupil.confidence == NO_CONFIDENCE ) {
-		pupil = pupilDetectionMethod.runWithConfidence(frame, roi, minPupilDiameterPx, maxPupilDiameterPx);
-		if (previousPupils.size() > 15) {
-			if (pupil.diameter() <= maxPupilDiameterPx)
-				updatePreviousPupil(ts, pupil);
-			else
-				pupil.clear();
-		} else
-			updatePreviousPupil(ts, pupil);
-		return;
-	}
-
-	QFuture<Pupil> future;
-	if (ts - lastDetection > maxTrackingWithoutDetectionTime) {
-		float previousDiameter = max<float>( previousPupil.size.width, previousPupil.size.height );
-		future = QtConcurrent::run(&pupilDetectionMethod, &PupilDetectionMethod::runWithConfidence, frame, roi, 0.9*previousDiameter, 1.1*previousDiameter);
-		parallelDetection = true;
-	}
-
-	run(frame, roi, previousPupil, pupil);
-
-	if (parallelDetection) {
-		parallelDetection = false;
-		lastDetection = ts;
-		Pupil detectedPupil = future.result();
-		if (detectedPupil.confidence > pupil.confidence)
-			pupil = detectedPupil;
-	} else {
-		if ( pupil.confidence < minDetectionConfidence)
-			pupil = pupilDetectionMethod.runWithConfidence(frame, roi);
-	}
-
-	if ( pupil.confidence > minDetectionConfidence) {
-		if (previousPupils.size() > 15) {
-			if (pupil.diameter() <= maxPupilDiameterPx)
-				updatePreviousPupil(ts, pupil);
-			else
-				pupil.clear();
-		} else
-			updatePreviousPupil(ts, pupil);
-	}
-	*/
 }
