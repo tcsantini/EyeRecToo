@@ -71,7 +71,7 @@ void DataRecorder::newData(FieldData fieldData)
 
 void DataRecorder::newData(DataTuple dataTuple)
 {
-    // Note that the Journal data recorder doesn't registered with the
+	// Note that the Journal data recorder isn't registered with the
     // performance monitor since it's cheap to store its data.
 
     if (dataStream == NULL)
