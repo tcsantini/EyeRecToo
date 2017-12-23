@@ -42,6 +42,8 @@ public slots:
 	void toggleCalibration();
 	void enableMarkerCollection();
 	void disableMarkerCollection();
+	void startRecording();
+	void stopRecording();
 
 private:
     QThread *gazeEstimationThread;
@@ -56,7 +58,8 @@ private:
     bool isCollecting;
     bool isSampling;
     bool lastStatus;
-    bool calibrationRequested;
+	bool calibrationRequested;
+	bool isRecording;
 
     QLabel *statusBarLabel;
 

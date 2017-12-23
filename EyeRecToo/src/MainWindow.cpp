@@ -118,8 +118,10 @@ MainWindow::MainWindow(QWidget *parent) :
             fieldWidget, SLOT(startRecording()) );
     connect(this, SIGNAL(stopRecording()),
             fieldWidget, SLOT(stopRecording()) );
-//    connect(this, SIGNAL(startRecording()), calibrationWidget, SLOT(startRecording()) );
-//    connect(this, SIGNAL(stopRecording()), calibrationWidget, SLOT(stopRecording()) );
+	connect(this, SIGNAL(startRecording()),
+			gazeEstimationWidget, SLOT(startRecording()) );
+	connect(this, SIGNAL(stopRecording()),
+			gazeEstimationWidget, SLOT(stopRecording()) );
     connect(this, SIGNAL(startRecording()),
             journal, SIGNAL(startRecording()) );
     connect(this, SIGNAL(stopRecording()),

@@ -491,20 +491,21 @@ void GazeEstimation::loadTuplesFromFile(CollectionTuple::TupleType tupleType, QS
 
 void GazeEstimation::saveTuplesToFile(CollectionTuple::TupleType tupleType, QString fileName)
 {
-    vector<CollectionTuple*> pertinentTuples;
-    for (unsigned int i=0; i<collectedTuples.size(); i++) {
-        if ( tupleType == CollectionTuple::CALIBRATION)
-            if (collectedTuples[i].isEvaluation())
-                continue;
+	vector<CollectionTuple*> pertinentTuples;
+	for (unsigned int i=0; i<collectedTuples.size(); i++) {
+		//if ( tupleType == CollectionTuple::CALIBRATION)
+		//	if (collectedTuples[i].isEvaluation())
+		//		continue;
 
-        if ( tupleType == CollectionTuple::EVALUATION)
-            if (collectedTuples[i].isCalibration())
-                continue;
+		if ( tupleType == CollectionTuple::EVALUATION) {
+			if (collectedTuples[i].isCalibration())
+				continue;
+		}
 
-        pertinentTuples.push_back(&collectedTuples[i]);
-    }
+		pertinentTuples.push_back(&collectedTuples[i]);
+	}
 
-    saveTuplesToFile(pertinentTuples, fileName, QIODevice::WriteOnly);
+	saveTuplesToFile(pertinentTuples, fileName, QIODevice::WriteOnly);
 }
 
 void GazeEstimation::saveTuplesToFile(const std::vector<CollectionTuple *> &tuples, QString fileName, QFlags<QIODevice::OpenModeFlag> flags)

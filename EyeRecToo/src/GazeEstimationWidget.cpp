@@ -13,7 +13,8 @@ GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
     isCollecting(false),
     isSampling(false),
     lastStatus(false),
-    calibrationRequested(false),
+	calibrationRequested(false),
+	isRecording(false),
     ui(new Ui::GazeEstimationWidget)
 {
     ui->setupUi(this);
@@ -298,6 +299,17 @@ void GazeEstimationWidget::on_collectionTypeComboBox_currentIndexChanged(int ind
     currentTupleType = static_cast<CollectionTuple::TupleType>( ui->collectionTypeComboBox->itemData(index).toInt() );
 }
 
+void GazeEstimationWidget::startRecording()
+{
+	isRecording = true;
+	QMetaObject::invokeMethod(gazeEstimation, "saveCalibration");
+}
+
+void GazeEstimationWidget::stopRecording()
+{
+	isRecording = false;
+}
+
 /*
 void GazeEstimationWidget::keyPressEvent(QKeyEvent *event)
 {
@@ -472,14 +484,15 @@ void GazeEstimationWidget::updateStatus(bool status, QString msg)
 
     if (status) {
         statusBarLabel->setText("Calibrated.");
-        statusBarLabel->setStyleSheet("QLabel { font : bold; color : green }");
+		statusBarLabel->setStyleSheet("QLabel { font : bold; color : green }");
+		if (isRecording)
+			QMetaObject::invokeMethod(gazeEstimation, "saveCalibration");
     } else {
         statusBarLabel->setText(QString("Uncalibrated: %1").arg(msg));
         statusBarLabel->setStyleSheet("QLabel { font : bold; color : red }");
     }
 
 }
-
 
 void GazeEstimationWidget::on_minCentralCoverage_editingFinished()
 {

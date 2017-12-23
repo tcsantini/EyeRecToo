@@ -195,7 +195,8 @@ public slots:
     void saveTuplesToFile(const std::vector<CollectionTuple*> &tuples, QString fileName, QFlags<QIODevice::OpenModeFlag> flags);
     void addTuple(CollectionTuple tuple);
     void addTuples(std::vector<CollectionTuple> tuples);
-    void reset(CollectionTuple::TupleType type);
+	void reset(CollectionTuple::TupleType type);
+	void saveCalibration() { saveTuplesToFile( CollectionTuple::TupleType::CALIBRATION, QString("%1-calibration.tup").arg( gTimer.elapsed() ) ); }
 
     void setCalibrating(bool v);
 
