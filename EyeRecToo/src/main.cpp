@@ -21,7 +21,8 @@ void makeFolders()
 
 int main(int argc, char *argv[])
 {
-    gExeDir = QDir::currentPath();
+	// TODO: consider using CoreApplication::applicationDirPath(). It must be done after the application is instantiated though.
+	gExeDir = QDir::currentPath();
 
     // Makes sure the binary deployment can find the uvc engine
 #define LIBRARY_PATH_WORKAROUND
