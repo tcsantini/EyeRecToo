@@ -25,7 +25,8 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 	// Pupil radii is based on PuRe assumptions
 	int min_r = (int) (0.5 * 0.07 * d);
 	int max_r = (int) (0.5 * 0.29 * d);
-    int r_step = (int) max<float>( 0.2f*(max_r + min_r), 1.0f);
+	int r_step = (int) max<float>( 0.2f*(max_r + min_r), 1.0f);
+
 	// TODO: padding so we consider the borders as well!
 
 	/* Haar-like feature suggested by Swirski. For details, see
@@ -82,6 +83,9 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
                 if ( response < 0.5*best_response)
                     continue;
 
+				if (response < 0.5 * best_response)
+					continue;
+
 				if (response > best_response)
 					best_response = response;
 
@@ -95,7 +99,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 		}
 	}
 
-    auto compare = [] (const pair<Rect, float> &a, const pair<Rect,float> &b) {
+	auto compare = [] (const pair<Rect, float> &a, const pair<Rect,float> &b) {
 		return (a.second > b.second);
 	};
 	sort( candidates.begin(), candidates.end(), compare);

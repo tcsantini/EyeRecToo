@@ -104,7 +104,7 @@ public:
 	virtual Pupil getNextCandidate() { return Pupil(); }
 
 	// Generic coarse pupil detection
-	static cv::Rect coarsePupilDetection(const cv::Mat &frame, const float &minCoverage=0.5f, const int &workingWidth=80, const int &workingHeight=60);
+	static cv::Rect coarsePupilDetection(const cv::Mat &frame, const float &minCoverage=0.5f, const int &workingWidth=60, const int &workingHeight=40);
 
 	// Generic confidence metrics
 	static float outlineContrastConfidence(const cv::Mat &frame, const Pupil &pupil, const int &bias=5);

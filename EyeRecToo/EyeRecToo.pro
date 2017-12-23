@@ -47,10 +47,10 @@ SOURCES +=\
 	$${TOP}/src/Overlay.cpp \
 	$${TOP}/src/CommandManager.cpp \
 	$${TOP}/src/ERWidget.cpp \
-    src/pupil-tracking/PupiTtrackingMethod.cpp \
 	src/pupil-tracking/PuReST.cpp \
     src/pupil-detection/PuRe.cpp \
-    src/Evaluation.cpp
+    src/Evaluation.cpp \
+    src/pupil-tracking/PupilTrackingMethod.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\

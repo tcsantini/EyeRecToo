@@ -126,7 +126,7 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 			data.validPupil = true;
 		}
 
-    }
+	}
 
     data.processingTimestamp = gTimer.elapsed() - data.timestamp;
 
