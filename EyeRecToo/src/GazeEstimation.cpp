@@ -204,9 +204,14 @@ void GazeEstimation::calibrate()
     interpolationHull.clear();
     evaluationRegions.clear();
 
-    QString error = "No gaze estimation method available.";
-    if (!gazeEstimationMethod)
-        return;
+	QString error = "";
+	if (!gazeEstimationMethod) {
+		error = "No gaze estimation method available.";
+		error = "No calibration tuples available.";
+		qInfo() << error;
+		emit calibrationFinished(false, error);
+		return;
+	}
 
     calibrationTuples.clear();
 
@@ -252,7 +257,21 @@ void GazeEstimation::calibrate()
         emit calibrationFinished(false, error);
         return;
     }
-    evaluate();
+	evaluate();
+
+	if ( centralHullCoverage < cfg.minCentralAreaCoverage )
+		error.append("Calibration didn't cover enough of the central area. ");
+	if ( peripheralHullCoverage < cfg.minPeriphericAreaCoverage )
+		error.append("Calibration didn't cover enough of the peripheric area. ");
+	if ( 100*meanEvaluationError > cfg.maxReprojectionError )
+		error.append("Reprojection error is too high. ");
+	if (!error.isEmpty()) {
+		qInfo() << error;
+		emit calibrationFinished(false, error);
+		calibrated = false;
+		return;
+	}
+
     autoVisualizationTimer.restart();
     emit calibrationFinished(true, "");
 }

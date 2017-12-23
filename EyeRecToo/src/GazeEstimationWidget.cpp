@@ -132,7 +132,19 @@ GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
 
     ui->visualizationTimeSpinBox->blockSignals(true);
     ui->visualizationTimeSpinBox->setValue(cfg.visualizationTimeS);
-    ui->visualizationTimeSpinBox->blockSignals(false);
+	ui->visualizationTimeSpinBox->blockSignals(false);
+
+	ui->minCentralCoverage->blockSignals(true);
+	ui->minCentralCoverage->setValue(cfg.minCentralAreaCoverage);
+	ui->minCentralCoverage->blockSignals(false);
+
+	ui->minPeriphericCoverage->blockSignals(true);
+	ui->minPeriphericCoverage->setValue(cfg.minPeriphericAreaCoverage);
+	ui->minPeriphericCoverage->blockSignals(false);
+
+	ui->maxReprojectionError->blockSignals(true);
+	ui->maxReprojectionError->setValue(cfg.maxReprojectionError);
+	ui->maxReprojectionError->blockSignals(false);
 
     statusBarLabel = new QLabel();
     ui->statusBar->addPermanentWidget(statusBarLabel, 1000);
@@ -468,3 +480,21 @@ void GazeEstimationWidget::updateStatus(bool status, QString msg)
 
 }
 
+
+void GazeEstimationWidget::on_minCentralCoverage_editingFinished()
+{
+	cfg.minCentralAreaCoverage = ui->minCentralCoverage->value();
+	updateConfig();
+}
+
+void GazeEstimationWidget::on_minPeriphericCoverage_editingFinished()
+{
+	cfg.minPeriphericAreaCoverage = ui->minPeriphericCoverage->value();
+	updateConfig();
+}
+
+void GazeEstimationWidget::on_maxReprojectionError_editingFinished()
+{
+	cfg.maxReprojectionError = ui->maxReprojectionError->value();
+	updateConfig();
+}

@@ -92,6 +92,9 @@ private slots:
     void on_visualizationGroupBox_toggled(bool arg1);
 	void on_visualizationTimeSpinBox_valueChanged(int arg1);
 
+	void on_minCentralCoverage_editingFinished();
+	void on_minPeriphericCoverage_editingFinished();
+	void on_maxReprojectionError_editingFinished();
 };
 
 #endif // GAZEESTIMATIONWIDGET_H
