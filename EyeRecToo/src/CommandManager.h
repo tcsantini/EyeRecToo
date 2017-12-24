@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QEvent>
 #include <QKeyEvent>
-#include <QSettings>
+
+#include "utils.h"
 
 class CommandManager : public QObject
 {
