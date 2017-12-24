@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-//#define EYEREC
+#define EYEREC
 #ifdef EYEREC
 
     createExtraMenus();
@@ -145,6 +145,8 @@ MainWindow::MainWindow(QWidget *parent) :
 			this, SLOT(freezeCameraImages()) );
 	connect(&commandManager, SIGNAL(unfreezeCameraImages()),
 			this, SLOT(unfreezeCameraImages()) );
+    connect(&commandManager, SIGNAL(togglePreview()),
+            this, SLOT(togglePreview()) );
 #else
 	gPerformanceMonitor.setFrameDrop(false);
 	evaluation = new Evaluation();
@@ -585,7 +587,17 @@ void MainWindow::toggleRecording()
 {
 	if ( ! ui->recordingToggle->isChecked()) {
 		if (ui->subject->text().isEmpty()) // Unset remote recording
-			setSubjectName("remote");
-	}
+            setSubjectName("remote");
+        QMetaObject::invokeMethod(performanceMonitorWidget, "on_resetCounters_clicked");
+    } else {
+        gPerformanceMonitor.report();
+    }
 	ui->recordingToggle->click();
+}
+
+void MainWindow::togglePreview()
+{
+    ui->fieldCam->click();
+    ui->leftEyeCam->click();
+    ui->rightEyeCam->click();
 }

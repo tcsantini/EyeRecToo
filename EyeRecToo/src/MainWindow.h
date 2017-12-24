@@ -206,7 +206,8 @@ private slots:
 
 	void toggleRecording();
 	void freezeCameraImages();
-	void unfreezeCameraImages();
+    void unfreezeCameraImages();
+    void togglePreview();
 
 };
 

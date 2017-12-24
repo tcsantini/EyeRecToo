@@ -4,10 +4,14 @@
 #include <QObject>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QSettings>
 
 class CommandManager : public QObject
 {
 	Q_OBJECT
+
+public:
+    explicit CommandManager(QObject *parent = 0);
 
 public slots:
 	void keyPress(QKeyEvent *event);
@@ -15,14 +19,18 @@ public slots:
 
 signals:
 	void toggleCalibration();
-	void toggleRecording();
+    void toggleRecording();
+    void togglePreview();
 	void enableMarkerCollection();
 	void disableMarkerCollection();
 	void freezeCameraImages();
-	void unfreezeCameraImages();
+    void unfreezeCameraImages();
 
 private:
-	bool calibrating = false;
+    bool calibrating = false;
+    int calibrationToggleKey = Qt::Key_PageDown;
+    int recordingToggleKey = Qt::Key_B;
+    int previewToggleKey = Qt::Key_PageUp;
 };
 
 #endif // COMMANDMANAGER_H

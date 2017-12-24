@@ -4,46 +4,35 @@
 
 // TODO: make these keys configurable
 
+CommandManager::CommandManager(QObject *parent)
+{
+
+}
+
 void CommandManager::keyPress(QKeyEvent *event)
 {
-	if (event->isAutoRepeat())
-		return;
-	switch (event->key()) {
-		case Qt::Key_C:
-		case Qt::Key_PageDown:
-			if (calibrating) {
-				calibrating = false;
-				emit disableMarkerCollection();
-				emit toggleCalibration();
-			} else {
-				calibrating = true;
-				emit toggleCalibration();
-				emit enableMarkerCollection();
-			}
-			break;
-		case Qt::Key_R:
-		case Qt::Key_B:
-			emit toggleRecording();
-			break;
-		case Qt::Key_F:
-		case Qt::Key_PageUp:
-			emit freezeCameraImages();
-			break;
-		default:
-			break;
-	}
+    if (event->isAutoRepeat())
+        return;
+
+    if (event->key() == calibrationToggleKey) {
+        if (calibrating) {
+            calibrating = false;
+            emit disableMarkerCollection();
+            emit toggleCalibration();
+        } else {
+            calibrating = true;
+            emit toggleCalibration();
+            emit enableMarkerCollection();
+        }
+    } else if (event->key() == recordingToggleKey) {
+        emit toggleRecording();
+    } else if (event->key()  == previewToggleKey ){
+        emit togglePreview();
+    }
 }
 
 void CommandManager::keyRelease(QKeyEvent *event)
 {
 	if (event->isAutoRepeat())
 		return;
-	switch (event->key()) {
-		case Qt::Key_F:
-		case Qt::Key_PageUp:
-			emit unfreezeCameraImages();
-			break;
-		default:
-			break;
-	}
 }
