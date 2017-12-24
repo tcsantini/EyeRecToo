@@ -6,7 +6,7 @@ using namespace cv;
 
 //#define DBG_COARSE_PUPIL_DETECTION
 //#define DBG_OUTLINE_CONTRAST
-
+#include <QElapsedTimer>
 Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &minCoverage, const int &workingWidth, const int &workingHeight)
 {
 	// We can afford to work on a very small input for haar features, but retain the aspect ratio
@@ -15,7 +15,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 	float r = max( xr, yr );
 
 	Mat downscaled;
-	resize(frame, downscaled, Size(), 1/r, 1/r, CV_INTER_LINEAR);
+    resize(frame, downscaled, Size(), 1/r, 1/r, CV_INTER_LINEAR);
 
 	int ystep = (int) max<float>( 0.01f*downscaled.rows, 1.0f);
 	int xstep = (int) max<float>( 0.01f*downscaled.cols, 1.0f);
@@ -25,8 +25,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 	// Pupil radii is based on PuRe assumptions
 	int min_r = (int) (0.5 * 0.07 * d);
 	int max_r = (int) (0.5 * 0.29 * d);
-	int r_step = (int) max<float>( 0.1f*(max_r + min_r), 1.0f);
-
+    int r_step = (int) max<float>( 0.2f*(max_r + min_r), 1.0f);
 	// TODO: padding so we consider the borders as well!
 
 	/* Haar-like feature suggested by Swirski. For details, see
@@ -38,9 +37,9 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 	*/
 	Mat itg;
 	integral(downscaled, itg, CV_32S);
-	Mat res = Mat::zeros( downscaled.rows, downscaled.cols, CV_32F);
+    Mat res = Mat::zeros( downscaled.rows, downscaled.cols, CV_32F);
 	float best_response = std::numeric_limits<float>::min();
-	deque< pair<Rect, float> > candidates;
+    deque< pair<Rect, float> > candidates;
 	for (int r = min_r; r<=max_r; r+=r_step) {
 		int step = 3*r;
 
@@ -62,7 +61,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 			ib.y = y - r;
 			ic.y = y + r;
 			id.y = y + r;
-			for (int x = step; x<downscaled.cols-step; x+=xstep) {
+            for (int x = step; x<downscaled.cols-step; x+=xstep) {
 				oa.x = x - step;
 				ob.x = x + step;
 				oc.x = x + step;
@@ -78,7 +77,10 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 
 				float inner_mean = inner_norm*inner;
 				float outer_mean = outer_norm*outer;
-				float response = (outer_mean - inner_mean);
+                float response = (outer_mean - inner_mean);
+
+                if ( response < 0.5*best_response)
+                    continue;
 
 				if (response > best_response)
 					best_response = response;
@@ -93,14 +95,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 		}
 	}
 
-	// Eliminate low response candidates then sort and combine
-	for ( auto c = candidates.begin(); c != candidates.end();) {
-		if ( c->second < 0.5 * best_response)
-			c = candidates.erase(c);
-		else
-			c++;
-	}
-	auto compare = [] (const pair<Rect, float> &a, const pair<Rect,float> &b) {
+    auto compare = [] (const pair<Rect, float> &a, const pair<Rect,float> &b) {
 		return (a.second > b.second);
 	};
 	sort( candidates.begin(), candidates.end(), compare);
@@ -125,7 +120,7 @@ Rect PupilDetectionMethod::coarsePupilDetection(const Mat &frame, const float &m
 #endif
 		if (coarse.width > minWidth && coarse.height > minHeight)
 			break;
-	}
+    }
 
 #ifdef DBG_COARSE_PUPIL_DETECTION
 	rectangle(dbg, coarse, Scalar(0,255,0));

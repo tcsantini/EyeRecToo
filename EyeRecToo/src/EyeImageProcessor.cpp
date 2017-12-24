@@ -97,25 +97,25 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 			   INTER_AREA);
 		Rect coarseROI = {0, 0, downscaled.cols, downscaled.rows };
 
-		// If the user wants a coarse location and the method has none embedded,
-		// we further constrain the search using the generic one
-		if (!pupilDetectionMethod->hasCoarseLocation() && cfg.coarseDetection) {
-			coarseROI = PupilDetectionMethod::coarsePupilDetection( downscaled, 0.5f );
-			data.coarseROI = Rect(
-								 userROI.tl() + coarseROI.tl() / scalingFactor,
-								 userROI.tl() + coarseROI.br() / scalingFactor
-							);
-		} else
-			data.coarseROI = Rect();
+        // If the user wants a coarse location and the method has none embedded,
+        // we further constrain the search using the generic one
+        if (!pupilDetectionMethod->hasCoarseLocation() && cfg.coarseDetection) {
+            coarseROI = PupilDetectionMethod::coarsePupilDetection( downscaled, 0.5f, 60, 40);
+            data.coarseROI = Rect(
+                                 userROI.tl() + coarseROI.tl() / scalingFactor,
+                                 userROI.tl() + coarseROI.br() / scalingFactor
+                            );
+        } else
+            data.coarseROI = Rect();
 
-		if (cfg.tracking && pupilTrackingMethod) {
+        if (cfg.tracking && pupilTrackingMethod) {
 			pupilTrackingMethod->run(timestamp, downscaled, coarseROI, data.pupil, *pupilDetectionMethod);
 		} else {
 			pupilDetectionMethod->run( downscaled, coarseROI, data.pupil );
 			// TODO: expose this to the user
 			if ( ! pupilDetectionMethod->hasConfidence() )
 				data.pupil.confidence = PupilDetectionMethod::outlineContrastConfidence(downscaled, data.pupil);
-		}
+        }
 
 		if (data.pupil.center.x > 0 && data.pupil.center.y > 0) {
 			// Upscale
@@ -128,7 +128,7 @@ void EyeImageProcessor::process(Timestamp timestamp, const Mat &frame)
 
     }
 
-	data.processingTimestamp = gTimer.elapsed() - data.timestamp;
+    data.processingTimestamp = gTimer.elapsed() - data.timestamp;
 
     emit newData(data);
 }
