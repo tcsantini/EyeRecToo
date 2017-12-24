@@ -61,17 +61,33 @@ QCameraViewfinderSettings Camera::getViewfinderSettings(const QCameraInfo camera
 
     // Recommend based on known cameras
     QString description = cameraInfo.description();
-    if (description == "Pupil Cam1 ID0") {
-		recommended.setMaximumFrameRate(90);
-		recommended.setMinimumFrameRate(90);
+
+    if (description == "Pupil Cam1 ID0") { // Pupil V1
+        recommended.setMaximumFrameRate(60);
+        recommended.setMinimumFrameRate(60);
         recommended.setResolution(640, 480);
         recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
     } else if (description == "Pupil Cam1 ID1") {
-		recommended.setMaximumFrameRate(90);
-		recommended.setMinimumFrameRate(90);
+        recommended.setMaximumFrameRate(60);
+        recommended.setMinimumFrameRate(60);
         recommended.setResolution(640, 480);
         recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
     } else if (description == "Pupil Cam1 ID2") {
+        recommended.setMaximumFrameRate(30);
+        recommended.setMinimumFrameRate(30);
+        recommended.setResolution(1280, 720);
+        recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
+    } else if (description == "Pupil Cam2 ID0") { // Pupil V2
+        recommended.setMaximumFrameRate(60);
+        recommended.setMinimumFrameRate(60);
+        recommended.setResolution(320, 240);
+        recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
+    } else if (description == "Pupil Cam2 ID1") {
+        recommended.setMaximumFrameRate(60);
+        recommended.setMinimumFrameRate(60);
+        recommended.setResolution(320, 240);
+        recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
+    } else if (description == "Pupil Cam2 ID2") {
         recommended.setMaximumFrameRate(30);
         recommended.setMinimumFrameRate(30);
         recommended.setResolution(1280, 720);
