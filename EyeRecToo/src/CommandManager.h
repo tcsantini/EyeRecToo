@@ -30,8 +30,8 @@ signals:
 private:
     bool calibrating = false;
     int calibrationToggleKey = Qt::Key_PageDown;
-    int recordingToggleKey = Qt::Key_B;
-    int previewToggleKey = Qt::Key_PageUp;
+    int recordingToggleKey = Qt::Key_PageUp;
+    int previewToggleKey = Qt::Key_B;
 };
 
 #endif // COMMANDMANAGER_H
