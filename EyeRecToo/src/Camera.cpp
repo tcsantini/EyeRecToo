@@ -80,17 +80,12 @@ QCameraViewfinderSettings Camera::getViewfinderSettings(const QCameraInfo camera
     } else if (description == "Pupil Cam2 ID0") { // Pupil V2
         recommended.setMaximumFrameRate(60);
         recommended.setMinimumFrameRate(60);
-        recommended.setResolution(320, 240);
+		recommended.setResolution(400, 400);
         recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
     } else if (description == "Pupil Cam2 ID1") {
         recommended.setMaximumFrameRate(60);
         recommended.setMinimumFrameRate(60);
-        recommended.setResolution(320, 240);
-        recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
-    } else if (description == "Pupil Cam2 ID2") {
-        recommended.setMaximumFrameRate(30);
-        recommended.setMinimumFrameRate(30);
-        recommended.setResolution(1280, 720);
+		recommended.setResolution(400, 400);
         recommended.setPixelFormat( QVideoFrame::Format_Jpeg);
     } else {
         // Unknown; recommend to maximize fps and minimize resolution
