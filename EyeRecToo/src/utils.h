@@ -112,5 +112,6 @@ extern std::vector<QString> gLogBuffer;
 extern PerformanceMonitor gPerformanceMonitor;
 
 extern bool gCalibrating;
+extern bool gFreezePreview;
 
 #endif // UTILS_H

@@ -24,6 +24,7 @@ std::vector<QString> gLogBuffer;
 PerformanceMonitor gPerformanceMonitor;
 
 bool gCalibrating = false;
+bool gFreezePreview = false;
 
 /*
  * Utility functions

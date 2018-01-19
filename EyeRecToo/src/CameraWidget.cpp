@@ -379,7 +379,10 @@ void CameraWidget::validatePoint(QPointF &point)
 bool CameraWidget::shouldUpdate(Timestamp t)
 {
     if (!this->isVisible())
-        return false;
+		return false;
+
+	if (gFreezePreview)
+		return false;
 
 	/* TODO: Right now, we don't update every frame to save resources.
 	 * Make this parametrizable or move to faster drawing methods.

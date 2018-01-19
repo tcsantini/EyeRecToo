@@ -597,7 +597,5 @@ void MainWindow::toggleRecording()
 
 void MainWindow::togglePreview()
 {
-    ui->fieldCam->click();
-    ui->leftEyeCam->click();
-    ui->rightEyeCam->click();
+	gFreezePreview = !gFreezePreview;
 }
