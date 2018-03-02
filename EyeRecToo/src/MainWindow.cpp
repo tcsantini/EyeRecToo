@@ -428,11 +428,13 @@ void MainWindow::widgetButtonReact(QMainWindow *window, bool checked)
     if (!window)
         return;
 
-    if (checked) {
+	if (checked) {
         window->show();
         window->raise();
         window->activateWindow();
-        window->setFocus();
+		window->setFocus();
+		if (window->isMinimized())
+			window->showNormal();
     } else
         window->hide();
 }

@@ -18,6 +18,7 @@ signals:
 public slots:
 
 protected:
+	void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(false); }
 	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE { Q_UNUSED(event) emit closed(false); }
 	void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE { emit keyPress(event); }
 	void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE { emit keyRelease(event); }
