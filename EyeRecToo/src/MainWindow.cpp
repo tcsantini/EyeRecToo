@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-// TODO: factor config aware class into ERWidget
+// TODO: automatically detect suitable window positions on first init
 
 void MainWindow::createExtraMenus()
 {
@@ -10,11 +10,11 @@ void MainWindow::createExtraMenus()
 }
 
 MainWindow::MainWindow(QWidget *parent) :
-	ERWidget(parent),
-    lEyeWidget(NULL),
-    rEyeWidget(NULL),
-    fieldWidget(NULL),
-    synchronizer(NULL),
+	ERWidget("EyeRecToo", parent),
+	lEyeWidget(),
+	rEyeWidget(),
+	fieldWidget(),
+	synchronizer(),
     ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
@@ -24,8 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     createExtraMenus();
     connect(ui->menuBar, SIGNAL(triggered(QAction*)), this, SLOT(menuOption(QAction*)) );
 
-    settings = new QSettings(gCfgDir + "/" + "EyeRecToo", QSettings::IniFormat);
-    cfg.load(settings);
+	settings = new QSettings(gCfgDir + "/" + "EyeRecToo", QSettings::IniFormat);
+	cfg.load(settings);
 
     setWindowTitle(QString("EyeRecToo v%1").arg(GIT_VERSION));
     setWindowIcon(QIcon(":/icons/EyeRecToo.png"));
@@ -36,8 +36,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	ui->blinker->hide();
 
-    logWidget = new LogWidget();
-    setupWidget(logWidget, cfg.logWidgetPos, cfg.logWidgetSize, cfg.logWidgetVisible, ui->log);
+	logWidget = new LogWidget("Log Widget");
+	logWidget->setDefaults( true, {480, 240} );
+	setupWidget(logWidget, settings, ui->log);
 	gLogWidget = logWidget;
 
     /*
@@ -53,17 +54,20 @@ MainWindow::MainWindow(QWidget *parent) :
     /*
      * Asynchronous elements
      */
-    lEyeWidget = new CameraWidget("LeftEye", ImageProcessor::Eye);
-    lEyeWidget->setWindowIcon(QIcon(":/icons/lEyeWidget.png"));
-	setupWidget(lEyeWidget, cfg.leftEyeWidgetPos, cfg.leftEyeWidgetSize, cfg.leftEyeWidgetVisible, ui->leftEyeCam);
+	lEyeWidget = new CameraWidget("Left Eye Widget", ImageProcessor::Eye);
+	lEyeWidget->setDefaults( true, {320, 240} );
+	lEyeWidget->setWindowIcon(QIcon(":/icons/lEyeWidget.png"));
+	setupWidget(lEyeWidget, settings, ui->leftEyeCam);
 	QThread::msleep(200);
-    rEyeWidget = new CameraWidget("RightEye", ImageProcessor::Eye);
-    rEyeWidget->setWindowIcon(QIcon(":/icons/rEyeWidget.png"));
-    setupWidget(rEyeWidget, cfg.rightEyeWidgetPos, cfg.rightEyeWidgetSize, cfg.rightEyeWidgetVisible, ui->rightEyeCam);
+	rEyeWidget = new CameraWidget("Right Eye Widget", ImageProcessor::Eye);
+	rEyeWidget->setDefaults( true, {320, 240} );
+	rEyeWidget->setWindowIcon(QIcon(":/icons/rEyeWidget.png"));
+	setupWidget(rEyeWidget, settings, ui->rightEyeCam);
 	QThread::msleep(200);
-    fieldWidget = new CameraWidget("Field", ImageProcessor::Field);
-    fieldWidget->setWindowIcon(QIcon(":/icons/fieldWidget.png"));
-    setupWidget(fieldWidget, cfg.fieldWidgetPos, cfg.fieldWidgetSize, cfg.fieldWidgetVisible, ui->fieldCam);
+	fieldWidget = new CameraWidget("Field Widget", ImageProcessor::Field);
+	fieldWidget->setDefaults( true, {854, 480} );
+	fieldWidget->setWindowIcon(QIcon(":/icons/fieldWidget.png"));
+	setupWidget(fieldWidget, settings, ui->fieldCam);
 
     /*
      * Synchronizer
@@ -79,8 +83,9 @@ MainWindow::MainWindow(QWidget *parent) :
     /*
      * Synchronous elements
      */
-    gazeEstimationWidget = new GazeEstimationWidget();
-    setupWidget(gazeEstimationWidget, cfg.gazeEstimationWidgetPos, cfg.gazeEstimationWidgetSize, cfg.gazeEstimationWidgetVisible, ui->gazeEstimation);
+	gazeEstimationWidget = new GazeEstimationWidget("Gaze Estimation Widget");
+	gazeEstimationWidget->setDefaults( false );
+	setupWidget(gazeEstimationWidget, settings, ui->gazeEstimation);
     connect(synchronizer, SIGNAL(newData(DataTuple)),
             gazeEstimationWidget, SIGNAL(inDataTuple(DataTuple)) );
     connect(fieldWidget, SIGNAL(newClick(Timestamp,QPoint,QSize)),
@@ -102,8 +107,9 @@ MainWindow::MainWindow(QWidget *parent) :
     networkStream->start(2002);
     connect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)), networkStream, SLOT(push(DataTuple)) );
 
-    performanceMonitorWidget = new PerformanceMonitorWidget();
-    setupWidget(performanceMonitorWidget, cfg.performanceMonitorWidgetPos, cfg.performanceMonitorWidgetSize, cfg.performanceMonitorWidgetVisible, ui->performanceMonitor);
+	performanceMonitorWidget = new PerformanceMonitorWidget("Performance Monitor Widget");
+	performanceMonitorWidget->setDefaults( false );
+	setupWidget(performanceMonitorWidget, settings, ui->performanceMonitor);
 
     // GUI to Widgets signals
     connect(this, SIGNAL(startRecording()),
@@ -130,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
     loadSoundEffect(recStartSound, "rec-start.wav");
     loadSoundEffect(recStopSound, "rec-stop.wav");
 
-	setupWidget(this, cfg.mainWindowPos, cfg.mainWindowSize, true);
+	setupWidget(this, settings);
 
 	// Commands
 	connect(&commandManager, SIGNAL(toggleCalibration()),
@@ -153,6 +159,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	evaluation->show();
 	QMetaObject::invokeMethod(evaluation, "run", Qt::QueuedConnection);
 #endif
+
 }
 
 MainWindow::~MainWindow()
@@ -172,29 +179,17 @@ void MainWindow::closeEvent(QCloseEvent *event)
         // ui->recordingToggle->click();
     }
 
-    cfg.mainWindowPos = pos();
-	cfg.mainWindowSize = size();
-	cfg.logWidgetPos = logWidget->pos();
-	cfg.logWidgetSize = logWidget->size();
-	cfg.logWidgetVisible = logWidget->isVisible();
-	cfg.leftEyeWidgetPos = lEyeWidget->pos();
-	cfg.leftEyeWidgetSize = lEyeWidget->size();
-	cfg.leftEyeWidgetVisible = lEyeWidget->isVisible();
-	cfg.rightEyeWidgetPos = rEyeWidget->pos();
-	cfg.rightEyeWidgetSize = rEyeWidget->size();
-	cfg.rightEyeWidgetVisible = rEyeWidget->isVisible();
-	cfg.fieldWidgetPos = fieldWidget->pos();
-	cfg.fieldWidgetSize = fieldWidget->size();
-	cfg.fieldWidgetVisible = fieldWidget->isVisible();
-	cfg.gazeEstimationWidgetPos = gazeEstimationWidget->pos();
-	cfg.gazeEstimationWidgetSize = gazeEstimationWidget->size();
-	cfg.gazeEstimationWidgetVisible = gazeEstimationWidget->isVisible();
-	cfg.performanceMonitorWidgetPos = performanceMonitorWidget->pos();
-	cfg.performanceMonitorWidgetSize = performanceMonitorWidget->size();
-	cfg.performanceMonitorWidgetVisible = performanceMonitorWidget->isVisible();
-    cfg.workingDirectory = QDir::currentPath();
-    if (settings)
-        cfg.save(settings);
+	cfg.workingDirectory = QDir::currentPath();
+	if (settings) {
+		cfg.save(settings);
+		save(settings);
+		logWidget->save(settings);
+		lEyeWidget->save(settings);
+		rEyeWidget->save(settings);
+		fieldWidget->save(settings);
+		gazeEstimationWidget->save(settings);
+		performanceMonitorWidget->save(settings);
+	}
 
     qInfo() << "Closing Left Eye Widget...";
     if ( lEyeWidget ) {
@@ -556,24 +551,21 @@ void MainWindow::showAboutDialog()
     QMessageBox::about(this, "About", msg);
 }
 
-void MainWindow::setupWidget(ERWidget *widget, QPoint &position, const QSize &size, const bool &visible, QPushButton *button)
+void MainWindow::setupWidget(ERWidget *widget, QSettings* settings, QPushButton *button)
 {
-    // Sanitize position first
+	// TODO: we might consider eventually move each ERWidget settings to their own file
+	widget->load(settings);
+	widget->setup();
+
+	// Sanitize position
     bool inScreen = false;
     for (int i = 0; i < QApplication::desktop()->screenCount(); i++)
-        inScreen |= QApplication::desktop()->screenGeometry(i).contains(position, true);
-
+		inScreen |= QApplication::desktop()->screenGeometry(i).contains(widget->pos(), true);
     if (!inScreen)
-        position = QApplication::desktop()->screenGeometry().topLeft();
-
-	widget->move(position);
-	widget->resize(size);
-
-    if (visible)
-		widget->show();
+		widget->move(QApplication::desktop()->screenGeometry().topLeft());
 
 	if (button) {
-		button->setChecked(visible);
+		button->setChecked(widget->isVisible());
 		connect(widget, SIGNAL(closed(bool)),
 				button, SLOT(setChecked(bool)) );
 	}

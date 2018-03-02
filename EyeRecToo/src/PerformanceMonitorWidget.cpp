@@ -3,15 +3,14 @@
 
 using namespace std;
 
-PerformanceMonitorWidget::PerformanceMonitorWidget(QWidget *parent) :
-	ERWidget(parent),
+PerformanceMonitorWidget::PerformanceMonitorWidget(QString id, QWidget *parent) :
+	ERWidget(id, parent),
     updateTimeMs(250),
     formLayout(NULL),
     ui(new Ui::PerformanceMonitorWidget)
 {
     ui->setupUi(this);
 
-    setWindowTitle("Performance Monitor Widget");
     setWindowIcon(QIcon(":/icons/performanceMonitorWidget.png"));
 
     QTimer::singleShot(updateTimeMs, this, SLOT(update()) );

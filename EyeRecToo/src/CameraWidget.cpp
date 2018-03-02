@@ -5,8 +5,7 @@ using namespace std;
 using namespace cv;
 
 CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *parent) :
-	ERWidget(parent),
-    id(id),
+	ERWidget(id, parent),
     type(type),
     sROI(QPoint(0,0)),
     eROI(QPoint(0,0)),
@@ -17,10 +16,10 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
 	cameraCalibrationSampleRequested(false),
     ui(new Ui::CameraWidget)
 {
-    ui->setupUi(this);
+	ui->setupUi(this);
     ui->viewFinder->setScaledContents(false);
     ui->viewFinder->setAttribute(Qt::WA_OpaquePaintEvent, true);
-    ui->viewFinder->setCursor(Qt::CrossCursor);
+	ui->viewFinder->setCursor(Qt::CrossCursor);
 
     switch (type) {
         case ImageProcessor::Eye:
@@ -38,7 +37,6 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     gPerformanceMonitor.enrol(id, "Image Processor");
     gPerformanceMonitor.enrol(id, "Data Recorder");
 
-    setWindowTitle(id + " Widget");
     camera = NULL;
     imageProcessor = NULL;
 

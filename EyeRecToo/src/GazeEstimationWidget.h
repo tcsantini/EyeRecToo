@@ -23,7 +23,7 @@ class GazeEstimationWidget : public ERWidget
     Q_OBJECT
 
 public:
-    explicit GazeEstimationWidget(QWidget *parent = 0);
+	explicit GazeEstimationWidget(QString id, QWidget *parent = 0);
     ~GazeEstimationWidget();
 
 signals:

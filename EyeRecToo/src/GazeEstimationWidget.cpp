@@ -8,8 +8,8 @@ static int gCollectionTupleId = qRegisterMetaType<CollectionTuple>("CollectionTu
 static int gVectorCollectionTupleId = qRegisterMetaType<std::vector<CollectionTuple> >("std::vector<CollectionTuple>");
 static int gCollectionTupleTypeId = qRegisterMetaType<CollectionTuple::TupleType>("CollectionTuple::TupleType");
 
-GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
-	ERWidget(parent),
+GazeEstimationWidget::GazeEstimationWidget(QString id, QWidget *parent) :
+	ERWidget(id, parent),
     isCollecting(false),
     isSampling(false),
     lastStatus(false),
@@ -19,7 +19,6 @@ GazeEstimationWidget::GazeEstimationWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setWindowTitle("Gaze Estimation Widget");
     setWindowIcon(QIcon(":/icons/gazeEstimationWidget.png"));
 
     gazeEstimationThread = new QThread();

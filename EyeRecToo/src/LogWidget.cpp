@@ -1,13 +1,12 @@
 #include "LogWidget.h"
 #include "ui_LogWidget.h"
 
-LogWidget::LogWidget(QWidget *parent) :
-	ERWidget(parent),
+LogWidget::LogWidget(QString id, QWidget *parent) :
+	ERWidget(id, parent),
     ui(new Ui::LogWidget)
 {
     ui->setupUi(this);
 
-    setWindowTitle("Log Widget");
     setWindowIcon(QIcon(":/icons/logWidget.png"));
 }
 

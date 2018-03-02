@@ -37,102 +37,22 @@ class MainWindowConfig
 {
 public:
     MainWindowConfig() :
-    mainWindowPos( QPoint(0,0) ),
-    mainWindowSize( QSize(100, 100)),
-    logWidgetPos( QPoint(0,0) ),
-    logWidgetSize( QSize(640, 240)),
-    logWidgetVisible(true),
-    leftEyeWidgetPos( QPoint(0,0) ),
-    leftEyeWidgetSize( QSize(320,240) ),
-    leftEyeWidgetVisible(true),
-    rightEyeWidgetPos( QPoint(0,0) ),
-    rightEyeWidgetSize( QSize(320, 240) ),
-    rightEyeWidgetVisible(true),
-    fieldWidgetPos( QPoint(0,0) ),
-    fieldWidgetSize( QSize(320,240) ),
-    fieldWidgetVisible(true),
-    gazeEstimationWidgetPos( QPoint(0,0) ),
-    gazeEstimationWidgetSize( QSize(100, 100) ),
-    gazeEstimationWidgetVisible(true),
-    performanceMonitorWidgetPos( QPoint(0,0) ),
-    performanceMonitorWidgetSize( QSize(640, 240)),
-    performanceMonitorWidgetVisible(true),
-    workingDirectory("./")
+	workingDirectory("./")
     {}
-
-    QPoint mainWindowPos;
-    QSize mainWindowSize;
-    QPoint logWidgetPos;
-    QSize logWidgetSize;
-    bool logWidgetVisible;
-    QPoint leftEyeWidgetPos;
-    QSize leftEyeWidgetSize;
-    bool leftEyeWidgetVisible;
-    QPoint rightEyeWidgetPos;
-    QSize rightEyeWidgetSize;
-    bool rightEyeWidgetVisible;
-    QPoint fieldWidgetPos;
-    QSize fieldWidgetSize;
-    bool fieldWidgetVisible;
-    QPoint gazeEstimationWidgetPos;
-    QSize gazeEstimationWidgetSize;
-    bool gazeEstimationWidgetVisible;
-    QPoint performanceMonitorWidgetPos;
-    QSize performanceMonitorWidgetSize;
-    bool performanceMonitorWidgetVisible;
-    QString workingDirectory;
 
     void save(QSettings *settings)
     {
         settings->sync();
-        settings->setValue("mainWindowPos", mainWindowPos);
-        settings->setValue("mainWindowSize", mainWindowSize);
-        settings->setValue("logWidgetPos", logWidgetPos);
-        settings->setValue("logWidgetSize", logWidgetSize);
-        settings->setValue("logWidgetVisible", logWidgetVisible);
-        settings->setValue("leftEyeWidgetPos", leftEyeWidgetPos);
-        settings->setValue("leftEyeWidgetSize", leftEyeWidgetSize);
-        settings->setValue("leftEyeWidgetVisible", leftEyeWidgetVisible);
-        settings->setValue("rightEyeWidgetPos", rightEyeWidgetPos);
-        settings->setValue("rightEyeWidgetSize", rightEyeWidgetSize);
-        settings->setValue("rightEyeWidgetVisible", rightEyeWidgetVisible);
-        settings->setValue("fieldWidgetPos", fieldWidgetPos);
-        settings->setValue("fieldWidgetSize", fieldWidgetSize);
-        settings->setValue("fieldWidgetVisible", fieldWidgetVisible);
-        settings->setValue("gazeEstimationWidgetPos", gazeEstimationWidgetPos);
-        settings->setValue("gazeEstimationWidgetSize", gazeEstimationWidgetSize);
-        settings->setValue("gazeEstimationWidgetVisible", gazeEstimationWidgetVisible);
-        settings->setValue("performanceMonitorWidgetPos", performanceMonitorWidgetPos);
-        settings->setValue("performanceMonitorWidgetSize", performanceMonitorWidgetSize);
-        settings->setValue("performanceMonitorWidgetVisible", performanceMonitorWidgetVisible);
-        settings->setValue("workingDirectory", workingDirectory);
+		settings->setValue("workingDirectory", workingDirectory);
     }
 
     void load(QSettings *settings)
     {
         settings->sync();
-        set(settings, "mainWindowPos", mainWindowPos);
-        set(settings, "mainWindowSize", mainWindowSize);
-        set(settings, "logWidgetPos", logWidgetPos);
-        set(settings, "logWidgetSize", logWidgetSize);
-        set(settings, "logWidgetVisible", logWidgetVisible);
-        set(settings, "leftEyeWidgetPos", leftEyeWidgetPos);
-        set(settings, "leftEyeWidgetSize", leftEyeWidgetSize);
-        set(settings, "leftEyeWidgetVisible", leftEyeWidgetVisible);
-        set(settings, "rightEyeWidgetPos", rightEyeWidgetPos);
-        set(settings, "rightEyeWidgetSize", rightEyeWidgetSize);
-        set(settings, "rightEyeWidgetVisible", rightEyeWidgetVisible);
-        set(settings, "fieldWidgetPos", fieldWidgetPos);
-        set(settings, "fieldWidgetSize", fieldWidgetSize);
-        set(settings, "fieldWidgetVisible", fieldWidgetVisible);
-        set(settings, "gazeEstimationWidgetPos", gazeEstimationWidgetPos);
-        set(settings, "gazeEstimationWidgetSize", gazeEstimationWidgetSize);
-        set(settings, "gazeEstimationWidgetVisible", gazeEstimationWidgetVisible);
-        set(settings, "performanceMonitorWidgetPos", performanceMonitorWidgetPos);
-        set(settings, "performanceMonitorWidgetSize", performanceMonitorWidgetSize);
-        set(settings, "performanceMonitorWidgetVisible", performanceMonitorWidgetVisible);
         set(settings, "workingDirectory", workingDirectory);
-    }
+	}
+
+	QString workingDirectory;
 
 };
 
@@ -181,7 +101,7 @@ private:
     void setWorkingDirectory(QString dir);
     void widgetButtonReact(QMainWindow *window, bool checked);
 	void createExtraMenus();
-	void setupWidget(ERWidget *widget, QPoint &position, const QSize &size, const bool &visible=true, QPushButton *button=NULL);
+	void setupWidget(ERWidget *widget, QSettings *settings, QPushButton *button=NULL);
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;

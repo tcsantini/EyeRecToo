@@ -21,7 +21,7 @@ class PerformanceMonitorWidget : public ERWidget
     Q_OBJECT
 
 public:
-    explicit PerformanceMonitorWidget(QWidget *parent = 0);
+	explicit PerformanceMonitorWidget(QString id, QWidget *parent = 0);
 	~PerformanceMonitorWidget();
 
 private:

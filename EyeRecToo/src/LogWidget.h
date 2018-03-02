@@ -17,7 +17,7 @@ class LogWidget : public ERWidget
     Q_OBJECT
 
 public:
-    explicit LogWidget(QWidget *parent = 0);
+	explicit LogWidget(QString id, QWidget *parent = 0);
 	~LogWidget();
 
 public slots:

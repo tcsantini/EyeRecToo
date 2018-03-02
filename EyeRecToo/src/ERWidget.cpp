@@ -1,6 +1,9 @@
 #include "ERWidget.h"
+#include <QDebug>
 
-ERWidget::ERWidget(QWidget *parent) : QMainWindow(parent)
+ERWidget::ERWidget(QString id, QWidget *parent) :
+	id(id),
+	QMainWindow(parent)
 {
-
+	setDefaults();
 }
