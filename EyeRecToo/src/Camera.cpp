@@ -23,7 +23,7 @@ Camera::Camera(QString id, QObject *parent)
     connect(ui, SIGNAL(setCamera(QCameraInfo)), this, SLOT(setCamera(QCameraInfo)) );
     connect(ui, SIGNAL(setViewfinderSettings(QCameraViewfinderSettings)), this, SLOT(setViewfinderSettings(QCameraViewfinderSettings)) );
     connect(ui, SIGNAL(setColorCode(int)), this, SLOT(setColorCode(int)) );
-    settings = new QSettings(gCfgDir + "/" + id + " Camera", QSettings::IniFormat);
+	settings = new QSettings(gCfgDir + "/" + id + " Camera", QSettings::IniFormat);
 }
 
 Camera::~Camera()
@@ -257,7 +257,10 @@ void Camera::loadCfg()
 
     set(settings, "colorCode", colorCode);
 
-    setCamera(info, viewFinderSetting);
+	setCamera(info, viewFinderSetting);
+
+	if ( info.isNull() )  // failed to load something, search for default cameras
+		searchDefaultCamera();
 }
 
 void Camera::timedout()
@@ -284,4 +287,35 @@ void Camera::retry()
         retriesLeft--;
         QTimer::singleShot(1000, this, SLOT(retry()));
     }
+}
+
+void Camera::searchDefaultCamera()
+{
+	/* TODO:
+	 * 1) consider searching for the cameras periodically -- e.g., if the
+	 * plugs the eye tracker *after* we are running, nothing will happen.
+	 *
+	 * 2) extend this so the user can add his own default cameras
+	 */
+	QRegularExpression re;
+
+	if (id.contains("eye", Qt::CaseInsensitive) ) {
+		if (id.contains("right", Qt::CaseInsensitive) )
+			re.setPattern("Pupil Cam. ID0");
+		if (id.contains("left", Qt::CaseInsensitive) )
+			re.setPattern("Pupil Cam. ID1");
+	}
+
+	if (id.contains("field", Qt::CaseInsensitive) )
+		re.setPattern("Pupil Cam. ID2");
+
+	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+	for (int i=0; i<cameras.size(); i++) {
+		if (re.match(cameras[i].deviceName()).hasMatch()) {
+			setCamera(cameras[i]);
+			if (!currentCameraInfo.isNull())
+				return;
+		}
+	}
+
 }

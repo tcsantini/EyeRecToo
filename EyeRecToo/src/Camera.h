@@ -12,6 +12,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QGridLayout>
+#include <QRegularExpression>
 
 #include "opencv/cv.h"
 
@@ -170,10 +171,11 @@ private:
     int retriesLeft;
     int maxRetries;
 
-    static QMutex setCameraMutex;
+	static QMutex setCameraMutex;
+	void searchDefaultCamera();
 
 private slots:
-    void reset();
+	void reset();
 };
 
 #endif // CAMERA_H
