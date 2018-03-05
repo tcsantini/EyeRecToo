@@ -109,7 +109,7 @@ public:
           inputSize(cv::Size(0, 0)),
           flip(CV_FLIP_NONE),
 		  undistort(false),
-		  coarseDetection(true),
+		  coarseDetection(false),
 		  processingDownscalingFactor(1),
 		  pupilDetectionMethod(PuRe::desc.c_str()),
 		  tracking(true)
