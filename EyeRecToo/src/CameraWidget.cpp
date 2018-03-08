@@ -105,7 +105,7 @@ CameraWidget::CameraWidget(QString id, ImageProcessor::Type type, QWidget *paren
     optionAction = new QAction("Camera", optionsGroup);
     optionAction->setData(QVariant::fromValue(optionAction->text()));
     optionAction->setCheckable(false);
-    ui->menuOptions->addAction(optionAction);
+	ui->menuOptions->addAction(optionAction);
 
     optionAction = new QAction("Image Processor", optionsGroup);
     optionAction->setData(QVariant::fromValue(optionAction->text()));
@@ -288,7 +288,7 @@ void CameraWidget::options(QAction* action)
             QMetaObject::invokeMethod(camera, "showOptions", Qt::QueuedConnection);
         }
     }
-    if (option == "image processor")
+	if (option == "image processor")
         if (imageProcessor)
             QMetaObject::invokeMethod(imageProcessor, "showOptions", Qt::QueuedConnection, Q_ARG(QPoint, this->pos()));
 

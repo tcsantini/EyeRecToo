@@ -488,17 +488,22 @@ void MainWindow::menuOption(QAction* action)
 
 void MainWindow::showReferencesDialog()
 {
-    ReferenceList::add( "Santini et al.",
+	ReferenceList::add( "Santini et al.",
+		"PuRe: Robust pupil detection for real-time pervasive eye tracking",
+		"CVIU", "2018",
+		"https://www.sciencedirect.com/science/article/pii/S1077314218300146"
+	);
+	ReferenceList::add( "Santini et al.",
         "EyeRecToo: Open-source Software for Real-time Pervasive Head-mounted Eye Tracking",
         "VISAPP", "2017a",
         "http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=gLeoir7PxnI=&t=1"
     );
-    ReferenceList::add( "Santini et al.",
+	ReferenceList::add( "Santini et al.",
         "CalibMe: Fast and Unsupervised Eye Tracker Calibration for Gaze-Based Pervasive Human-Computer Interaction",
         "CHI", "2017b",
         "http://dl.acm.org/citation.cfm?id=3025453.3025950"
     );
-    ReferenceList::add( "Fuhl et al.",
+	ReferenceList::add( "Fuhl et al.",
         "ElSe: Ellipse Selection for Robust Pupil Detection in Real-World Environments",
         "ETRA", "2016",
         "http://dl.acm.org/citation.cfm?id=2857505"

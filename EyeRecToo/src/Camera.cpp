@@ -18,11 +18,12 @@ Camera::Camera(QString id, QObject *parent)
     this->id = id;
     if (id.contains("eye", Qt::CaseInsensitive) )
             colorCode = CV_8UC1;
-    ui = new CameraUI();
-    ui->moveToThread(QApplication::instance()->thread());
+	ui = new CameraUI();
+	ui->moveToThread(QApplication::instance()->thread());
     connect(ui, SIGNAL(setCamera(QCameraInfo)), this, SLOT(setCamera(QCameraInfo)) );
     connect(ui, SIGNAL(setViewfinderSettings(QCameraViewfinderSettings)), this, SLOT(setViewfinderSettings(QCameraViewfinderSettings)) );
-    connect(ui, SIGNAL(setColorCode(int)), this, SLOT(setColorCode(int)) );
+	connect(ui, SIGNAL(setColorCode(int)), this, SLOT(setColorCode(int)) );
+	connect(ui, SIGNAL(setParameter(QString,float)), this, SLOT(setParameter(QString,float)) );
 	settings = new QSettings(gCfgDir + "/" + id + " Camera", QSettings::IniFormat);
 }
 
@@ -52,7 +53,7 @@ void Camera::reset()
     if (frameGrabber) {
         frameGrabber->deleteLater();
         frameGrabber = NULL;
-    }
+	}
 }
 
 QCameraViewfinderSettings Camera::getViewfinderSettings(const QCameraInfo cameraInfo)
@@ -184,8 +185,9 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
         settingsList = camera->supportedViewfinderSettings();
         msg = currentCameraInfo.description() + " " + toQString(settings);
         retriesLeft = maxRetries;
-    }
-    saveCfg();
+	}
+
+	saveCfg();
     qInfo() << id << msg;
     QMetaObject::invokeMethod(ui, "updateSettings", Q_ARG(QList<QCameraViewfinderSettings>, settingsList), Q_ARG(QCameraViewfinderSettings, currentViewfinderSettings) );
 }
@@ -195,6 +197,30 @@ void Camera::setColorCode(int code)
     colorCode = code;
     QMetaObject::invokeMethod(frameGrabber, "setColorCode", Q_ARG(int, colorCode));
     saveCfg();
+}
+
+void Camera::setParameter(QString what, float value)
+{
+	//qDebug() << what << value;
+	if (!camera)
+		return;
+
+	QCameraImageProcessing *ip = camera->imageProcessing();
+
+	if (!ip->isAvailable())
+		return;
+
+	QString parameter = what.toLower();
+	if (parameter == "brightness")
+		ip->setBrightness(value);
+	if (parameter == "contrast")
+		ip->setContrast(value);
+	if (parameter == "white balance")
+		ip->setManualWhiteBalance(value);
+	if (parameter == "saturation")
+		ip->setSaturation(value);
+	if (parameter == "sharpening level")
+		ip->setSharpeningLevel(value);
 }
 
 void Camera::showOptions()

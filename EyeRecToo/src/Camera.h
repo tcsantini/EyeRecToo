@@ -13,10 +13,12 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QRegularExpression>
+#include <QFormLayout>
 
 #include "opencv/cv.h"
 
 #include "FrameGrabber.h"
+
 
 class CameraUI : public QDialog
 {
@@ -31,7 +33,8 @@ public:
         QGridLayout *layout = new QGridLayout();
 
         QHBoxLayout *hBoxLayout;
-        QGroupBox *box;
+		QFormLayout *formLayout;
+		QGroupBox *box;
 
         devicesBox = new QComboBox();
         hBoxLayout = new QHBoxLayout();
@@ -54,7 +57,17 @@ public:
         box = new QGroupBox("Color:");
         box->setLayout(hBoxLayout);
         hBoxLayout->addWidget(colorBox);
-        layout->addWidget(box);
+		layout->addWidget(box);
+
+		box = new QGroupBox("Parameters:");
+		formLayout = new QFormLayout();
+		addSlider(formLayout, "Brightness");
+		addSlider(formLayout, "Contrast");
+		addSlider(formLayout, "White Balance");
+		addSlider(formLayout, "Saturation");
+		addSlider(formLayout, "Sharpening Level");
+		box->setLayout(formLayout);
+		layout->addWidget(box, 0, 1, 3, 1);
 
         setLayout(layout);
         connect(devicesBox, SIGNAL(currentIndexChanged(int)),
@@ -117,17 +130,33 @@ public slots:
 signals:
     void setCamera(QCameraInfo cameraInfo);
     void setViewfinderSettings(QCameraViewfinderSettings settings);
-    void setColorCode(int code);
+	void setColorCode(int code);
+	void setParameter(QString what, float value);
 
 private slots:
     void deviceChanged(int i) { emit setCamera(devicesBox->itemData(i).value<QCameraInfo>());}
     void settingsChanged(int i) { emit setViewfinderSettings(settingsBox->itemData(i).value<QCameraViewfinderSettings>());}
-    void colorChanged(int i) { emit setColorCode(colorBox->itemData(i).value<int>()); }
+	void colorChanged(int i) { emit setColorCode(colorBox->itemData(i).value<int>()); }
+	void sliderReleased() {
+		QSlider *slider = static_cast<QSlider*>( QObject::sender() );
+		emit setParameter(slider->objectName(), slider->value() / 100.0);
+	}
 
 private:
     QComboBox *devicesBox;
     QComboBox *settingsBox;
     QComboBox *colorBox;
+	QSlider *brightnessSlider;
+
+	void addSlider(QFormLayout *formLayout, QString label ) {
+		QSlider *slider = new QSlider( Qt::Horizontal );
+		slider->setMinimum(0);
+		slider->setMaximum(100);
+		slider->setSingleStep(1);
+		slider->setObjectName(label);
+		formLayout->addRow(new QLabel(label), slider);
+		connect(slider, SIGNAL(sliderReleased()), this, SLOT(sliderReleased()) );
+	}
 };
 
 class Camera : public QObject
@@ -151,7 +180,8 @@ public slots:
     void setViewfinderSettings(QCameraViewfinderSettings settings);
     void setCamera(const QCameraInfo &cameraInfo);
     void setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings settings);
-    void setColorCode(int code);
+	void setColorCode(int code);
+	void setParameter(QString what, float value);
     void showOptions();
     void saveCfg();
     void loadCfg();
