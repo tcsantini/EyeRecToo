@@ -14,6 +14,7 @@
 #include <QGridLayout>
 #include <QRegularExpression>
 #include <QFormLayout>
+#include <QDoubleSpinBox>
 
 #include "opencv/cv.h"
 
@@ -59,13 +60,36 @@ public:
         hBoxLayout->addWidget(colorBox);
 		layout->addWidget(box);
 
+		// Sliders are prettier and easier, but spinboxes are more accurate; unfortunatelly, that's what we favor.
+		bool useSliders = false;
+		QComboBox *parBox;
 		box = new QGroupBox("Parameters:");
+		box->setWhatsThis("Set camera parameters mode or values as % of their range.\nCurrently, no test is performed to check if the camera actually supports changing the parameter.");
+		box->setToolTip(box->whatsThis());
 		formLayout = new QFormLayout();
-		addSlider(formLayout, "Brightness");
-		addSlider(formLayout, "Contrast");
-		addSlider(formLayout, "White Balance");
-		addSlider(formLayout, "Saturation");
-		addSlider(formLayout, "Sharpening Level");
+		QStringList list = {
+			"Brightness",
+			"Contrast",
+			"White Balance",
+			"Saturation",
+			"Sharpening Level",
+			"Gamma",
+			"Gain",
+			"Backlight",
+			"Exposure Time",
+		};
+		for (auto i = list.begin(); i != list.end(); i++) {
+			if (useSliders)
+				addSlider(formLayout, *i);
+			else
+				addSpinBox(formLayout, *i);
+		}
+		parBox = addComboBox(formLayout, "Exposure Mode");
+		parBox->addItem("Manual", 1);
+		parBox->addItem("Auto", 2);
+		parBox->addItem("Shutter", 4);
+		parBox->addItem("Aperture", 8);
+
 		box->setLayout(formLayout);
 		layout->addWidget(box, 0, 1, 3, 1);
 
@@ -141,6 +165,14 @@ private slots:
 		QSlider *slider = static_cast<QSlider*>( QObject::sender() );
 		emit setParameter(slider->objectName(), slider->value() / 100.0);
 	}
+	void spinBoxChanged(double value) {
+		QDoubleSpinBox *sb = static_cast<QDoubleSpinBox*>( QObject::sender() );
+		emit setParameter(sb->objectName(), value/ 100.0);
+	}
+	void comboBoxChanged() {
+		QComboBox *box = static_cast<QComboBox*>( QObject::sender() );
+		emit setParameter(box->objectName(), box->currentData().toFloat());
+	}
 
 private:
     QComboBox *devicesBox;
@@ -156,6 +188,26 @@ private:
 		slider->setObjectName(label);
 		formLayout->addRow(new QLabel(label), slider);
 		connect(slider, SIGNAL(sliderReleased()), this, SLOT(sliderReleased()) );
+	}
+
+	void addSpinBox(QFormLayout *formLayout, QString label ) {
+		QDoubleSpinBox *sb = new QDoubleSpinBox();
+		sb->setMinimum(0);
+		sb->setMaximum(100);
+		sb->setSingleStep(0.5);
+		sb->setDecimals(1);
+		sb->setObjectName(label);
+		sb->setSuffix("%");
+		formLayout->addRow(new QLabel(label), sb);
+		connect(sb, SIGNAL(valueChanged(double)), this, SLOT(spinBoxChanged(double)) );
+	}
+
+	QComboBox* addComboBox(QFormLayout *formLayout, QString label ) {
+		QComboBox *box = new QComboBox();
+		box->setObjectName(label);
+		formLayout->addRow(new QLabel(label), box);
+		connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxChanged()) );
+		return box;
 	}
 };
 

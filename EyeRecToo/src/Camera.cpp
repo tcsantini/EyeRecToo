@@ -206,21 +206,39 @@ void Camera::setParameter(QString what, float value)
 		return;
 
 	QCameraImageProcessing *ip = camera->imageProcessing();
-
-	if (!ip->isAvailable())
-		return;
+	QCameraExposure *exp = camera->exposure();
 
 	QString parameter = what.toLower();
-	if (parameter == "brightness")
-		ip->setBrightness(value);
-	if (parameter == "contrast")
-		ip->setContrast(value);
-	if (parameter == "white balance")
-		ip->setManualWhiteBalance(value);
-	if (parameter == "saturation")
-		ip->setSaturation(value);
-	if (parameter == "sharpening level")
-		ip->setSharpeningLevel(value);
+	qDebug() << what << value;
+
+	if ( ip->isAvailable() ) {
+		if (parameter == "brightness")
+			ip->setBrightness(value);
+		if (parameter == "contrast")
+			ip->setContrast(value);
+		if (parameter == "white balance")
+			ip->setManualWhiteBalance(value);
+		if (parameter == "saturation")
+			ip->setSaturation(value);
+		if (parameter == "sharpening level")
+			ip->setSharpeningLevel(value);
+	}
+
+	if ( exp->isAvailable() ) {
+		if (parameter == "exposure mode") {
+			switch ( (int) value ) {
+				case 1:
+					exp->setExposureMode(QCameraExposure::ExposureManual);
+					break;
+				case 2:
+					exp->setExposureMode(QCameraExposure::ExposureAuto);
+					break;
+			}
+		}
+		if (parameter == "exposure time")
+			exp->setManualAperture(value);
+	}
+
 }
 
 void Camera::showOptions()
