@@ -73,9 +73,9 @@ public:
 			"White Balance",
 			"Saturation",
 			"Sharpening Level",
-			"Gamma",
-			"Gain",
-			"Backlight",
+			//"Gamma",
+			//"Gain",
+			//"Backlight",
 			"Exposure Time",
 		};
 		for (auto i = list.begin(); i != list.end(); i++) {
@@ -87,8 +87,8 @@ public:
 		parBox = addComboBox(formLayout, "Exposure Mode");
 		parBox->addItem("Manual", 1);
 		parBox->addItem("Auto", 2);
-		parBox->addItem("Shutter", 4);
-		parBox->addItem("Aperture", 8);
+		//parBox->addItem("Shutter", 4);
+		//parBox->addItem("Aperture", 8);
 
 		box->setLayout(formLayout);
 		layout->addWidget(box, 0, 1, 3, 1);
