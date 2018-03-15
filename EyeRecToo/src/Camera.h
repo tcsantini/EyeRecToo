@@ -15,6 +15,7 @@
 #include <QRegularExpression>
 #include <QFormLayout>
 #include <QDoubleSpinBox>
+#include <QFileInfo>
 
 #include "opencv/cv.h"
 
@@ -100,7 +101,29 @@ public:
                 this, SLOT(settingsChanged(int)) );
         connect(colorBox, SIGNAL(currentIndexChanged(int)),
                 this, SLOT(colorChanged(int)) );
-    }
+	}
+
+	void setValue(QDoubleSpinBox *sb, double val) {
+		if (!sb)
+			return;
+		sb->blockSignals(true);
+		sb->setValue(100*val);
+		sb->blockSignals(false);
+	}
+	void setValue(QSlider *s, double val) {
+		if (!s)
+			return;
+		s->blockSignals(true);
+		s->setValue(100*val);
+		s->blockSignals(false);
+	}
+	void setValue(QComboBox *cb, QVariant val) {
+		if (!cb)
+			return;
+		cb->blockSignals(true);
+		cb->setCurrentIndex(cb->findData(val));
+		cb->blockSignals(false);
+	}
 
 public slots:
     void update(QCameraInfo current, int colorCode)
@@ -178,14 +201,13 @@ private:
     QComboBox *devicesBox;
     QComboBox *settingsBox;
     QComboBox *colorBox;
-	QSlider *brightnessSlider;
 
 	void addSlider(QFormLayout *formLayout, QString label ) {
 		QSlider *slider = new QSlider( Qt::Horizontal );
 		slider->setMinimum(0);
 		slider->setMaximum(100);
 		slider->setSingleStep(1);
-		slider->setObjectName(label);
+		slider->setObjectName(label.toLower().replace(" ", "_"));
 		formLayout->addRow(new QLabel(label), slider);
 		connect(slider, SIGNAL(sliderReleased()), this, SLOT(sliderReleased()) );
 	}
@@ -196,7 +218,7 @@ private:
 		sb->setMaximum(100);
 		sb->setSingleStep(0.5);
 		sb->setDecimals(1);
-		sb->setObjectName(label);
+		sb->setObjectName(label.toLower().replace(" ", "_"));
 		sb->setSuffix("%");
 		formLayout->addRow(new QLabel(label), sb);
 		connect(sb, SIGNAL(valueChanged(double)), this, SLOT(spinBoxChanged(double)) );
@@ -204,7 +226,7 @@ private:
 
 	QComboBox* addComboBox(QFormLayout *formLayout, QString label ) {
 		QComboBox *box = new QComboBox();
-		box->setObjectName(label);
+		box->setObjectName(label.toLower().replace(" ", "_"));
 		formLayout->addRow(new QLabel(label), box);
 		connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxChanged()) );
 		return box;
@@ -234,11 +256,12 @@ public slots:
     void setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings settings);
 	void setColorCode(int code);
 	void setParameter(QString what, float value);
-    void showOptions();
+	void setValuesUI();
+	void showOptions();
     void saveCfg();
     void loadCfg();
     void timedout();
-    void retry();
+	void retry();
 
 private:
     QString id;
@@ -255,6 +278,36 @@ private:
 
 	static QMutex setCameraMutex;
 	void searchDefaultCamera();
+
+	QString makeSettingsFileName() { return QString("%1/cfg/camera-parameters/%2.ini").arg(QCoreApplication::applicationDirPath()).arg(currentCameraInfo.deviceName()); }
+	bool loadCameraParameter(const QSettings &settings, const QString &parameter, double &value)
+	{
+		if ( ! settings.contains(parameter) )
+			return false;
+		value = settings.value(parameter).toDouble();
+		return true;
+	}
+	bool loadCameraParameter(const QString &parameter, double &value)
+	{
+		QFileInfo cameraSettingsFile( makeSettingsFileName() );
+		if ( ! cameraSettingsFile.exists() )
+			return false;
+		QSettings settings(cameraSettingsFile.absoluteFilePath(), QSettings::IniFormat);
+		return loadCameraParameter(settings, parameter, value);
+	}
+	void saveCameraParameter(const QString &parameter, const double &value)
+	{
+		QFileInfo cameraSettingsFile( makeSettingsFileName() );
+		QSettings s(cameraSettingsFile.absoluteFilePath(), QSettings::IniFormat);
+		s.setValue(parameter, value);
+	}
+	void loadAndSet(const QSettings &settings, QString key) {
+		double value;
+		if ( loadCameraParameter(settings, key, value) )
+			setParameter(key, value);
+
+	}
+	void loadUserCameraParameters();
 
 private slots:
 	void reset();

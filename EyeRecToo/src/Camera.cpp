@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <QFileInfo>
 
 static int gQCameraInfoMetaTypeId = qRegisterMetaType<QCameraInfo>("QCameraInfo");
 static int gMatMetaTypeId = qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -187,6 +188,8 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
         retriesLeft = maxRetries;
 	}
 
+	loadUserCameraParameters();
+	setValuesUI();
 	saveCfg();
     qInfo() << id << msg;
     QMetaObject::invokeMethod(ui, "updateSettings", Q_ARG(QList<QCameraViewfinderSettings>, settingsList), Q_ARG(QCameraViewfinderSettings, currentViewfinderSettings) );
@@ -201,31 +204,31 @@ void Camera::setColorCode(int code)
 
 void Camera::setParameter(QString what, float value)
 {
-	//qDebug() << what << value;
 	if (!camera)
 		return;
 
 	QCameraImageProcessing *ip = camera->imageProcessing();
 	QCameraExposure *exp = camera->exposure();
 
-	QString parameter = what.toLower();
-	qDebug() << what << value;
+	QString parameter = what;
 
 	if ( ip->isAvailable() ) {
 		if (parameter == "brightness")
 			ip->setBrightness(value);
 		if (parameter == "contrast")
 			ip->setContrast(value);
-		if (parameter == "white balance")
+		if (parameter == "white_balance")
 			ip->setManualWhiteBalance(value);
 		if (parameter == "saturation")
 			ip->setSaturation(value);
-		if (parameter == "sharpening level")
+		if (parameter == "sharpening_level")
 			ip->setSharpeningLevel(value);
 	}
 
 	if ( exp->isAvailable() ) {
-		if (parameter == "exposure mode") {
+		if (parameter == "exposure_time")
+			exp->setManualAperture(value);
+		if (parameter == "exposure_mode") {
 			switch ( (int) value ) {
 				case 1:
 					exp->setExposureMode(QCameraExposure::ExposureManual);
@@ -235,10 +238,38 @@ void Camera::setParameter(QString what, float value)
 					break;
 			}
 		}
-		if (parameter == "exposure time")
-			exp->setManualAperture(value);
 	}
 
+	saveCameraParameter(parameter, value);
+}
+
+void Camera::setValuesUI()
+{
+	if (!camera)
+		return;
+
+	QCameraImageProcessing *ip = camera->imageProcessing();
+	QCameraExposure *exp = camera->exposure();
+
+	if ( ip->isAvailable() ) {
+		ui->setValue( ui->findChild<QDoubleSpinBox*>("brightness"), ip->brightness() );
+		ui->setValue( ui->findChild<QDoubleSpinBox*>("contrast"), ip->contrast() );
+		ui->setValue( ui->findChild<QDoubleSpinBox*>("white_balance"), ip->manualWhiteBalance() );
+		ui->setValue( ui->findChild<QDoubleSpinBox*>("saturation"), ip->saturation() );
+		ui->setValue( ui->findChild<QDoubleSpinBox*>("sharpening_level"), ip->sharpeningLevel() );
+	}
+
+	if ( exp->isAvailable() ) {
+		ui->setValue( ui->findChild<QDoubleSpinBox*>("exposure_time"), exp->aperture() );
+		switch ( (int) exp->exposureMode() ) {
+			case QCameraExposure::ExposureManual:
+				ui->setValue( ui->findChild<QComboBox*>("exposure_mode"), 1 );
+				break;
+			case QCameraExposure::ExposureAuto:
+				ui->setValue( ui->findChild<QComboBox*>("exposure_mode"), 2 );
+				break;
+		}
+	}
 }
 
 void Camera::showOptions()
@@ -362,4 +393,19 @@ void Camera::searchDefaultCamera()
 		}
 	}
 
+}
+
+void Camera::loadUserCameraParameters()
+{
+	QFileInfo cameraSettingsFile( makeSettingsFileName() );
+	if ( ! cameraSettingsFile.exists() )
+		return;
+	QSettings settings(cameraSettingsFile.absoluteFilePath(), QSettings::IniFormat);
+	loadAndSet(settings, "brightness");
+	loadAndSet(settings, "contrast");
+	loadAndSet(settings, "white_balance");
+	loadAndSet(settings, "saturation");
+	loadAndSet(settings, "sharpening_level");
+	loadAndSet(settings, "exposure_time");
+	loadAndSet(settings, "exposure_mode");
 }
