@@ -3,7 +3,7 @@
 using namespace cv;
 
 DataRecorder::DataRecorder(QString id, QString header, QObject *parent)
-    : id(id),
+	: id(id.replace("Widget", "").replace(" ", "")),
       header(header),
       videoWriter(NULL),
       dataFile(NULL),

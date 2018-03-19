@@ -81,9 +81,9 @@ public:
         gazeEstimationMethod("POLY_X_Y_XY_XX_YY_XYY_YXX_XXYY"),
         visualize(true),
 		visualizationTimeS(5),
-		minCentralAreaCoverage(0.8f),
-		minPeriphericAreaCoverage(0.1f),
-		maxReprojectionError(4.f)
+		minCentralAreaCoverage(0.0f),
+		minPeriphericAreaCoverage(0.0f),
+		maxReprojectionError(10.0f)
 	{}
 
     /*

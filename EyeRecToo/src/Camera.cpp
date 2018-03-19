@@ -92,11 +92,12 @@ QCameraViewfinderSettings Camera::getViewfinderSettings(const QCameraInfo camera
     } else {
         // Unknown; recommend to maximize fps and minimize resolution
         recommended = camera->viewfinderSettings();
-        foreach (const QCameraViewfinderSettings &setting,  camera->supportedViewfinderSettings()) {
+		foreach (const QCameraViewfinderSettings &setting,  camera->supportedViewfinderSettings()) {
             if ( setting.pixelFormat() == QVideoFrame::Format_RGB32
                  || setting.pixelFormat() == QVideoFrame::Format_RGB24
                  || setting.pixelFormat() == QVideoFrame::Format_YUYV
-                 || setting.pixelFormat() == QVideoFrame::Format_Jpeg ) {
+				 || setting.pixelFormat() == QVideoFrame::Format_UYVY
+				 || setting.pixelFormat() == QVideoFrame::Format_Jpeg ) {
 
                 if (recommended.isNull())
                     recommended = setting;
