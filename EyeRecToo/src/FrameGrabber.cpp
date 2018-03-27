@@ -196,6 +196,9 @@ bool FrameGrabber::rgb32_2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
 
 bool FrameGrabber::yuyv_2bmp(const QVideoFrame &in, cv::Mat &cvFrame)
 {
+	// some of the cheaper cameras tend to mess up the data for the first frames
+	if (abs(in.height()) * abs(in.width()) * 2 > in.mappedBytes())
+			return false;
 	Mat yuyv = Mat(abs(in.height()), abs(in.width()), CV_8UC2, (void*) in.bits());
 	if (code == CV_8UC3)
 		cvtColor(yuyv, cvFrame, CV_YUV2BGR_YUYV);
