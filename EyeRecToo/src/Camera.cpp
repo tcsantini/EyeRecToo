@@ -93,9 +93,9 @@ QCameraViewfinderSettings Camera::getViewfinderSettings(const QCameraInfo camera
         // Unknown; recommend to maximize fps and minimize resolution
         recommended = camera->viewfinderSettings();
 		foreach (const QCameraViewfinderSettings &setting,  camera->supportedViewfinderSettings()) {
-            if ( setting.pixelFormat() == QVideoFrame::Format_RGB32
-                 || setting.pixelFormat() == QVideoFrame::Format_RGB24
-                 || setting.pixelFormat() == QVideoFrame::Format_YUYV
+			if ( setting.pixelFormat() == QVideoFrame::Format_RGB32
+				 || setting.pixelFormat() == QVideoFrame::Format_RGB24
+				 || setting.pixelFormat() == QVideoFrame::Format_YUYV
 				 || setting.pixelFormat() == QVideoFrame::Format_UYVY
 				 || setting.pixelFormat() == QVideoFrame::Format_Jpeg ) {
 
@@ -152,18 +152,23 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
 
         qInfo() << id << "Opening" << cameraInfo.description();
         camera = new QCamera(cameraInfo.deviceName().toUtf8());
-        frameGrabber = new FrameGrabber(id, colorCode);
+		frameGrabber = new FrameGrabber(id, colorCode);
 
         camera->load();
         if (camera->state() == QCamera::UnloadedState) {
             qInfo() << id << cameraInfo.description() << "failed to load:\n" << camera->errorString();
-            reset();
-            emit noCamera("Failed to load.");
+			reset();
+			emit noCamera("Failed to load.");
             return;
         }
 
         if (settings.isNull())
-            settings = getViewfinderSettings(cameraInfo);
+			settings = getViewfinderSettings(cameraInfo);
+
+		currentCameraInfo = cameraInfo;
+		currentViewfinderSettings = settings;
+		settingsList = camera->supportedViewfinderSettings();
+		QMetaObject::invokeMethod(ui, "updateSettings", Q_ARG(QList<QCameraViewfinderSettings>, settingsList), Q_ARG(QCameraViewfinderSettings, currentViewfinderSettings) );
 
         camera->setViewfinderSettings(settings);
         camera->setViewfinder(frameGrabber);
@@ -171,7 +176,6 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
 
         if (camera->state() != QCamera::ActiveState) {
             qInfo() << id << cameraInfo.description() << "failed to start (" << settings << ")\n" << camera->errorString();
-            reset();
             emit noCamera("Failed to start.");
             return;
         }
@@ -182,9 +186,6 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
                 this, SLOT(timedout()) );
 
         fps = settings.maximumFrameRate();
-        currentCameraInfo = cameraInfo;
-        currentViewfinderSettings = settings;
-        settingsList = camera->supportedViewfinderSettings();
         msg = currentCameraInfo.description() + " " + toQString(settings);
         retriesLeft = maxRetries;
 	}
@@ -193,7 +194,6 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
 	setValuesUI();
 	saveCfg();
     qInfo() << id << msg;
-    QMetaObject::invokeMethod(ui, "updateSettings", Q_ARG(QList<QCameraViewfinderSettings>, settingsList), Q_ARG(QCameraViewfinderSettings, currentViewfinderSettings) );
 }
 
 void Camera::setColorCode(int code)
