@@ -138,15 +138,25 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	setupWidget(this, settings);
 
-	// Commands
+	/***************************************************************************
+	 *  Commands
+	 **************************************************************************/
+
+	// Calibration
 	connect(&commandManager, SIGNAL(toggleCalibration()),
 			gazeEstimationWidget, SLOT(toggleCalibration()) );
-	connect(&commandManager, SIGNAL(enableMarkerCollection()),
-			gazeEstimationWidget, SLOT(enableMarkerCollection()) );
-	connect(&commandManager, SIGNAL(disableMarkerCollection()),
-			gazeEstimationWidget, SLOT(disableMarkerCollection()) );
+	connect(&commandManager, SIGNAL(toggleMarkerCollection()),
+			gazeEstimationWidget, SLOT(toggleMarkerCollection()) );
+	connect(&commandManager, SIGNAL(toggleRemoteCalibration()),
+			gazeEstimationWidget, SLOT(toggleRemoteCalibration()) );
+
+	// Recording
 	connect(&commandManager, SIGNAL(toggleRecording()),
-			this, SLOT(toggleRecording()) );
+			ui->recordingToggle, SLOT(click()) );
+	connect(&commandManager, SIGNAL(toggleRemoteRecording()),
+			this, SLOT(toggleRemoteRecording()) );
+
+	// Additionals
 	connect(&commandManager, SIGNAL(freezeCameraImages()),
 			this, SLOT(freezeCameraImages()) );
 	connect(&commandManager, SIGNAL(unfreezeCameraImages()),
@@ -372,7 +382,8 @@ void MainWindow::on_recordingToggle_clicked()
             ui->recordingToggle->setChecked(false);
             return;
         }
-        qInfo() << "Record starting (Subject:" << ui->subject->text() << ")";
+		QMetaObject::invokeMethod(performanceMonitorWidget, "on_resetCounters_clicked");
+		qInfo() << "Record starting (Subject:" << ui->subject->text() << ")";
         ui->changeSubjectButton->setEnabled(false);
         ui->changePwdButton->setEnabled(false);
         emit startRecording();
@@ -396,7 +407,8 @@ void MainWindow::on_recordingToggle_clicked()
         ui->changeSubjectButton->setEnabled(true);
         ui->changePwdButton->setEnabled(true);
         recStopSound.play();
-    }
+		gPerformanceMonitor.report();
+	}
 }
 void MainWindow::effectiveRecordingStart()
 {
@@ -582,15 +594,11 @@ void MainWindow::setupWidget(ERWidget *widget, QSettings* settings, QPushButton 
 
 }
 
-void MainWindow::toggleRecording()
+void MainWindow::toggleRemoteRecording()
 {
-	if ( ! ui->recordingToggle->isChecked()) {
-		if (ui->subject->text().isEmpty()) // Unset remote recording
-            setSubjectName("remote");
-        QMetaObject::invokeMethod(performanceMonitorWidget, "on_resetCounters_clicked");
-    } else {
-        gPerformanceMonitor.report();
-    }
+	// If the subject name is empty, use the remote label
+	if ( !ui->recordingToggle->isChecked() && ui->subject->text().isEmpty() )
+		setSubjectName("remote");
 	ui->recordingToggle->click();
 }
 

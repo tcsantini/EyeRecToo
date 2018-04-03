@@ -20,18 +20,21 @@ public slots:
 
 signals:
 	void toggleCalibration();
-    void toggleRecording();
-    void togglePreview();
-	void enableMarkerCollection();
-	void disableMarkerCollection();
+	void toggleMarkerCollection();
+	void toggleRemoteCalibration();
+	void toggleRecording();
+	void toggleRemoteRecording();
+	void togglePreview();
 	void freezeCameraImages();
     void unfreezeCameraImages();
 
 private:
-    bool calibrating = false;
-    int calibrationToggleKey = Qt::Key_PageDown;
-    int recordingToggleKey = Qt::Key_PageUp;
-    int previewToggleKey = Qt::Key_B;
+	int remoteCalibrationToggleKey = Qt::Key_PageDown;
+	int calibrationToggleKey = Qt::Key_S;
+	int collectionToggleKey = Qt::Key_C;
+	int recordingToggleKey = Qt::Key_R;
+	int remoteRecordingToggleKey = Qt::Key_PageUp;
+	int previewToggleKey = Qt::Key_B;
 };
 
 #endif // COMMANDMANAGER_H

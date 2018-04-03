@@ -40,8 +40,8 @@ signals:
 
 public slots:
 	void toggleCalibration();
-	void enableMarkerCollection();
-	void disableMarkerCollection();
+	void toggleMarkerCollection();
+	void toggleRemoteCalibration();
 	void startRecording();
 	void stopRecording();
 
@@ -60,6 +60,7 @@ private:
     bool lastStatus;
 	bool calibrationRequested;
 	bool isRecording;
+	bool isMarkerCollectionEnabled = false;
 
     QLabel *statusBarLabel;
 
@@ -72,6 +73,8 @@ private slots:
     void finishSampling();
     void collectMarkerTuple(DataTuple dataTuple);
     void updateStatus(bool status, QString msg);
+	void enableMarkerCollection();
+	void disableMarkerCollection();
 
     void on_saveTuples_clicked();
     void on_loadTuples_clicked();

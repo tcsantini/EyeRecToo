@@ -124,7 +124,7 @@ private slots:
     void on_log_clicked();
 	void on_performanceMonitor_clicked();
 
-	void toggleRecording();
+	void toggleRemoteRecording();
 	void freezeCameraImages();
     void unfreezeCameraImages();
     void togglePreview();

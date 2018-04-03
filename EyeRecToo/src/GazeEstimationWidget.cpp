@@ -347,7 +347,23 @@ void GazeEstimationWidget::keyReleaseEvent(QKeyEvent *event)
 void GazeEstimationWidget::toggleCalibration()
 {
 	ui->startFinishButton->click();
-	//ui->startFinishButton->setChecked(!ui->startFinishButton->isChecked());
+}
+
+void GazeEstimationWidget::toggleRemoteCalibration()
+{
+	ui->startFinishButton->click();
+	if ( ui->startFinishButton->isChecked() )
+		enableMarkerCollection();
+	else
+		disableMarkerCollection();
+}
+
+void GazeEstimationWidget::toggleMarkerCollection()
+{
+	if (isMarkerCollectionEnabled)
+		disableMarkerCollection();
+	else
+		enableMarkerCollection();
 }
 
 void GazeEstimationWidget::enableMarkerCollection()
@@ -355,6 +371,7 @@ void GazeEstimationWidget::enableMarkerCollection()
 	if (isCollecting) {
 		connect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
 		collectedSound.play();
+		isMarkerCollectionEnabled = true;
 	}
 }
 
@@ -363,6 +380,7 @@ void GazeEstimationWidget::disableMarkerCollection()
 	disconnect(this, SIGNAL(inDataTuple(DataTuple)), this, SLOT(collectMarkerTuple(DataTuple)) );
 	if (isCollecting)
 		collectedSound.play();
+	isMarkerCollectionEnabled = false;
 }
 
 void GazeEstimationWidget::collectMarkerTuple(DataTuple dataTuple)
