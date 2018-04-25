@@ -31,8 +31,6 @@
 
 #include "utils.h"
 
-#include "Evaluation.h"
-
 class MainWindowConfig
 {
 public:
@@ -88,7 +86,6 @@ private:
     LogWidget *logWidget;
 	PerformanceMonitorWidget *performanceMonitorWidget;
 	CommandManager commandManager;
-	Evaluation *evaluation;
 
     QElapsedTimer elapsedTime;
     int elapsedTimeUpdateTimer;

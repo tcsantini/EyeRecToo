@@ -49,7 +49,6 @@ SOURCES +=\
 	$${TOP}/src/ERWidget.cpp \
 	src/pupil-tracking/PuReST.cpp \
     src/pupil-detection/PuRe.cpp \
-    src/Evaluation.cpp \
     src/pupil-tracking/PupilTrackingMethod.cpp
 
 HEADERS  += \
@@ -83,7 +82,6 @@ HEADERS  += \
 	$${TOP}/src/ERWidget.h \
 	$${TOP}/src/pupil-tracking/PupilTrackingMethod.h \
     src/pupil-detection/PuRe.h \
-    src/Evaluation.h \
 	src/pupil-tracking/PuReST.h
 
 FORMS    += \
@@ -91,8 +89,7 @@ FORMS    += \
     $${TOP}/src/CameraWidget.ui \
     $${TOP}/src/GazeEstimationWidget.ui \
     $${TOP}/src/LogWidget.ui \
-    $${TOP}/src/PerformanceMonitorWidget.ui \
-    src/Evaluation.ui
+	$${TOP}/src/PerformanceMonitorWidget.ui
 
 RESOURCES += \
     $${TOP}/resources.qrc

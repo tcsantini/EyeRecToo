@@ -18,8 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-#define EYEREC
-#ifdef EYEREC
 
     createExtraMenus();
     connect(ui->menuBar, SIGNAL(triggered(QAction*)), this, SLOT(menuOption(QAction*)) );
@@ -163,12 +161,6 @@ MainWindow::MainWindow(QWidget *parent) :
 			this, SLOT(unfreezeCameraImages()) );
     connect(&commandManager, SIGNAL(togglePreview()),
             this, SLOT(togglePreview()) );
-#else
-	gPerformanceMonitor.setFrameDrop(false);
-	evaluation = new Evaluation();
-	evaluation->show();
-	QMetaObject::invokeMethod(evaluation, "run", Qt::QueuedConnection);
-#endif
 
 }
 
@@ -180,7 +172,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-#ifdef EYEREC
     if (ui->recordingToggle->isChecked()) {
         ui->recordingToggle->setChecked(false);
         on_recordingToggle_clicked();
@@ -263,13 +254,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
         settings->deleteLater();
         settings = NULL;
 	}
-#else
-	if ( evaluation ) {
-		evaluation->close();
-		evaluation->deleteLater();
-		evaluation = NULL;
-	}
-#endif
 
     event->accept();
 }
