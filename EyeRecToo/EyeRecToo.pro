@@ -47,9 +47,9 @@ SOURCES +=\
 	$${TOP}/src/Overlay.cpp \
 	$${TOP}/src/CommandManager.cpp \
 	$${TOP}/src/ERWidget.cpp \
-	src/pupil-tracking/PuReST.cpp \
-    src/pupil-detection/PuRe.cpp \
-    src/pupil-tracking/PupilTrackingMethod.cpp
+	$${TOP}/src/pupil-tracking/PuReST.cpp \
+	$${TOP}/src/pupil-detection/PuRe.cpp \
+	$${TOP}/src/pupil-tracking/PupilTrackingMethod.cpp
 
 HEADERS  += \
     $${TOP}/src/MainWindow.h\
@@ -81,8 +81,8 @@ HEADERS  += \
 	$${TOP}/src/CommandManager.h \
 	$${TOP}/src/ERWidget.h \
 	$${TOP}/src/pupil-tracking/PupilTrackingMethod.h \
-    src/pupil-detection/PuRe.h \
-	src/pupil-tracking/PuReST.h
+	$${TOP}/src/pupil-detection/PuRe.h \
+	$${TOP}/src/pupil-tracking/PuReST.h
 
 FORMS    += \
     $${TOP}/src/MainWindow.ui \
