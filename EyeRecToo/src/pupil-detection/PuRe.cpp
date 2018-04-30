@@ -173,7 +173,7 @@ Mat PuRe::canny(const Mat &in, bool blurImage, bool useL2, int bins, float nonEd
 	}
 	low_th = lowHighThresholdRatio*high_th;
 
-	delete histogram;
+	delete[] histogram;
 
 	/*
 	 *  Non maximum supression
