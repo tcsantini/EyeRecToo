@@ -485,8 +485,13 @@ void MainWindow::menuOption(QAction* action)
 void MainWindow::showReferencesDialog()
 {
 	ReferenceList::add( "Santini et al.",
+		"PuReST: Robust pupil tracking for real-time pervasive eye tracking",
+		"ETRA", "2018b",
+		"https://doi.org/10.1145/3204493.3204578"
+	);
+	ReferenceList::add( "Santini et al.",
 		"PuRe: Robust pupil detection for real-time pervasive eye tracking",
-		"CVIU", "2018",
+		"CVIU", "2018a",
 		"https://www.sciencedirect.com/science/article/pii/S1077314218300146"
 	);
 	ReferenceList::add( "Santini et al.",

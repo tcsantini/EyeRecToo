@@ -49,7 +49,7 @@
 using namespace std;
 using namespace cv;
 
-string PuRe::desc = "PuRe (Santini et. al 2018)";
+string PuRe::desc = "PuRe (Santini et. al 2018a)";
 
 PuRe::PuRe() :
 	baseSize(320,240),

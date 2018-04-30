@@ -166,6 +166,7 @@ public:
         QFormLayout *formLayout;
         QGroupBox *box;
 
+		// TODO: make sure that the tooltip/whatsthis things are set for the QLabels as well
         box = new QGroupBox("Preprocessing");
         formLayout = new QFormLayout();
         widthSB = new QSpinBox();
@@ -221,9 +222,9 @@ public:
 		pupilDetectionComboBox = new QComboBox();
 		formLayout->addRow(pupilDetectionComboBox);
 		trackingBox = new QCheckBox();
-		trackingBox->setWhatsThis("Track the pupil after detection.");
+		trackingBox->setWhatsThis("Track the pupil after detection using PuReST.");
 		trackingBox->setToolTip(box->whatsThis());
-		formLayout->addRow( new QLabel("Tracking:"), trackingBox );
+		formLayout->addRow( new QLabel("PuReST (Santini et al. 2018b):"), trackingBox );
 		layout->addWidget(box);
 
         applyButton = new QPushButton("Apply");
