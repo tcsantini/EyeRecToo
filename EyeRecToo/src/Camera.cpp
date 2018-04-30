@@ -140,10 +140,10 @@ void Camera::setCamera(const QCameraInfo &cameraInfo, QCameraViewfinderSettings 
 {
     QMutexLocker setCameraLocker(&setCameraMutex);
 
-    reset();
+	reset();
 
-    QList<QCameraViewfinderSettings> settingsList;
-    QString msg = "No camera selected";
+	QString msg = "No camera selected";
+	QList<QCameraViewfinderSettings> settingsList;
     if (cameraInfo.isNull()) {
         currentCameraInfo = QCameraInfo();
         currentViewfinderSettings = QCameraViewfinderSettings();
@@ -343,7 +343,8 @@ void Camera::timedout()
 {
     qWarning() << id << "timedout; reopening...";
     retriesLeft--; // initialize the countdown
-    retry();
+	reset();
+	retry();
 }
 
 void Camera::retry()
@@ -354,15 +355,23 @@ void Camera::retry()
     currentCameraInfo = QCameraInfo();
     currentViewfinderSettings = QCameraViewfinderSettings();
 
-    if (retriesLeft < maxRetries && retriesLeft >= 0) {
-        setCamera(cameraInfo, viewfinderSettings);
-        if (!currentCameraInfo.isNull())
-            return;
-        currentCameraInfo = cameraInfo;
-        currentViewfinderSettings = viewfinderSettings;
-        retriesLeft--;
-        QTimer::singleShot(1000, this, SLOT(retry()));
-    }
+	if (retriesLeft < maxRetries && retriesLeft >= 0) {
+		if (isAvailable(cameraInfo))
+			setCamera(cameraInfo, viewfinderSettings);
+		if (!currentCameraInfo.isNull())
+			return;
+		currentCameraInfo = cameraInfo;
+		currentViewfinderSettings = viewfinderSettings;
+		retriesLeft--;
+		QTimer::singleShot(1000, this, SLOT(retry()));
+	}
+
+	QString msg = QString("%1: ").arg(cameraInfo.deviceName());
+	if (retriesLeft < 0)
+		msg.append("lost.");
+	else
+		msg.append(QString("reopening (%1/%2) ...").arg(maxRetries-retriesLeft).arg(maxRetries));
+	emit noCamera(msg);
 }
 
 void Camera::searchDefaultCamera()

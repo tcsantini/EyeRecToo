@@ -278,6 +278,14 @@ private:
 
 	static QMutex setCameraMutex;
 	void searchDefaultCamera();
+	bool isAvailable(const QCameraInfo &cameraInfo) {
+		QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+		for (auto c = cameras.begin(); c != cameras.end(); c++) {
+			if (c->description() == cameraInfo.description() && c->deviceName() == cameraInfo.deviceName())
+				return true;
+		}
+		return false;
+	}
 
 	QString makeSettingsFileName() { return QString("%1/cfg/camera-parameters/%2.ini").arg(QCoreApplication::applicationDirPath()).arg(currentCameraInfo.deviceName()); }
 	bool loadCameraParameter(const QSettings &settings, const QString &parameter, double &value)
