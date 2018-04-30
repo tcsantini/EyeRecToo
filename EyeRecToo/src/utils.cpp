@@ -64,7 +64,7 @@ void logInitBanner()
 
     QDateTime utc = QDateTime::currentDateTimeUtc();
     qDebug() << "Starting\n######################################################################"
-             << "\n# " << QString("EyeRecToo v%1").arg(GIT_VERSION)
+			 << "\n# " << QString("EyeRecToo v%1").arg(VERSION)
              << "\n# UTC:      " << utc.toString()
              << "\n# Local:    " << utc.toLocalTime().toString()
              << "\n######################################################################";

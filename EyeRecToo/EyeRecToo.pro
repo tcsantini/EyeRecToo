@@ -1,3 +1,9 @@
+VERSION = 1.2
+QMAKE_TARGET_COMPANY = "University of Tuebingen"
+QMAKE_TARGET_PRODUCT = "EyeRecToo"
+QMAKE_TARGET_DESCRIPTION = ""
+QMAKE_TARGET_COPYRIGHT = "Thiago Santini"
+
 QT       += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -176,8 +182,12 @@ unix{
 }
 
 system("git --version"):{
-	GIT_VERSION=$$system(git --git-dir $${TOP}/../.git --work-tree $$TOP describe --always --tags)
-	DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
+	GIT_BRANCH=$$system(git rev-parse --abbrev-ref HEAD)
+	GIT_COMMIT_HASH=$$system(git rev-parse --short HEAD)
 } else {
-	GIT_VERSION=""
+	GIT_BRANCH="unknown"
+	GIT_COMMIT_HASH="unknown"
 }
+DEFINES += VERSION=\\\"$$VERSION\\\"
+DEFINES += GIT_BRANCH=\\\"$$GIT_BRANCH\\\"
+DEFINES += GIT_COMMIT_HASH=\\\"$$GIT_COMMIT_HASH\\\"

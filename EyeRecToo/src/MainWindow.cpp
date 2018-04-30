@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	settings = new QSettings(gCfgDir + "/" + "EyeRecToo", QSettings::IniFormat);
 	cfg.load(settings);
 
-    setWindowTitle(QString("EyeRecToo v%1").arg(GIT_VERSION));
+	ui->statusBar->showMessage( QString("This is version %1").arg(VERSION) );
     setWindowIcon(QIcon(":/icons/EyeRecToo.png"));
 
     if (!cfg.workingDirectory.isEmpty())
@@ -546,10 +546,11 @@ void MainWindow::showReferencesDialog()
 
 void MainWindow::showAboutDialog()
 {
-    QString msg = QString("EyeRecToo v%1<br><br>").arg(GIT_VERSION);
+	QString msg = QString("EyeRecToo v%1<br><br>").arg(VERSION);
     msg.append("Contact: <a href=\"mailto:thiago.santini@uni-tuebingen.de?Subject=[EyeRecToo] Contact\" target=\"_top\">thiago.santini@uni-tuebingen.de</a><br><br>");
-    msg.append("Copyright &copy; 2017 University of Tübingen");
-    QMessageBox::about(this, "About", msg);
+	msg.append("Copyright &copy; 2018 Thiago Santini / University of Tübingen<br><br>");
+	msg.append( QString("Build: %1 %2").arg(GIT_BRANCH).arg(GIT_COMMIT_HASH) );
+	QMessageBox::about(this, "About", msg);
 }
 
 void MainWindow::setupWidget(ERWidget *widget, QSettings* settings, QPushButton *button)
