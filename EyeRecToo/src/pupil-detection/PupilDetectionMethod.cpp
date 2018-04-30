@@ -1,6 +1,9 @@
 #include "PupilDetectionMethod.h"
 #include <QDebug>
 
+// TODO: clean up this interface and the one from the tracking
+// this includes renaming everything from the old "run" method
+
 using namespace std;
 using namespace cv;
 
