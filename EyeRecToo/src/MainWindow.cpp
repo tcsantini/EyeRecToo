@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include <QSysInfo>
+
 // TODO: automatically detect suitable window positions on first init
 
 void MainWindow::createExtraMenus()
@@ -365,7 +367,8 @@ void MainWindow::on_recordingToggle_clicked()
         if (!setupSubjectDirectory()) {
             ui->recordingToggle->setChecked(false);
             return;
-        }
+		}
+		storeMetaDataHead();
 		QMetaObject::invokeMethod(performanceMonitorWidget, "on_resetCounters_clicked");
 		qInfo() << "Record starting (Subject:" << ui->subject->text() << ")";
         ui->changeSubjectButton->setEnabled(false);
@@ -382,7 +385,8 @@ void MainWindow::on_recordingToggle_clicked()
         emit stopRecording();
         disconnect(gazeEstimationWidget, SIGNAL(outDataTuple(DataTuple)),
                 journal, SIGNAL(newData(DataTuple)) );
-        killTimer(elapsedTimeUpdateTimer);
+		storeMetaDataTail();
+		killTimer(elapsedTimeUpdateTimer);
         elapsedTime.invalidate();
         ui->elapsedTime->setText("00:00:00");
         ui->recordingToggle->setText("Start");
@@ -595,4 +599,45 @@ void MainWindow::toggleRemoteRecording()
 void MainWindow::togglePreview()
 {
 	gFreezePreview = !gFreezePreview;
+}
+
+void MainWindow::storeMetaDataHead()
+{
+	QFile file(metaDataFile);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		return;
+	QTextStream out(&file);
+
+	QDateTime utc = QDateTime::currentDateTimeUtc();
+	out << "start_utc" << gDataSeparator <<
+		   utc.toString() << gDataNewline;
+	out << "start_timer" << gDataSeparator <<
+		   gTimer.elapsed() << gDataNewline;
+	out << "version" << gDataSeparator <<
+		   VERSION << gDataNewline;
+	out << "build" << gDataSeparator <<
+		   QString("%1 %2").arg(GIT_BRANCH).arg(GIT_COMMIT_HASH) << gDataNewline;
+
+	QSysInfo system;
+	(void) system; // MSVC is giving an unused variable warning so let's satisfy it...
+	out << "OS" << gDataSeparator <<
+		   QString("%1 %2").arg(system.productType()).arg(system.productVersion()) << gDataNewline;
+	out << "Host" << gDataSeparator <<
+		   system.machineHostName() << gDataNewline;
+
+	file.close();
+}
+
+void MainWindow::storeMetaDataTail()
+{
+	QFile file(metaDataFile);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+		return;
+	QTextStream out(&file);
+
+	QDateTime utc = QDateTime::currentDateTimeUtc();
+	out << "end_utc" << gDataSeparator << utc.toString() << gDataNewline;
+	out << "end_timer" << gDataSeparator << gTimer.elapsed() << gDataNewline;
+
+	file.close();
 }

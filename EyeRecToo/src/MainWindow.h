@@ -100,6 +100,10 @@ private:
 	void createExtraMenus();
 	void setupWidget(ERWidget *widget, QSettings *settings, QPushButton *button=NULL);
 
+	const QString metaDataFile = "meta.csv";
+	void storeMetaDataHead();
+	void storeMetaDataTail();
+
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
