@@ -14,6 +14,7 @@ win32: RC_ICONS = $${TOP}/icons/eyerectoo.ico
 #TEMPLATE = vcapp
 
 DEFINES += TURBOJPEG
+TURBOJPEGPATH="$${TOP}/deps/libjpeg-turbo-1.5.90/"
 
 # Note: Starburst and Swirski are not currently included in the repository; do not enable
 #DEFINES += STARBURST
@@ -124,11 +125,11 @@ LIBS += \
 
 # JPEG-TURBO
 contains(DEFINES, TURBOJPEG) {
-    INCLUDEPATH += "$${TOP}/deps/libjpeg-turbo-1.5.1/libjpeg-turbo64/include/"
+	INCLUDEPATH += "$${TURBOJPEGPATH}/include/"
     win32:contains(QMAKE_HOST.arch, x86_64) {
-        LIBS += "-L$${TOP}/deps/libjpeg-turbo-1.5.1/libjpeg-turbo64/lib/"
+		LIBS += "-L$${TURBOJPEGPATH}/lib/"
     } else {
-        LIBS += "-L$${TOP}/deps/libjpeg-turbo-1.5.1/libjpeg-turbo32/lib/"
+		LIBS += "-L$${TURBOJPEGPATH}/lib/"
     }
     LIBS += -lturbojpeg
 }
@@ -175,8 +176,8 @@ unix{
 }
 
 system("git --version"):{
-    GIT_VERSION=$$system(git --git-dir $${TOP}/../.git --work-tree $$TOP describe --always --tags)
-    DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
+	GIT_VERSION=$$system(git --git-dir $${TOP}/../.git --work-tree $$TOP describe --always --tags)
+	DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 } else {
-    GIT_VERSION=""
+	GIT_VERSION=""
 }
