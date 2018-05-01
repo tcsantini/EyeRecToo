@@ -22,7 +22,7 @@ DataRecorder::~DataRecorder()
 
 void DataRecorder::startRecording()
 {
-    QString fileName = id + "Data.csv";
+    QString fileName = id + "Data.tsv";
     dataFile = new QFile( fileName );
     if ( !dataFile->open(QIODevice::WriteOnly) ) {
         qWarning() << "Recording failure." << QString("Could not open %1").arg(fileName);
