@@ -377,7 +377,7 @@ void Camera::retry()
 void Camera::searchDefaultCamera()
 {
 	/* TODO:
-	 * 1) consider searching for the cameras periodically -- e.g., if the
+	 * 1) consider searching for the cameras periodically -- e.g., if the user
 	 * plugs the eye tracker *after* we are running, nothing will happen.
 	 *
 	 * 2) extend this so the user can add his own default cameras

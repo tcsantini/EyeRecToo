@@ -1,9 +1,10 @@
 # EyeRecToo
 
-EyeRecToo is a second-generation open-source software for head-mounted eye trackers.
-Its main raison d'être is to provide an open platform to replace the data
-acquisition functionality from eye-tracker vendors' software, which typically
-are expensive, closed-source, and geared toward their own devices.
+EyeRecToo is a second-generation hardware-agnostic open-source software for
+head-mounted eye trackers.  Its main raison d'être is to provide an open
+platform to replace the data acquisition functionality from eye-tracker
+vendors' software, which typically are expensive, closed-source, and geared
+toward their own devices.
 It deprecates [EyeRec](https://www-ti.informatik.uni-tuebingen.de/santini/EyeRec).
 
 For data analysis functionality replacement, we recommend
@@ -21,39 +22,30 @@ For data analysis functionality replacement, we recommend
 - Windows 64 bits
 >This is the platform that gets the most testing and recommended.
 
-- Initiall support for Ubuntu 16.04 64 bits has been added; no binaries available atm though
->Only supports camera access using the uvcengine, including the Pupil Labs eye tracker. Has been tested for
+- Initiall support for Ubuntu 16.04 64 bits has been added; no binaries available at the moment though.
+>Only supports camera access using the uvcengine, including the Pupil Labs eye tracker. It has been tested for
 pupil detection, gaze estimation, and data recording. This is **alpha**.
 
 - Notes
 
 >It's also possible to get EyeRecToo running on 32 bits platforms, but no Pupil
->eye tracker supported is available.
+>eye tracker support is available.
 
 ## Supported Devices
 
 Theoretically, cameras using DirectShow (on Windows) and v4l2 (on Linux)
 should work out of the box.
 
+UVC-compliant cameras are suuported through the [UVC Engine](https://atreus.informatik.uni-tuebingen.de/santini/uvcengine).
+On Windows, it is typically necessary to change camera drivers to be able to
+use the uvcengine; see the **Running** section for details.
+
 *Tested Eye Trackers:*
 - Dikablis Essential / Pro (see [Ergoneers](http://www.ergoneers.com))
 - Pupil DIY (see [Pupil Labs](https://pupil-labs.com/))
 - Eivazi's microscope add-on (see [Eivazi, S et al.  2016](http://ieeexplore.ieee.org/document/7329925/))
-- Pupil Eye Tracker (see [Pupil Labs](https://pupil-labs.com/store/))
-**NOTE:** Early support for Pupil Labs' custom cameras is provided
-through the [UVC Engine](https://atreus.informatik.uni-tuebingen.de/santini/uvcengine).
-This support was tested with a binocular Pupil headset (in total three cameras) with the
-following configurations:
-1. Eyes (320 x 240 @120fps) Field (1280 x 720 @30fps)
-2. Eyes (640 x 480 @120fps) Field (1280 x 720 @30fps)
-3. Eyes (640 x 480 @120fps) Field (640 x 480 @120fps)
-
-Other configurations also work but were not extensively used.
-
-*Please note that the camera driver, libusb, and libuvc can crash if the headset is unplugged
-while the cameras are streaming. These are still work in progress for Windows,
-and the uvc engine is still in beta.*
-
+- Pupil Eye Tracker, both Cam1 and Cam2 models (see [Pupil Labs](https://pupil-labs.com/store/))
+- The inconspicuous modular eye trackers from [Eivazi, S et al 2018](http://www.ti.uni-tuebingen.de/typo3conf/ext/timitarbeiter/pi4/show_bibtex.php?uid=887&tid=1)
 
 *Tested webcams:*
 - [Playstation Eye](https://en.wikipedia.org/wiki/PlayStation_Eye)
@@ -72,11 +64,6 @@ and the uvc engine is still in beta.*
 
 Binaries can be downloaded [here](www.ti.uni-tuebingen.de/perception).
 
-Prior to running, make sure you have the Visual C++ 2015 x64 run-time
-components installed. If not, you can install them by running
-vcredist_x64.exe or
-[downloading the installer directly from Microsoft](https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe).
-
 **NOTE:** Additionally, you may need to install drivers to access your eye tracker
 cameras:
 
@@ -84,17 +71,23 @@ cameras:
 [VRMagic drivers](https://www.vrmagic.com/imaging/downloads/) (make sure you
 have the 64 bits version)
 2. For Pupil eye trackers, check the [Pupil Labs' guide](https://github.com/pupil-labs/pupil/wiki/Windows-Driver-Setup).
+3. (Windows only) for better interfacing with UVC-compliant cameras, we recommend to change the camera drivers to enable the uvcengine.
+This can be easily achieved through [Zadig](https://zadig.akeo.ie/):
+a) Check *Options->"list all devices"*,
+b) uncheck *Options->"Ignore Hubs or Composite Parents"* ,
+c) change your camera's *interface* driver to *libusbK*,
+d) change your camera's *composite parent* to *libusbK*
 
 ## Developing
 
-The EyeRecToo official repository is located at:
+The official EyeRecToo repository is located at:
 [https://atreus.informatik.uni-tuebingen.de/santini/EyeRecToo](https://atreus.informatik.uni-tuebingen.de/santini/EyeRecToo)
 
 **Windows**
 
 The particulars of the test build system we use are:
 - QtCreator 4.0.3
-- Qt 5.7.0 (MSVC 2015, 64 bit)
+- Qt >= 5.7.0 (MSVC 2015, 64 bit)
 - Visual Studio 2015
 - Microsoft Windows 8.1
 
@@ -103,15 +96,15 @@ All libraries/includes (for Windows 64 bits) should be in the deps directory alr
 2. Install Qt 5.7.0 (and Qt Creator)
 3. Open the project
 4. Run qmake and build
-5. Before running, add deps/runtime/Release or deps/runtime/Debug to your PATH.
+5. **Before running, add deps/runtime/Release or deps/runtime/Debug to your PATH accordingly to your build type.**
 
-*Both Release and Debug versions are functional although the latter may run at a low sampling rates.*
+*Both Release and Debug versions are functional although the latter may run at much lower sampling rates.*
 
 **Linux**
 
 The particulars of the test build system we use are:
 - QtCreator 4.4.1
-- Qt 5.9.2 
+- Qt 5.9.2
 - GCC 5.4.0
 - Ubuntu 16.04.3
 
@@ -121,7 +114,4 @@ Requires the installation of some packages (see README.LINUX); to build:
 3. Open the project
 4. Run qmake and build
 5. Should be good to go :-)
-
-*Only Release versions have been tested.*
-
 
