@@ -25,7 +25,7 @@ Camera::Camera(QString id, QObject *parent)
     connect(ui, SIGNAL(setViewfinderSettings(QCameraViewfinderSettings)), this, SLOT(setViewfinderSettings(QCameraViewfinderSettings)) );
 	connect(ui, SIGNAL(setColorCode(int)), this, SLOT(setColorCode(int)) );
 	connect(ui, SIGNAL(setParameter(QString,float)), this, SLOT(setParameter(QString,float)) );
-	settings = new QSettings(gCfgDir + "/" + id + " Camera", QSettings::IniFormat);
+	settings = new QSettings(gCfgDir + "/" + id + " Camera.ini", QSettings::IniFormat);
 }
 
 Camera::~Camera()

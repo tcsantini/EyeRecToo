@@ -15,7 +15,7 @@ FieldImageProcessor::FieldImageProcessor(QString id, QObject *parent)
 	  cameraCalibration(NULL),
 	  QObject(parent)
 {
-    settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor", QSettings::IniFormat);
+    settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor.ini", QSettings::IniFormat);
     updateConfig();
 
     dict = getPredefinedDictionary(DICT_4X4_250);

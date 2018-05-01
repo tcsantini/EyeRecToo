@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     createExtraMenus();
     connect(ui->menuBar, SIGNAL(triggered(QAction*)), this, SLOT(menuOption(QAction*)) );
 
-	settings = new QSettings(gCfgDir + "/" + "EyeRecToo", QSettings::IniFormat);
+	settings = new QSettings(gCfgDir + "/" + "EyeRecToo.ini", QSettings::IniFormat);
 	cfg.load(settings);
 
 	ui->statusBar->showMessage( QString("This is version %1").arg(VERSION) );
@@ -564,7 +564,7 @@ void MainWindow::showAboutDialog()
 
 void MainWindow::setupWidget(ERWidget *widget, QSettings* settings, QPushButton *button)
 {
-	// TODO: we might consider eventually move each ERWidget settings to their own file
+	// TODO: we might consider eventually moving each ERWidget settings to their own file
 	widget->load(settings);
 	widget->setup();
 

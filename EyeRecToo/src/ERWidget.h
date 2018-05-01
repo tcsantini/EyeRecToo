@@ -8,7 +8,7 @@
 // We can't include utils.h here because of the global access used for the log
 // and performance monitor widgets. So we define an alternative set function
 // here for convenience
-template<typename T> void erset(const QSettings *settings, const QString key, T &v)
+template<typename T> void reset(const QSettings *settings, const QString key, T &v)
 {
 	if (!settings)
 		return;
@@ -55,9 +55,9 @@ public slots:
 		}
 
 		settings->sync();
-		erset(settings, id + " Pos",  pos);
-		erset(settings, id + " Size",  size);
-		erset(settings, id + " Visible",  visible);
+		reset(settings, id + " Pos",  pos);
+		reset(settings, id + " Size",  size);
+		reset(settings, id + " Visible",  visible);
 
 		move(pos);
 		resize(size);

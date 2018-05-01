@@ -22,7 +22,7 @@ EyeImageProcessor::EyeImageProcessor(QString id, QObject *parent)
 #ifdef SWIRSKI
     availablePupilDetectionMethods.push_back(new Swirski());
 #endif
-    settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor", QSettings::IniFormat);
+    settings = new QSettings(gCfgDir + "/" + id + " ImageProcessor.ini", QSettings::IniFormat);
     updateConfig();
 
 	pmIdx = gPerformanceMonitor.enrol(id, "Image Processor");

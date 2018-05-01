@@ -8,7 +8,7 @@
 CommandManager::CommandManager(QObject *parent)
 {
     Q_UNUSED(parent);
-    QString settingsFileName = QString("%1/CommandManager").arg(gCfgDir);
+    QString settingsFileName = QString("%1/CommandManager.ini").arg(gCfgDir);
     bool hasSettings = QFile::exists(settingsFileName);
     QSettings *settings = new QSettings(settingsFileName, QSettings::IniFormat);
     if (hasSettings) {

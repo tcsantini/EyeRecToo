@@ -54,7 +54,7 @@ GazeEstimationWidget::GazeEstimationWidget(QString id, QWidget *parent) :
             this, SLOT(updateStatus(bool,QString)) );
 
     // TODO: right now options from widget and gaze estimation are mixed in a single file, separate them
-    settings = new QSettings(gCfgDir + "/" + "Gaze Estimation", QSettings::IniFormat);
+    settings = new QSettings(gCfgDir + "/" + "Gaze Estimation.ini", QSettings::IniFormat);
     cfg.load(settings);
 
     // QSignalBlocker blocker(this) does not block the GUI elements
