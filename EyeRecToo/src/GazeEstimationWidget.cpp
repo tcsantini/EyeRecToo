@@ -269,7 +269,7 @@ void GazeEstimationWidget::on_startFinishButton_toggled(bool checked)
 	if (checked) {
 		gCalibrating = true;
         ui->startFinishButton->setText("Finish");
-        statusBarLabel->setText("Calibrating: click on the field widget\nor hold 'c' to collect from marker.");
+		statusBarLabel->setText("Calibrating: click on the field widget\nor press 'c' to toggle marker collection.");
         statusBarLabel->setStyleSheet("QLabel { color : black; font : bold }");
         ui->loadTuples->setEnabled(false);
         ui->saveTuples->setEnabled(false);

@@ -115,3 +115,90 @@ Requires the installation of some packages (see README.LINUX); to build:
 4. Run qmake and build
 5. Should be good to go :-)
 
+## Data Format
+
+Text data files (*.tsv*) use the [tsv format](https://en.wikipedia.org/wiki/Tab-separated_values) -- i.e., **tab** delimited files.
+
+Video data files (*.mp4*) are uncompressed MJPEG files using MPEG-4 Part 14 containers.
+**Note: timing information from these files is not reliable. You can find the timestamp for each frame in its respective *\*Data.tsv* counterpart.**
+
+---
+
+- *meta.csv*
+>Contains meta data about the program, recording, and host machine.
+
+
+- *\<Camera Widget\>Data.tsv* and *\<Camera Widget\>.mp4*
+> Frames and respective processing tuples, e.g., detected pupil, markers, etc; these are FieldData and EyeData in the code. The number of entries in the *.tsv* **must** match the amount of frames in the video file. For each camera widget (e.g., eyes, field), one of these pairs is generated with the appropriate name -- e.g., RightEye.tsv, RightEye.mp4.
+
+- *JournalData.tsv*
+> Synchronized data file. This file includes entries containing only synchronized tuples (DataTuple in the code). **Note: despite gaze estimation being part of FieldData (since it's the correct reference frame), it is available only after synchronization and, thus, in this file, not on FieldData.tsv).**
+
+- *[0-9]\*-calibration.tup*
+> Data tuples used for calibration. The number prefix indicates the timestamp of the calibration.
+
+---
+
+For convenience, we also provide the *ERTViewer.exe* application, which allows one to visualize, do some basic annotation, and record gaze-overlayed videos from an EyeRecToo recording.
+
+**Note:**
+This is just a temporary application until we start integrating a data viewer/analyzer for video data in [*Eyetrace*](http://www.ti.uni-tuebingen.de/Eyetrace.1751.0.html). There are some bugs (e.g., the overlayed pupil can be slightly unsynchronized), and there is no focus on usability nor documentation.
+
+## Markers
+
+Default ArUco markers can be found under the *utils/all-markers* directory.
+
+Default collection marker for *CalibMe* calibrations is provided at
+*utils/CalibMeCollectionMarker.png*.
+
+Camera calibration patterns are *utils/asymmetric_circle_grid_4x11_20mm.pdf* (default)
+and *utils/chessboard_9x6_25mm.pdf*.
+
+These markers can also be found only
+[here](https://atreus.informatik.uni-tuebingen.de/santini/EyeRecToo/tree/master/EyeRecToo/utils).
+
+## Video Tutorials
+
+An introduction to EyeRecToo is available on YouTube. It is a bit outdated since
+its from 2017, but the principles remain the same.
+
+<iframe width="640" height="480" src="https://www.youtube.com/embed/vbrfjpfYkvg"
+frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+If you want to learn more about *CalibMe* and unassisted calibration, here is a talk about it at CHI2017.
+
+<iframe width="640" height="480"
+src="https://youtube.com/embed/gYtF3j2Hdl4" frameborder="0"
+allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+## Configuration Files
+
+All configuration files are found in the *cfg* directory. These are
+[*.ini](https://en.wikipedia.org/wiki/INI_file) files that can be easily edited
+if needed.
+
+## Keyboard Shortcuts
+
+These shortcuts can be changed through *cfg/CommandManager.ini*. Key codes can
+be found [here](http://doc.qt.io/qt-5/qt.html#Key-enum).
+
+Exposed functionality at the moment includes:
+
+- remoteCalibrationToggleKey = Qt::Key_PageDown:
+> Toggles calibration (including *CalibMe* marker collection).
+
+- calibrationToggleKey = Qt::Key_S:
+> Toggles calibration.
+ 
+- collectionToggleKey = Qt::Key_C:
+> Toggles *CalibMe* marker collection.
+ 
+- recordingToggleKey = Qt::Key_R:
+> Toggles recording.
+
+- remoteRecordingToggleKey = Qt::Key_PageUp:
+> If subject is not set, sets subject to "remote". Toggles recording.
+
+- previewToggleKey = Qt::Key_B:
+> Freezes previews; useful, e.g., during development to check gaze estimation / pupil detection, or for didactic purposes.
+
