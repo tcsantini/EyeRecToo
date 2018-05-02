@@ -247,7 +247,7 @@ void CameraCalibration::calibrate()
 		if (fishEye) {
 			int fisheyeFlags = 0;
 			fisheyeFlags |= fisheye::CALIB_RECOMPUTE_EXTRINSIC;
-			fisheyeFlags |= fisheye::CALIB_CHECK_COND;
+			//fisheyeFlags |= fisheye::CALIB_CHECK_COND;
 			fisheyeFlags |= fisheye::CALIB_FIX_SKEW;
 			rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rv, tv, fisheyeFlags);
 		} else {
