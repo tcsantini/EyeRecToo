@@ -3,8 +3,7 @@
 using namespace cv;
 
 DataRecorder::DataRecorder(QString id, QString header, QObject *parent)
-	: id(id.replace("Widget", "").replace(" ", "")),
-      header(header),
+	: header(header),
       videoWriter(NULL),
       dataFile(NULL),
       dataStream(NULL),
@@ -13,6 +12,7 @@ DataRecorder::DataRecorder(QString id, QString header, QObject *parent)
 {
     if (!id.contains("Journal"))
         pmIdx = gPerformanceMonitor.enrol(id, "Data Recorder");
+	this->id = id.replace("Widget", "").replace(" ", "");
 }
 
 DataRecorder::~DataRecorder()
