@@ -62,7 +62,7 @@ use the uvcengine; see the **Running** section for details.
 
 ## Running
 
-Binaries can be downloaded [here](www.ti.uni-tuebingen.de/perception).
+Binaries can be downloaded [here](https://www.hci.uni-tuebingen.de/research/Projects/eyerectoo.html).
 
 **NOTE:** Additionally, you may need to install drivers to access your eye tracker
 cameras:
